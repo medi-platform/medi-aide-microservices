@@ -1,0 +1,216 @@
+version: '3.8'
+
+networks:
+  stage3-network:
+    external: true
+    name: stage3-network
+
+services:
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+    container_name: stage3-analytics-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4016
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=analytics_db
+    ports:
+      - "4016:4016"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  audit-service:
+    build:
+      context: ./services/audit-service
+    container_name: stage3-audit-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4017
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=audit_db
+    ports:
+      - "4017:4017"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  ai-service:
+    build:
+      context: ./services/ai-service
+    container_name: stage3-ai-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4018
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=ai_db
+    ports:
+      - "4018:4018"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  care-plan-service:
+    build:
+      context: ./services/care-plan-service
+    container_name: stage3-care-plan-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4019
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=care_plan_db
+    ports:
+      - "4019:4019"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  evv-service:
+    build:
+      context: ./services/evv-service
+    container_name: stage3-evv-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4020
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=evv_db
+    ports:
+      - "4020:4020"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  file-service:
+    build:
+      context: ./services/file-service
+    container_name: stage3-file-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4021
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=file_db
+    ports:
+      - "4021:4021"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  search-service:
+    build:
+      context: ./services/search-service
+    container_name: stage3-search-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4022
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=search_db
+    ports:
+      - "4022:4022"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  matching-service:
+    build:
+      context: ./services/matching-service
+    container_name: stage3-matching-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4023
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=matching_db
+    ports:
+      - "4023:4023"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  training-service:
+    build:
+      context: ./services/training-service
+    container_name: stage3-training-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4024
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=training_db
+    ports:
+      - "4024:4024"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  feedback-service:
+    build:
+      context: ./services/feedback-service
+    container_name: stage3-feedback-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4025
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=feedback_db
+    ports:
+      - "4025:4025"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  communication-service:
+    build:
+      context: ./services/communication-service
+    container_name: stage3-communication-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4026
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=communication_db
+    ports:
+      - "4026:4026"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network

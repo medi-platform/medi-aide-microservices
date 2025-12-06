@@ -1,0 +1,4 @@
+namespace: medi-aide
+elasticsearch:
+  enabled: false
+

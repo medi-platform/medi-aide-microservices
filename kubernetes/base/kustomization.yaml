@@ -1,0 +1,80 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: medi-aide
+
+resources:
+  # ConfigMaps
+  - configmaps/consul-configmap.yaml
+  
+  # Secrets
+  - secrets/notification-service-db-secret.yaml
+  - secrets/rabbitmq-credentials-secret.yaml
+  
+  # Services
+  - services/notification-service.yaml
+  - services/auth-service.yaml
+  - services/user-service.yaml
+  - services/visit-service.yaml
+  - services/wellness-service.yaml
+  - services/payment-service.yaml
+  - services/analytics-service.yaml
+  - services/audit-service.yaml
+  - services/ai-service.yaml
+  - services/care-plan-service.yaml
+  - services/evv-service.yaml
+  - services/file-service.yaml
+  - services/search-service.yaml
+  - services/matching-service.yaml
+  - services/training-service.yaml
+  - services/feedback-service.yaml
+  - services/communication-service.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: stage3
+
+images:
+  - name: ghcr.io/medi-aide/notification-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/auth-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/user-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/visit-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/wellness-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/payment-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/analytics-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/audit-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/ai-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/care-plan-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/evv-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/file-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/search-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/matching-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/training-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/feedback-service
+    newTag: latest
+  - name: ghcr.io/medi-aide/communication-service
+    newTag: latest
+
+patches:
+  - target:
+      kind: Deployment
+      labelSelector: app.kubernetes.io/part-of=stage3
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/securityContext/runAsUser
+        value: 10001

@@ -1,0 +1,47 @@
+{
+  "dashboard": {
+    "title": "Kubernetes Disk Usage Monitor",
+    "panels": [
+      {
+        "title": "Node Disk Usage %",
+        "targets": [
+          {
+            "expr": "(1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|fuse.lxcfs|squashfs|vfat\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|fuse.lxcfs|squashfs|vfat\"}) * 100"
+          }
+        ],
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "title": "Available Disk Space (GB)",
+        "targets": [
+          {
+            "expr": "node_filesystem_avail_bytes{fstype!~\"tmpfs|fuse.lxcfs|squashfs|vfat\"} / 1024 / 1024 / 1024"
+          }
+        ],
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "title": "Container Disk Usage by Pod",
+        "targets": [
+          {
+            "expr": "sum(container_fs_usage_bytes{namespace=\"medi-aide\"}) by (pod) / 1024 / 1024"
+          }
+        ],
+        "type": "table",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+      },
+      {
+        "title": "PVC Usage",
+        "targets": [
+          {
+            "expr": "kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * 100"
+          }
+        ],
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+      }
+    ]
+  }
+}

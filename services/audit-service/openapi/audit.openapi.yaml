@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Audit Service API
+  version: 1.0.0
+  description: API for audit logging and compliance records
+servers:
+  - url: http://localhost:28000/api/v1/audit
+paths:
+  /ping:
+    get:
+      summary: Health ping
+      responses:
+        '200':
+          description: OK
+  /events:
+    post:
+      summary: Create an audit event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actorId: { type: string, format: uuid }
+                action: { type: string }
+                entityType: { type: string }
+                entityId: { type: string }
+                metadata: { type: object }
+              required: [actorId, action]
+      responses:
+        '202': { description: Accepted }
+

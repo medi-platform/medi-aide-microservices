@@ -1,0 +1,403 @@
+networks:
+  stage3-network:
+    external: true
+    name: stage3-network
+
+services:
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile.pnpm
+    container_name: stage3-notification-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4010
+      - SERVICE_NAME=notification-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - SERVICE_ROUTE_PREFIX=notifications
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=notification_db
+      - RABBITMQ_URL=amqp://admin:admin@stage3-rabbitmq:5672
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4010:4010"
+    depends_on:
+      - stage3-postgres
+      - stage3-rabbitmq
+    networks:
+      - stage3-network
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+    container_name: stage3-auth-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4011
+      - SERVICE_NAME=auth-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=auth_db
+      - JWT_SECRET=dev-secret
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4011:4011"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  user-service:
+    build:
+      context: ./services/user-service
+    container_name: stage3-user-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4012
+      - SERVICE_NAME=user-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - SERVICE_ROUTE_PREFIX=users
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=user_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4012:4012"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  visit-service:
+    build:
+      context: ./services/visit-service
+    container_name: stage3-visit-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4013
+      - SERVICE_NAME=visit-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - SERVICE_ROUTE_PREFIX=visits
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=visit_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4013:4013"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  wellness-service:
+    build:
+      context: ./services/wellness-service
+    container_name: stage3-wellness-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4014
+      - SERVICE_NAME=wellness-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=wellness_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4014:4014"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+    container_name: stage3-payment-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4015
+      - SERVICE_NAME=payment-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - SERVICE_ROUTE_PREFIX=payments
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=payment_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4015:4015"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+    container_name: stage3-analytics-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4016
+      - SERVICE_NAME=analytics-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=analytics_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4016:4016"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  audit-service:
+    build:
+      context: ./services/audit-service
+    container_name: stage3-audit-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4017
+      - SERVICE_NAME=audit-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=audit_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4017:4017"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  ai-service:
+    build:
+      context: ./services/ai-service
+    container_name: stage3-ai-service
+    environment:
+      - PORT=4018
+      - SERVICE_NAME=ai-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=ai_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4018:4018"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  care-plan-service:
+    build:
+      context: ./services/care-plan-service
+    container_name: stage3-care-plan-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4019
+      - SERVICE_NAME=care-plan-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - SERVICE_ROUTE_PREFIX=care-plans
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=care_plan_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4019:4019"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  evv-service:
+    build:
+      context: ./services/evv-service
+    container_name: stage3-evv-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4020
+      - SERVICE_NAME=evv-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=evv_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4020:4020"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  file-service:
+    build:
+      context: ./services/file-service
+    container_name: stage3-file-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4021
+      - SERVICE_NAME=file-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - SERVICE_ROUTE_PREFIX=files
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=file_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4021:4021"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  search-service:
+    build:
+      context: ./services/search-service
+    container_name: stage3-search-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4022
+      - SERVICE_NAME=search-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - ELASTICSEARCH_URL=http://stage3-elasticsearch:9200
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4022:4022"
+    networks:
+      - stage3-network
+
+  matching-service:
+    build:
+      context: ./services/matching-service
+    container_name: stage3-matching-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4023
+      - SERVICE_NAME=matching-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=matching_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4023:4023"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  training-service:
+    build:
+      context: ./services/training-service
+    container_name: stage3-training-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4024
+      - SERVICE_NAME=training-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=training_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4024:4024"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  feedback-service:
+    build:
+      context: ./services/feedback-service
+    container_name: stage3-feedback-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4025
+      - SERVICE_NAME=feedback-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=feedback_db
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4025:4025"
+    depends_on:
+      - stage3-postgres
+    networks:
+      - stage3-network
+
+  communication-service:
+    build:
+      context: ./services/communication-service
+    container_name: stage3-communication-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4026
+      - SERVICE_NAME=communication-service
+      - SERVICE_ADDRESS=host.docker.internal
+      - DB_HOST=stage3-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=communication_db
+      - RABBITMQ_URL=amqp://admin:admin@stage3-rabbitmq:5672
+      - REDIS_URL=redis://stage3-redis:6379
+      - CONSUL_HOST=stage3-consul
+      - CONSUL_PORT=8500
+    ports:
+      - "4026:4026"
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+      - stage3-rabbitmq
+    networks:
+      - stage3-network

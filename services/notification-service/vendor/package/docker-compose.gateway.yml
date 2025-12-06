@@ -1,0 +1,81 @@
+networks:
+  stage3-network:
+    external: true
+    name: stage3-network
+
+volumes:
+  stage3-kong-db:
+  stage3-consul-data:
+
+services:
+  stage3-kong-database:
+    image: postgres:15-alpine
+    container_name: stage3-kong-db
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    volumes:
+      - stage3-kong-db:/var/lib/postgresql/data
+    networks:
+      - stage3-network
+
+  stage3-kong-migration:
+    image: kong:3.4
+    container_name: stage3-kong-migration
+    command: kong migrations bootstrap
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: stage3-kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    depends_on:
+      - stage3-kong-database
+    networks:
+      - stage3-network
+    restart: on-failure
+
+  stage3-kong:
+    image: kong:3.4
+    container_name: stage3-kong
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: stage3-kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "${KONG_PROXY_HOST_PORT:-8000}:8000"
+      - "${KONG_ADMIN_HOST_PORT:-8001}:8001"
+    depends_on:
+      - stage3-kong-migration
+    networks:
+      - stage3-network
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  stage3-consul:
+    image: hashicorp/consul:1.18
+    container_name: stage3-consul
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    volumes:
+      - stage3-consul-data:/consul/data
+    networks:
+      - stage3-network
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+

@@ -1,0 +1,759 @@
+version: '3.8'
+
+services:
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: notification-service
+    container_name: stage3-notification-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: notification-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4010
+      DISABLE_CONSUL: "true"
+      DISABLE_MQ: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: notification_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ROUTE_PREFIX: notifications
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+      # Phase 4: Migration flags
+      READ_SOURCE: micro
+      DUAL_WRITE_ENABLED: "true"
+      SECONDARY_API_BASE: http://host.docker.internal:3000
+      MIGRATION_REQUEST_TIMEOUT_MS: 5000
+      RECONCILIATION_ENABLED: "false"
+    ports:
+      - "4010:4010"
+    healthcheck:
+      # Use Node to avoid curl dependency in runtime image
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4010/ping',r=>{if(r.statusCode===200)process.exit(0);process.exit(1)}).on('error',()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: auth-service
+    container_name: stage3-auth-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: auth-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4011
+      DISABLE_DB: "true"
+      HEALTH_ONLY: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: auth_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JWT_SECRET: your-secret-key-here
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4011:4011"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: user-service
+    container_name: stage3-user-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: user-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4012
+      DISABLE_DB: "true"
+      HEALTH_ONLY: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: user_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ROUTE_PREFIX: users
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4012:4012"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  visit-service:
+    build:
+      context: .
+      dockerfile: services/visit-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: visit-service
+    container_name: stage3-visit-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: visit-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4013
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: visit_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ROUTE_PREFIX: visits
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4013:4013"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  wellness-service:
+    build:
+      context: .
+      dockerfile: services/wellness-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: wellness-service
+    container_name: stage3-wellness-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: wellness-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4014
+      DISABLE_DB: "true"
+      HEALTH_ONLY: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: wellness_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4014:4014"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: payment-service
+    container_name: stage3-payment-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: payment-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4015
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: payment_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ROUTE_PREFIX: payments
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4015:4015"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: analytics-service
+    container_name: stage3-analytics-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: analytics-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4016
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: analytics_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4016:4016"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  audit-service:
+    build:
+      context: .
+      dockerfile: services/audit-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: audit-service
+    container_name: stage3-audit-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: audit-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4017
+      DISABLE_MQ: "true"
+      DISABLE_DB: "true"
+      DISABLE_CONSUL: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: audit_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4017:4017"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: services/ai-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: ai-service
+    container_name: stage3-ai-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: ai-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4018
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: ai_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4018:4018"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  care-plan-service:
+    build:
+      context: .
+      dockerfile: services/care-plan-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: care-plan-service
+    container_name: stage3-care-plan-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: care-plan-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4019
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: care_plan_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4019:4019"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  evv-service:
+    build:
+      context: .
+      dockerfile: services/evv-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: evv-service
+    container_name: stage3-evv-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: evv-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4020
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: evv_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4020:4020"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  contract-service:
+    build:
+      context: .
+      dockerfile: services/contract-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: contract-service
+    container_name: stage3-contract-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: contract-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4027
+    ports:
+      - "4027:4027"
+    networks:
+      - stage3-network
+
+  file-service:
+    build:
+      context: .
+      dockerfile: services/file-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: file-service
+    container_name: stage3-file-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: file-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4021
+      DISABLE_MQ: "true"
+      DISABLE_CONSUL: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: file_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "4021:4021"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  admin-service:
+    build:
+      context: .
+      dockerfile: services/admin-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: admin-service
+    container_name: stage3-admin-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: admin-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4036
+      ALLOW_DEV_ADMIN: "true"
+    ports:
+      - "4036:4036"
+    networks:
+      - stage3-network
+
+  moderation-service:
+    build:
+      context: .
+      dockerfile: services/moderation-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: moderation-service
+    container_name: stage3-moderation-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: moderation-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4037
+    ports:
+      - "4037:4037"
+    networks:
+      - stage3-network
+
+  admin-analytics-service:
+    build:
+      context: .
+      dockerfile: services/admin-analytics-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: admin-analytics-service
+    container_name: stage3-admin-analytics-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: admin-analytics-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4038
+    ports:
+      - "4038:4038"
+    networks:
+      - stage3-network
+
+  care-network-service:
+    build:
+      context: .
+      dockerfile: services/care-network-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: care-network-service
+    container_name: stage3-care-network-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: care-network-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4033
+    ports:
+      - "4033:4033"
+    networks:
+      - stage3-network
+
+  provincial-service:
+    build:
+      context: .
+      dockerfile: services/provincial-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: provincial-service
+    container_name: stage3-provincial-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: provincial-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4034
+    ports:
+      - "4034:4034"
+    networks:
+      - stage3-network
+
+  mentorship-service:
+    build:
+      context: .
+      dockerfile: services/mentorship-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: mentorship-service
+    container_name: stage3-mentorship-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: mentorship-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4035
+    ports:
+      - "4035:4035"
+    networks:
+      - stage3-network
+
+  fraud-detection-service:
+    build:
+      context: .
+      dockerfile: services/fraud-detection-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: fraud-detection-service
+    container_name: stage3-fraud-detection-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: fraud-detection-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4040
+    ports:
+      - "4040:4040"
+    networks:
+      - stage3-network
+
+  security-monitoring-service:
+    build:
+      context: .
+      dockerfile: services/security-monitoring-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: security-monitoring-service
+    container_name: stage3-security-monitoring-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: security-monitoring-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4041
+    ports:
+      - "4041:4041"
+    networks:
+      - stage3-network
+
+  search-service:
+    build:
+      context: .
+      dockerfile: services/search-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: search-service
+    container_name: stage3-search-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: search-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4022
+      DISABLE_MQ: "true"
+      DISABLE_CONSUL: "true"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: search_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4022:4022"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  matching-service:
+    build:
+      context: .
+      dockerfile: services/matching-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: matching-service
+    container_name: stage3-matching-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: matching-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4023
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: matching_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4023:4023"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  training-service:
+    build:
+      context: .
+      dockerfile: services/training-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: training-service
+    container_name: stage3-training-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: training-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4024
+      LMS_BASE_URL: https://demo.talentlms.com
+      LMS_API_ENABLED: "false"
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: training_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4024:4024"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  feedback-service:
+    build:
+      context: .
+      dockerfile: services/feedback-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: feedback-service
+    container_name: stage3-feedback-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: feedback-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4025
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: feedback_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4025:4025"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  communication-service:
+    build:
+      context: .
+      dockerfile: services/communication-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: communication-service
+    container_name: stage3-communication-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: communication-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4026
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: communication_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      TEMPORAL_ADDRESS: temporal:7233
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4026:4026"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+networks:
+  stage3-network:
+    external: true

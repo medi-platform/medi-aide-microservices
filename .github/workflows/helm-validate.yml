@@ -1,0 +1,35 @@
+name: Helm Lint & Kubeconform
+
+on:
+  pull_request:
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm-validate.yml'
+  push:
+    paths:
+      - 'charts/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Helm lint (nest-service)
+        run: helm lint charts/nest-service
+      - name: Helm lint (nextjs-mfe)
+        run: helm lint charts/nextjs-mfe
+      - name: Install kubeconform
+        run: |
+          curl -L https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: Render and validate (nest-service)
+        run: |
+          helm template test charts/nest-service | kubeconform -summary -strict -kubernetes-version 1.29.0
+      - name: Render and validate (nextjs-mfe)
+        run: |
+          helm template test charts/nextjs-mfe | kubeconform -summary -strict -kubernetes-version 1.29.0
+
+

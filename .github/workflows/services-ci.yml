@@ -1,0 +1,62 @@
+name: Microservices CI
+
+on:
+  push:
+    paths:
+      - 'services/**'
+      - '.github/workflows/services-ci.yml'
+  pull_request:
+    paths:
+      - 'services/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - name: Enable corepack
+        run: corepack enable && corepack prepare pnpm@8.15.0 --activate
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Build Training Service
+        run: pnpm --filter @medi-aide/training-service build
+      - name: Build Feedback Service
+        run: pnpm --filter @medi-aide/feedback-service build
+      - name: Build Communication Service
+        run: pnpm --filter @medi-aide/communication-service build
+      - name: Build Payment Service
+        run: pnpm --filter @medi-aide/payment-service build
+      - name: Build Wellness Service
+        run: pnpm --filter @medi-aide/wellness-service build
+      - name: Build Matching Service
+        run: pnpm --filter @medi-aide/matching-service build
+      - name: Build Care Plan Service
+        run: pnpm --filter @medi-aide/care-plan-service build
+      - name: Build Visit Service
+        run: pnpm --filter @medi-aide/visit-service build
+      - name: Build Analytics Service
+        run: pnpm --filter @medi-aide/analytics-service build
+      - name: Build Contract Service
+        run: pnpm --filter @medi-aide/contract-service build
+      - name: Build Admin Service
+        run: pnpm --filter @medi-aide/admin-service build
+      - name: Build Moderation Service
+        run: pnpm --filter @medi-aide/moderation-service build
+      - name: Build Admin Analytics Service
+        run: pnpm --filter @medi-aide/admin-analytics-service build
+      - name: Build Care Network Service
+        run: pnpm --filter @medi-aide/care-network-service build
+      - name: Build Provincial Service
+        run: pnpm --filter @medi-aide/provincial-service build
+      - name: Build Mentorship Service
+        run: pnpm --filter @medi-aide/mentorship-service build
+      - name: Build Fraud Detection Service
+        run: pnpm --filter @medi-aide/fraud-detection-service build
+      - name: Build Security Monitoring Service
+        run: pnpm --filter @medi-aide/security-monitoring-service build
+
+

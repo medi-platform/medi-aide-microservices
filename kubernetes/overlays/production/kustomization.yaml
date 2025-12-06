@@ -1,0 +1,111 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namespace: medi-aide-prod
+
+namePrefix: prod-
+
+commonLabels:
+  environment: production
+  
+patchesStrategicMerge:
+  - deployment-patches.yaml
+  - hpa-patches.yaml
+
+replicas:
+  - name: notification-service
+    count: 5
+  - name: auth-service
+    count: 5
+  - name: user-service
+    count: 5
+  - name: visit-service
+    count: 5
+  - name: wellness-service
+    count: 3
+  - name: payment-service
+    count: 5
+  - name: analytics-service
+    count: 3
+  - name: audit-service
+    count: 3
+  - name: ai-service
+    count: 3
+  - name: care-plan-service
+    count: 3
+  - name: evv-service
+    count: 3
+  - name: file-service
+    count: 3
+  - name: search-service
+    count: 3
+  - name: matching-service
+    count: 3
+  - name: training-service
+    count: 2
+  - name: feedback-service
+    count: 3
+  - name: communication-service
+    count: 3
+
+resources:
+  - namespace.yaml
+  - network-policies.yaml
+  - pod-security-policies.yaml
+  - resource-quotas.yaml
+
+configMapGenerator:
+  - name: production-config
+    behavior: merge
+    literals:
+      - NODE_ENV=production
+      - LOG_LEVEL=warn
+      - ENABLE_DEBUG=false
+      - RATE_LIMIT_REQUESTS_PER_MINUTE=100
+      - CACHE_TTL_SECONDS=300
+
+secretGenerator:
+  - name: production-secrets
+    type: Opaque
+    files:
+      - tls.crt=secrets/tls.crt
+      - tls.key=secrets/tls.key
+
+images:
+  - name: ghcr.io/medi-aide/notification-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/auth-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/user-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/visit-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/wellness-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/payment-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/analytics-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/audit-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/ai-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/care-plan-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/evv-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/file-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/search-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/matching-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/training-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/feedback-service
+    newTag: v1.0.0
+  - name: ghcr.io/medi-aide/communication-service
+    newTag: v1.0.0

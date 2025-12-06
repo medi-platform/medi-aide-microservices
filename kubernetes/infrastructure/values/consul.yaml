@@ -1,0 +1,19 @@
+global:
+  name: consul
+server:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+client:
+  enabled: true
+  grpc: true
+connectInject:
+  enabled: false
+ui:
+  enabled: true
+

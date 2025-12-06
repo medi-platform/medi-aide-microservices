@@ -1,0 +1,15 @@
+provisionDataStore:
+  cassandra: false
+storage:
+  type: memory
+query:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+collector:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+

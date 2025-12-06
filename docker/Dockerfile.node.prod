@@ -1,0 +1,76 @@
+# Production-ready Dockerfile for pnpm monorepo services
+FROM node:20-alpine AS deps
+
+ARG SERVICE_NAME
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+WORKDIR /app
+
+# Copy workspace config and lockfile
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+
+# Copy all package.json files to preserve workspace structure
+COPY packages/*/package.json packages/
+COPY services/*/package.json services/
+
+# Install production dependencies for the entire workspace
+RUN pnpm install --frozen-lockfile --prod
+
+# Build stage
+FROM node:20-alpine AS builder
+
+ARG SERVICE_NAME
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+WORKDIR /app
+
+# Copy everything
+COPY . .
+
+# Install all dependencies (including dev) and build
+RUN pnpm install --frozen-lockfile && \
+    pnpm -r --filter './packages/**' build && \
+    pnpm --filter @medi-aide/${SERVICE_NAME} build
+
+# Production stage
+FROM node:20-alpine
+
+ARG SERVICE_NAME
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Copy production dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/services/${SERVICE_NAME}/node_modules ./services/${SERVICE_NAME}/node_modules
+
+# Copy built application
+COPY --from=builder /app/services/${SERVICE_NAME}/dist ./dist
+COPY --from=builder /app/services/${SERVICE_NAME}/package.json ./package.json
+
+# Create symlinks for workspace packages
+RUN mkdir -p node_modules/@medi-aide && \
+    for pkg in packages/*; do \
+      if [ -d "$pkg" ]; then \
+        ln -s /app/$pkg node_modules/@medi-aide/$(basename $pkg) 2>/dev/null || true; \
+      fi \
+    done
+
+# Non-root user
+RUN addgroup -g 10001 app && \
+    adduser -u 10001 -G app -s /bin/sh -D app && \
+    chown -R 10001:10001 /app
+
+USER 10001
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD node -e "fetch('http://127.0.0.1:3000/health').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
+
+CMD ["node", "dist/main.js"]

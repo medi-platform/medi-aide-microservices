@@ -1,0 +1,26 @@
+auth:
+  postgresPassword: postgres
+  database: medi_aide
+persistence:
+  size: 50Gi
+primary:
+  initdb:
+    scripts:
+      init.sql: |
+        CREATE DATABASE auth_db;
+        CREATE DATABASE user_db;
+        CREATE DATABASE notification_db;
+        CREATE DATABASE visit_db;
+        CREATE DATABASE wellness_db;
+        CREATE DATABASE payment_db;
+        CREATE DATABASE analytics_db;
+        CREATE DATABASE audit_db;
+        CREATE DATABASE ai_db;
+        CREATE DATABASE care_plan_db;
+        CREATE DATABASE evv_db;
+        CREATE DATABASE file_db;
+        CREATE DATABASE search_db;
+        CREATE DATABASE matching_db;
+        CREATE DATABASE training_db;
+        CREATE DATABASE feedback_db;
+        CREATE DATABASE communication_db;

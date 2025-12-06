@@ -1,0 +1,72 @@
+x-common-variables: &common-variables
+  NODE_ENV: development
+  LOG_LEVEL: debug
+
+x-healthcheck: &default-healthcheck
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+networks:
+  stage3-network:
+    driver: bridge
+    name: stage3-network
+
+volumes:
+  stage3-postgres-data:
+  stage3-redis-data:
+  stage3-rabbitmq-data:
+  stage3-kong-data:
+  stage3-consul-data:
+
+services:
+  stage3-postgres:
+    image: postgres:15-alpine
+    container_name: stage3-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stage3_main
+    volumes:
+      - stage3-postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - stage3-network
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+
+  stage3-redis:
+    image: redis:7-alpine
+    container_name: stage3-redis
+    command: redis-server --appendonly yes --port 6379
+    volumes:
+      - stage3-redis-data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - stage3-network
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "redis-cli", "ping"]
+
+  stage3-rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: stage3-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - stage3-rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    networks:
+      - stage3-network
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+
+

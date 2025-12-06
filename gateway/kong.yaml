@@ -1,0 +1,329 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  # Auth Service
+  - name: auth-service
+    url: http://stage3-auth-service:4011
+    routes:
+      - name: auth-route
+        paths:
+          - /api/v1/auth
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # User Service
+  - name: user-service
+    url: http://stage3-user-service:4012
+    routes:
+      - name: user-route
+        paths:
+          - /api/v1/users
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Visit Service
+  - name: visit-service
+    url: http://stage3-visit-service:4013
+    routes:
+      - name: visit-route
+        paths:
+          - /api/v1/visits
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Wellness Service
+  - name: wellness-service
+    url: http://stage3-wellness-service:4014
+    routes:
+      - name: wellness-route
+        paths:
+          - /api/v1/wellness
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Payment Service
+  - name: payment-service
+    url: http://stage3-payment-service:4015
+    routes:
+      - name: payment-route
+        paths:
+          - /api/v1/payments
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Notification Service
+  - name: notification-service
+    url: http://host.docker.internal:4010
+    routes:
+      - name: notification-route
+        paths:
+          - /api/v1/notifications
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Analytics Service
+  - name: analytics-service
+    url: http://stage3-analytics-service:4016
+    routes:
+      - name: analytics-route
+        paths:
+          - /api/v1/analytics
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Audit Service
+  - name: audit-service
+    url: http://stage3-audit-service:4017
+    routes:
+      - name: audit-route
+        paths:
+          - /api/v1/audit
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # AI Service
+  - name: ai-service
+    url: http://stage3-ai-service:4018
+    routes:
+      - name: ai-route
+        paths:
+          - /api/v1/ai
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Care Plan Service
+  - name: care-plan-service
+    url: http://stage3-care-plan-service:4019
+    routes:
+      - name: care-plan-route
+        paths:
+          - /api/v1/care-plans
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # EVV Service
+  - name: evv-service
+    url: http://stage3-evv-service:4020
+    routes:
+      - name: evv-route
+        paths:
+          - /api/v1/evv
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # File Service
+  - name: file-service
+    url: http://stage3-file-service:4021
+    routes:
+      - name: file-route
+        paths:
+          - /api/v1/files
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Search Service
+  - name: search-service
+    url: http://stage3-search-service:4022
+    routes:
+      - name: search-route
+        paths:
+          - /api/v1/search
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Matching Service
+  - name: matching-service
+    url: http://stage3-matching-service:4023
+    routes:
+      - name: matching-route
+        paths:
+          - /api/v1/matching
+        strip_path: true
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Training Service
+  - name: training-service
+    url: http://stage3-training-service:4024
+    routes:
+      - name: training-route
+        paths:
+          - /api/v1/training
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Feedback Service
+  - name: feedback-service
+    url: http://stage3-feedback-service:4025
+    routes:
+      - name: feedback-route
+        paths:
+          - /api/v1/feedback
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Communication Service
+  - name: communication-service
+    url: http://stage3-communication-service:4026
+    routes:
+      - name: communication-route
+        paths:
+          - /api/v1/communication
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Special route for patients endpoints (could be wellness or user service)
+  - name: patients-wellness
+    url: http://stage3-wellness-service:4014
+    routes:
+      - name: patients-route
+        paths:
+          - /api/v1/patients
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+# Global plugins
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - X-Auth-Token
+        - Authorization
+      exposed_headers:
+        - X-Auth-Token
+      credentials: true
+      max_age: 3600
+
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 10
+      size_unit: megabytes
+
+  - name: rate-limiting
+    config:
+      minute: 100
+      policy: local
+

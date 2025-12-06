@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: medi-aide-services
+  namespace: argocd
+spec:
+  project: medi-aide
+  source:
+    repoURL: https://github.com/medi-platform/medi-aide-monorepo.git
+    targetRevision: HEAD
+    path: kubernetes/base
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: medi-aide
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+

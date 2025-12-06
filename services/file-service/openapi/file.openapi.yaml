@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: File Service API
+  version: 1.0.0
+  description: API for file upload sessions and downloads
+servers:
+  - url: http://localhost:28000/api/v1/files
+paths:
+  /ping:
+    get:
+      summary: Health ping
+      responses:
+        '200':
+          description: OK
+  /uploads/init:
+    post:
+      summary: Initialize an upload session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: string, format: uuid }
+                fileName: { type: string }
+                mimeType: { type: string }
+                fileSize: { type: integer }
+                documentType: { type: string }
+                metadata: { type: object, additionalProperties: true }
+              required: [userId, fileName, mimeType, fileSize]
+      responses:
+        '200':
+          description: Upload session initialized
+  /uploads/finalize:
+    post:
+      summary: Finalize an upload session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: string, format: uuid }
+                uploadId: { type: string }
+                uploadMetadata: { type: object }
+              required: [userId, uploadId]
+      responses:
+        '200':
+          description: Finalized
+  /downloads/url:
+    get:
+      summary: Generate download URL
+      parameters:
+        - in: query
+          name: key
+          schema: { type: string }
+          required: true
+      responses:
+        '200': { description: URL generated }
+

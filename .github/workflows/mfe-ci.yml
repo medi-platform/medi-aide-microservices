@@ -1,0 +1,48 @@
+name: Micro-Frontends CI
+
+on:
+  push:
+    paths:
+      - 'apps/micro-frontends/**'
+      - '.github/workflows/mfe-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/micro-frontends/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - name: Enable corepack
+        run: corepack enable && corepack prepare pnpm@8.15.0 --activate
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm -r --filter "./apps/micro-frontends/**" lint || true
+      - name: Build caregiver-portal
+        run: pnpm --filter ./apps/micro-frontends/caregiver-portal build
+      - name: Build patient-portal
+        run: pnpm --filter ./apps/micro-frontends/patient-portal build
+      - name: Build admin-console
+        run: pnpm --filter ./apps/micro-frontends/admin-console build
+      - name: Build wellness-dashboard
+        run: pnpm --filter ./apps/micro-frontends/wellness-dashboard build
+      - name: Build admin-console-enhanced
+        run: pnpm --filter ./apps/micro-frontends/admin-console-enhanced build
+      - name: Build training-portal
+        run: pnpm --filter ./apps/micro-frontends/training-portal build
+      - name: Build networking-hub
+        run: pnpm --filter ./apps/micro-frontends/networking-hub build
+      - name: Build analytics-dashboard
+        run: pnpm --filter ./apps/micro-frontends/analytics-dashboard build
+      - name: Build compliance-portal
+        run: pnpm --filter ./apps/micro-frontends/compliance-portal build
+      - name: Build mobile-optimized
+        run: pnpm --filter ./apps/micro-frontends/mobile-optimized build
+
+

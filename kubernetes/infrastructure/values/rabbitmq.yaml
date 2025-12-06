@@ -1,0 +1,14 @@
+auth:
+  username: admin
+  # password will be provided via helmfile set: auth.password
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 1Gi
+persistence:
+  enabled: true
+  size: 8Gi
+

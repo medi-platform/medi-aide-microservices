@@ -1,0 +1,85 @@
+grafana:
+  adminPassword: "admin"
+  persistence:
+    enabled: true
+    size: 10Gi
+  # Import dashboards on startup
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        options:
+          path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: disk-usage-dashboard
+  # Default dashboards
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: utc
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+    # Enable monitoring of kubelets for disk metrics
+    serviceMonitorSelectorNilUsesHelmValues: false
+    # Additional scrape configs for disk monitoring
+    additionalScrapeConfigs:
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - source_labels: [__address__]
+            regex: '(.*):10250'
+            replacement: '${1}:9100'
+            target_label: __address__
+      - job_name: 'kubelet'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          insecure_skip_verify: true
+        relabel_configs:
+          - source_labels: [__address__]
+            regex: '(.*):10250'
+            replacement: '${1}:10255'
+            target_label: __address__
+    # Mount alert rules
+    additionalAlertRelabelConfigs:
+      - source_labels: [__name__]
+        regex: 'node_filesystem.*'
+        target_label: __tmp_keep
+        replacement: 'true'
+      - source_labels: [__tmp_keep]
+        regex: 'true'
+        action: keep
+
+# Enable node-exporter for disk metrics
+nodeExporter:
+  enabled: true
+
+# Enable kube-state-metrics for PVC metrics
+kubeStateMetrics:
+  enabled: true
+
+# Alert manager configuration
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi

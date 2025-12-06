@@ -1,0 +1,35 @@
+nameOverride: notification-service
+
+image:
+  repository: ghcr.io/medi-aide/notification-service
+  tag: latest
+
+service:
+  port: 4010
+  targetPort: 4010
+
+env:
+  - name: NODE_ENV
+    value: production
+  - name: SERVICE_NAME
+    value: notification-service
+  - name: SERVICE_VERSION
+    value: "1.0.0"
+  - name: PORT
+    value: "4010"
+  - name: READ_SOURCE
+    value: micro
+  - name: DUAL_WRITE_ENABLED
+    value: "true"
+  - name: SECONDARY_API_BASE
+    value: http://host.kubernetes.internal:3000
+  - name: MIGRATION_REQUEST_TIMEOUT_MS
+    value: "5000"
+
+ingress:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+
+

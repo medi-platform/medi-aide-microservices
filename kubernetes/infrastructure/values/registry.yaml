@@ -1,0 +1,31 @@
+# Local Docker Registry for Kind
+replicaCount: 1
+image:
+  repository: registry
+  tag: 2
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5000
+  nodePort: 30500
+
+persistence:
+  enabled: true
+  size: 20Gi
+  storageClass: standard
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Enable delete operations
+env:
+  - name: REGISTRY_STORAGE_DELETE_ENABLED
+    value: "true"
+  - name: REGISTRY_HTTP_ADDR
+    value: ":5000"

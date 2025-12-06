@@ -1,0 +1,192 @@
+services:
+  shell:
+    image: node:20-alpine
+    working_dir: /app
+    environment:
+      - NEXT_USE_MF_HOST=true
+      - NEXT_PUBLIC_ALLOWED_ORIGINS=http://localhost:3002,http://localhost:3013,http://localhost:3004,http://localhost:3005,http://localhost:3006,http://localhost:3007,http://localhost:3008,http://localhost:3009,http://localhost:3010,http://localhost:3011,http://localhost:3012,http://localhost:3080
+      - NEXT_PUBLIC_MFE_NAME=shell
+      - NEXT_PUBLIC_CAREGIVER_MFE_URL=http://localhost:3002
+      - NEXT_PUBLIC_PATIENT_MFE_URL=http://localhost:3013
+      - NEXT_PUBLIC_WELLNESS_MFE_URL=http://localhost:3004
+      - NEXT_PUBLIC_ADMIN_MFE_URL=http://localhost:3005
+      - NEXT_PUBLIC_ADMIN_ENHANCED_MFE_URL=http://localhost:3006
+      - NEXT_PUBLIC_TRAINING_MFE_URL=http://localhost:3007
+      - NEXT_PUBLIC_NETWORKING_MFE_URL=http://localhost:3008
+      - NEXT_PUBLIC_ANALYTICS_MFE_URL=http://localhost:3009
+      - NEXT_PUBLIC_COMPLIANCE_MFE_URL=http://localhost:3010
+      - NEXT_PUBLIC_MOBILE_MFE_URL=http://localhost:3012
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    command: >-
+      sh -lc "corepack enable && corepack prepare pnpm@8.15.0 --activate && pnpm install --frozen-lockfile && pnpm run build && node .next/standalone/server.js"
+    volumes:
+      - /Users/memoor/medi-aide/medi-aide-frontend:/app
+    ports:
+      - '3011:3000'
+    depends_on:
+      - caregiver
+      - patient
+      - wellness
+      - admin
+      - admin-enhanced
+      - training
+      - networking
+      - analytics
+      - compliance
+      - mobile
+
+  caregiver:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/caregiver-portal"
+        APP_NAME: "@medi-aide/caregiver-portal"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=caregiver
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3002:3000'
+
+  patient:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/patient-portal"
+        APP_NAME: "@medi-aide/patient-portal"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=patient
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3013:3000'
+
+  wellness:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/wellness-dashboard"
+        APP_NAME: "@medi-aide/wellness-dashboard"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=wellness
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3004:3000'
+
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/admin-console"
+        APP_NAME: "@medi-aide/admin-console"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=admin
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3005:3000'
+
+  admin-enhanced:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/admin-console-enhanced"
+        APP_NAME: "@medi-aide/admin-console-enhanced"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=adminEnhanced
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3006:3000'
+
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/training-portal"
+        APP_NAME: "@medi-aide/training-portal"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=training
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3007:3000'
+
+  networking:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/networking-hub"
+        APP_NAME: "@medi-aide/networking-hub"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=networking
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3008:3000'
+
+  analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/analytics-dashboard"
+        APP_NAME: "@medi-aide/analytics-dashboard"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=analytics
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3009:3000'
+
+  compliance:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/compliance-portal"
+        APP_NAME: "@medi-aide/compliance-portal"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=compliance
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3010:3000'
+
+  mobile:
+    build:
+      context: .
+      dockerfile: Dockerfile.next.mfe
+      args:
+        APP_DIR: "micro-frontends/mobile-optimized"
+        APP_NAME: "@medi-aide/mobile-optimized"
+    environment:
+      - NEXT_PUBLIC_MFE_NAME=mobile
+      - NEXT_PUBLIC_SHELL_MFE_URL=http://localhost:3011
+    ports:
+      - '3012:3000'
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - '3080:80'
+    volumes:
+      - ./nginx/mfe.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - caregiver
+      - patient
+      - wellness
+      - admin
+      - admin-enhanced
+      - training
+      - networking
+      - analytics
+      - compliance
+      - mobile
+
+networks:
+  default:
+    name: stage3-network
+    external: true
+
+

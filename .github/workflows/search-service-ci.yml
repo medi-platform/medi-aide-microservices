@@ -1,0 +1,44 @@
+name: search-service CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/search-service/**'
+      - '.github/workflows/search-service-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'services/search-service/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build search-service image
+        working-directory: services/search-service
+        run: |
+          docker build -f Dockerfile.pnpm -t medi-aide/search-service:ci .
+
+      - name: Lint TypeScript (if available)
+        working-directory: services/search-service
+        run: |
+          if [ -f package.json ]; then
+            if jq -e '.scripts.lint' package.json >/dev/null 2>&1; then
+              npm ci --ignore-scripts
+              npm run lint
+            else
+              echo "No lint script defined. Skipping."
+            fi
+          fi
+
+

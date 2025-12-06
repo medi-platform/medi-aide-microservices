@@ -1,0 +1,23 @@
+name: k6 Smoke Test - Notifications
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Base URL for notifications service
+        required: true
+        default: http://localhost:4010
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run k6
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tools/load-testing/k6/notifications-smoke.js
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url }}
+
+

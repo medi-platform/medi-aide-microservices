@@ -1,0 +1,8 @@
+apiVersion: v2
+name: nextjs-mfe
+description: Reusable Helm chart for Next.js micro frontends (Module Federation ready)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+

@@ -1,0 +1,18 @@
+architecture: standalone
+primary:
+  persistence:
+    enabled: true
+    storageClass: standard
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  volumePermissions:
+    enabled: true
+readReplicas:
+  enabled: false
+

@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-disk-alerts
+  namespace: monitoring
+data:
+  disk-alerts.yaml: |
+    groups:
+      - name: disk-usage
+        interval: 30s
+        rules:
+          # Node disk space alerts
+          - alert: NodeDiskSpaceWarning
+            expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 > 80
+            for: 5m
+            labels:
+              severity: warning
+              component: node
+            annotations:
+              summary: "Node disk space warning on {{ $labels.instance }}"
+              description: "Disk {{ $labels.device }} on {{ $labels.instance }} is {{ $value | humanize }}% full"
+          
+          - alert: NodeDiskSpaceCritical
+            expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 > 90
+            for: 5m
+            labels:
+              severity: critical
+              component: node
+            annotations:
+              summary: "Node disk space critical on {{ $labels.instance }}"
+              description: "Disk {{ $labels.device }} on {{ $labels.instance }} is {{ $value | humanize }}% full"
+          
+          # Container disk usage alerts
+          - alert: ContainerDiskUsageHigh
+            expr: sum(container_fs_usage_bytes{namespace="medi-aide"}) by (pod, container) / 1024 / 1024 / 1024 > 5
+            for: 10m
+            labels:
+              severity: warning
+              component: container
+            annotations:
+              summary: "Container disk usage high"
+              description: "Container {{ $labels.container }} in pod {{ $labels.pod }} is using {{ $value | humanize }}GB of disk"
+          
+          # PVC usage alerts
+          - alert: PVCUsageWarning
+            expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * 100 > 80
+            for: 5m
+            labels:
+              severity: warning
+              component: storage
+            annotations:
+              summary: "PVC usage warning"
+              description: "PVC {{ $labels.persistentvolumeclaim }} is {{ $value | humanize }}% full"
+          
+          # Docker daemon disk usage
+          - alert: DockerDiskUsageHigh
+            expr: node_filesystem_avail_bytes{mountpoint="/var/lib/docker"} / node_filesystem_size_bytes{mountpoint="/var/lib/docker"} < 0.1
+            for: 5m
+            labels:
+              severity: critical
+              component: docker
+            annotations:
+              summary: "Docker disk usage critical"
+              description: "Docker data directory has less than 10% free space on {{ $labels.instance }}"

@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Search Service API
+  version: 1.0.0
+  description: API for indexing and full-text search
+servers:
+  - url: http://localhost:28000/api/v1/search
+paths:
+  /ping:
+    get:
+      summary: Health ping
+      responses:
+        '200':
+          description: OK
+  /index:
+    post:
+      summary: Index a document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                index: { type: string }
+                id: { type: string }
+                document: { type: object }
+              required: [index, id, document]
+      responses:
+        '200': { description: Indexed }
+  /:
+    get:
+      summary: Search documents
+      parameters:
+        - in: query
+          name: index
+          schema: { type: string }
+          required: true
+        - in: query
+          name: q
+          schema: { type: string }
+          required: true
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: offset
+          schema: { type: integer }
+      responses:
+        '200': { description: Results returned }
+

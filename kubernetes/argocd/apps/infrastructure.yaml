@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: medi-aide-infrastructure
+  namespace: argocd
+spec:
+  project: medi-aide
+  source:
+    repoURL: https://github.com/medi-platform/medi-aide-monorepo.git
+    targetRevision: HEAD
+    path: kubernetes/infrastructure
+    plugin:
+      name: argocd-helmfile
+      env:
+        - name: HELMFILE_ENV
+          value: development
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: medi-aide
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+

@@ -1,0 +1,102 @@
+# Production-grade Dockerfile for Node.js services (without BuildKit)
+FROM node:20-alpine AS builder
+
+ARG NPM_REGISTRY_URL=https://registry.npmjs.org/
+ARG SERVICE_NAME
+
+# Install system dependencies
+RUN apk add --no-cache tini curl bash
+
+# Enable pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Set working directory
+WORKDIR /app
+
+# Copy workspace configuration files
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+
+# Copy all packages to respect workspace structure
+COPY packages ./packages
+
+# Copy service-specific files
+COPY services/${SERVICE_NAME}/package.json ./services/${SERVICE_NAME}/
+COPY services/${SERVICE_NAME}/tsconfig.json ./services/${SERVICE_NAME}/
+COPY services/${SERVICE_NAME}/src ./services/${SERVICE_NAME}/src
+
+# Configure pnpm for better performance
+ENV PNPM_HOME=/root/.local/share/pnpm \
+    PNPM_FETCH_RETRIES=6 \
+    PNPM_FETCH_TIMEOUT=120000 \
+    PNPM_NETWORK_CONCURRENCY=1
+
+# Set registry if provided
+RUN pnpm config set registry ${NPM_REGISTRY_URL}
+
+# Install dependencies (without cache mount)
+RUN pnpm install --frozen-lockfile --prefer-offline
+
+# Build the service
+WORKDIR /app/services/${SERVICE_NAME}
+RUN pnpm run build
+
+# Prune dependencies for production
+RUN pnpm prune --prod
+
+# Production stage
+FROM node:20-alpine AS runtime
+
+ARG SERVICE_NAME
+ARG SERVICE_PORT=3000
+
+# Install runtime dependencies
+RUN apk add --no-cache tini curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S app && adduser -u 1001 -S app -G app
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+
+# Copy node_modules (includes workspace packages)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy packages
+COPY --from=builder /app/packages ./packages
+
+# Copy service files
+COPY --from=builder /app/services/${SERVICE_NAME}/package.json ./services/${SERVICE_NAME}/
+COPY --from=builder /app/services/${SERVICE_NAME}/dist ./services/${SERVICE_NAME}/dist
+COPY --from=builder /app/services/${SERVICE_NAME}/node_modules ./services/${SERVICE_NAME}/node_modules
+
+# Set environment
+ENV NODE_ENV=production \
+    SERVICE_NAME=${SERVICE_NAME} \
+    PORT=${SERVICE_PORT}
+
+# Change ownership
+RUN chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
+# Expose port
+EXPOSE ${SERVICE_PORT}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:${SERVICE_PORT}/health || exit 1
+
+# Run with tini
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start the service
+CMD ["sh", "-c", "cd services/${SERVICE_NAME} && npm start"]
+

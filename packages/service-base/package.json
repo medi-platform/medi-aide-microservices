@@ -1,0 +1,48 @@
+{
+  "name": "@medi-aide/service-base",
+  "version": "1.0.0",
+  "description": "Base service configuration for all microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "dependencies": {
+    "@nestjs/swagger": "^7.0.0",
+    "swagger-ui-express": "^5.0.0",
+    "@medi-aide/consul-integration": "workspace:*",
+    "@medi-aide/health-check": "workspace:*",
+    "@medi-aide/service-framework": "workspace:*",
+    "kafkajs": "^2.2.4",
+    "@grpc/grpc-js": "^1.9.0",
+    "@grpc/proto-loader": "^0.7.0",
+    "amqplib": "^0.10.3",
+    "amqp-connection-manager": "^4.1.14",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "helmet": "^7.0.0",
+    "typeorm": "^0.3.17"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "tsup": "^6.7.0",
+    "typescript": "^5.0.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/config": "^3.0.0",
+    "@nestjs/microservices": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/terminus": "^10.3.0",
+    "@nestjs/typeorm": "^10.0.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/config": "^3.0.0",
+    "@nestjs/microservices": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/terminus": "^10.3.0",
+    "@nestjs/typeorm": "^10.0.0"
+  }
+}

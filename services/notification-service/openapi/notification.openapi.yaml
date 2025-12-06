@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Notification Service API
+  version: 1.0.0
+  description: HTTP API for creating and querying notifications
+servers:
+  - url: http://localhost:4010
+  - url: http://localhost:28000/api/v1/notifications
+paths:
+  /ping:
+    get:
+      summary: Liveness ping
+      responses:
+        '200':
+          description: OK
+  /:
+    post:
+      summary: Create a notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNotificationRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateNotificationResponse'
+  /{id}:
+    get:
+      summary: Get a notification by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+  /:
+    get:
+      summary: List notifications
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [email, sms, push, in_app]
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+components:
+  schemas:
+    CreateNotificationRequest:
+      type: object
+      required: [userId, recipient, body, type]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        recipient:
+          type: string
+          description: Email/phone/user id depending on channel
+        subject:
+          type: string
+        body:
+          type: string
+        type:
+          type: string
+          enum: [email, sms, push, in_app]
+        variables:
+          type: object
+          additionalProperties: true
+    CreateNotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: accepted
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        recipient:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        type:
+          type: string
+          enum: [email, sms, push, in_app]
+        status:
+          type: string
+          enum: [pending, scheduled, sent, failed, cancelled]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+

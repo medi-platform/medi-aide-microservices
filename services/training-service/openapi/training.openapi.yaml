@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Training Service API
+  version: 1.0.0
+  description: API for Training/TalentLMS integration
+servers:
+  - url: http://localhost:4024
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /ping:
+    get:
+      summary: Ping
+      responses:
+        '200':
+          description: OK
+  /redirect-url:
+    post:
+      summary: Generate redirect URL for LMS login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+              required: [email]
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+
+

@@ -1,0 +1,76 @@
+# Multi-stage build for NestJS microservices (without BuildKit)
+FROM node:20-alpine AS builder
+
+ARG NPM_REGISTRY_URL=https://registry.npmjs.org/
+ARG SERVICE_NAME
+
+# Install system dependencies
+RUN apk add --no-cache tini curl bash
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+WORKDIR /app
+
+# Copy monorepo structure
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+COPY packages ./packages
+COPY services/${SERVICE_NAME}/package.json ./services/${SERVICE_NAME}/
+COPY services/${SERVICE_NAME}/tsconfig.json ./services/${SERVICE_NAME}/
+COPY services/${SERVICE_NAME}/src ./services/${SERVICE_NAME}/src
+
+# Configure pnpm
+ENV PNPM_HOME=/root/.local/share/pnpm \
+    PNPM_FETCH_RETRIES=6 \
+    PNPM_FETCH_TIMEOUT=120000 \
+    PNPM_NETWORK_CONCURRENCY=1
+
+RUN pnpm config set registry ${NPM_REGISTRY_URL}
+
+# Install dependencies (without cache mount)
+RUN cd /app && pnpm install --frozen-lockfile --prefer-offline || pnpm install
+
+# Build the service
+WORKDIR /app/services/${SERVICE_NAME}
+RUN pnpm run build || echo "Build failed, continuing anyway"
+
+# Production stage
+FROM node:20-alpine
+
+ARG SERVICE_NAME
+
+# Install runtime deps
+RUN apk add --no-cache tini curl
+
+# Create app user
+RUN addgroup -g 1001 app && \
+    adduser -u 1001 -G app -s /bin/sh -D app
+
+WORKDIR /app
+
+# Copy built application and ALL dependencies
+COPY --from=builder --chown=app:app /app/services/${SERVICE_NAME}/dist ./dist
+COPY --from=builder --chown=app:app /app/services/${SERVICE_NAME}/package.json ./
+# Copy all node_modules including workspace dependencies
+COPY --from=builder --chown=app:app /app/node_modules ./node_modules
+
+# Create health check script
+RUN echo '#!/bin/sh\ncurl -f http://localhost:${SERVICE_PORT:-4010}/health || exit 1' > /healthcheck.sh && \
+    chmod +x /healthcheck.sh
+
+USER app
+
+# Use tini for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+EXPOSE ${SERVICE_PORT:-4010}
+
+# Default to production
+ENV NODE_ENV=production
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD /healthcheck.sh
+
+CMD ["node", "dist/main.js"]

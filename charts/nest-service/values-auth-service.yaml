@@ -1,0 +1,12 @@
+nameOverride: auth-service
+image:
+  repository: host.docker.internal:5001/medi-aide/auth-service
+  tag: latest
+  pullPolicy: Always
+service:
+  port: 4011
+env:
+  - name: SERVICE_PORT
+    value: "4011"
+  - name: NODE_ENV
+    value: "production"

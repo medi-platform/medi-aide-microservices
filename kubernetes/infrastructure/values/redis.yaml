@@ -1,0 +1,18 @@
+global:
+  storageClass: "standard"
+architecture: standalone
+auth:
+  enabled: true
+  # password will be provided via helmfile set: auth.password
+master:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 8Gi
+

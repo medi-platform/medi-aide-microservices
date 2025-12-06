@@ -1,0 +1,96 @@
+# Global settings
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/medi-aide/placeholder
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+serviceAccount:
+  create: false
+  name: "default"
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4010
+
+ingress:
+  enabled: false
+  className: "nginx"
+  hosts: []
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  path: /ping
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 2
+
+readinessProbe:
+  path: /health
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 2
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+serviceMonitor:
+  enabled: false
+  interval: 15s
+  scrapeTimeout: 5s
+  path: /metrics
+
+networkPolicy:
+  enabled: true
+  allowNamespaceSelectors:
+    - {}
+
+env:
+  - name: NODE_ENV
+    value: production
+  - name: SERVICE_NAME
+    value: "notification-service"
+  - name: SERVICE_VERSION
+    value: "1.0.0"
+  - name: SERVICE_PORT
+    value: "4010"
+
+extraEnv: []
+extraEnvFrom: []
+extraVolumes: []
+extraVolumeMounts: []
+
+

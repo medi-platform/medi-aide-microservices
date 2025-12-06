@@ -1,0 +1,66 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/medi-aide/placeholder-mfe
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+serviceAccount:
+  create: true
+  name: ""
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts: []
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  path: /api/health
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 2
+
+readinessProbe:
+  path: /api/health
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 2
+
+env:
+  - name: NEXT_USE_MF_HOST
+    value: "true"
+  - name: NEXT_PUBLIC_SHELL_MFE_URL
+    value: http://shell.local
+
+extraEnv: []
+extraEnvFrom: []
+
+

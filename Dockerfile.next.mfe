@@ -1,0 +1,62 @@
+# syntax=docker/dockerfile:1.6
+
+ARG NODE_IMAGE=node:20-alpine
+
+FROM ${NODE_IMAGE} AS deps
+RUN apk add --no-cache tini curl bash libc6-compat
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+WORKDIR /app
+
+# Build args
+ARG APP_DIR
+ARG APP_NAME
+
+# Workspace files
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+COPY packages ./packages
+COPY apps ./apps
+
+ENV PNPM_HOME=/root/.local/share/pnpm \
+    PNPM_FETCH_RETRIES=6 \
+    PNPM_FETCH_TIMEOUT=120000 \
+    PNPM_NETWORK_CONCURRENCY=1 \
+    NEXT_PRIVATE_LOCAL_WEBPACK=true
+
+RUN pnpm config set registry https://registry.npmjs.org/
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm fetch --prefer-offline
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --prefer-offline --no-frozen-lockfile
+
+# Build shared packages first
+RUN pnpm -r --filter "./packages/**" build || true
+
+# Build the app (Next.js standalone)
+RUN pnpm --filter "${APP_NAME}" build
+
+FROM ${NODE_IMAGE} AS runner
+RUN apk add --no-cache tini
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+
+ARG APP_DIR
+
+# Copy standalone output
+COPY --from=deps /app/apps/${APP_DIR}/.next/standalone ./
+COPY --from=deps /app/apps/${APP_DIR}/.next/static ./apps/${APP_DIR}/.next/static
+
+# Ensure server.js is available at /app/server.js
+RUN if [ -f "apps/${APP_DIR}/server.js" ]; then \
+      ln -s "apps/${APP_DIR}/server.js" ./server.js; \
+    fi
+
+EXPOSE 3000
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "server.js"]
+
+

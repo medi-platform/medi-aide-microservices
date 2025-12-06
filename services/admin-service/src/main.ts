@@ -1,0 +1,20 @@
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { AdminModule } from './admin.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AdminModule, { bufferLogs: true });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const port = parseInt(process.env.SERVICE_PORT || '4036', 10);
+  await app.listen(port, '0.0.0.0');
+  // eslint-disable-next-line no-console
+  console.log(`Admin service listening on ${port}`);
+}
+
+bootstrap().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('Fatal error starting Admin Service', err);
+  process.exit(1);
+});
+
+

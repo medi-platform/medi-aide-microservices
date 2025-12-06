@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+  - 'apps/micro-frontends/*'
+  - 'services/*'
+  - 'packages/*'
+  - 'packages/micro-apps/*'
+  - 'tools/*'

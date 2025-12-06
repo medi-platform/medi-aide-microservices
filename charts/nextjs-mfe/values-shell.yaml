@@ -1,0 +1,22 @@
+nameOverride: shell
+image:
+  repository: ghcr.io/medi-aide/shell
+  tag: latest
+
+service:
+  port: 3011
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: shell.local
+      paths:
+        - path: /
+
+env:
+  - name: NEXT_USE_MF_HOST
+    value: "true"
+
+

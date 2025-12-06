@@ -1,0 +1,14 @@
+{
+  "name": "@medi-aide/health-server",
+  "version": "1.0.0",
+  "description": "Simple health check server for services",
+  "main": "index.js",
+  "bin": {
+    "health-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["health", "check", "server"],
+  "license": "MIT"
+}

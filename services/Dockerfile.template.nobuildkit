@@ -1,5 +1,5 @@
 # Multi-stage build for NestJS microservices (without BuildKit)
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 
 ARG NPM_REGISTRY_URL=https://registry.npmjs.org/
 ARG SERVICE_NAME
@@ -37,7 +37,7 @@ WORKDIR /app/services/${SERVICE_NAME}
 RUN pnpm run build || echo "Build failed, continuing anyway"
 
 # Production stage
-FROM node:20-alpine
+FROM node:25-alpine
 
 ARG SERVICE_NAME
 

@@ -9,7 +9,7 @@
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
   "dependencies": {
-    "@nestjs/swagger": "^7.0.0",
+    "@nestjs/swagger": "^11.2.3",
     "swagger-ui-express": "^5.0.0",
     "@medi-aide/consul-integration": "workspace:*",
     "@medi-aide/health-check": "workspace:*",

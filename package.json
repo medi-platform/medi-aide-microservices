@@ -15,7 +15,7 @@
     "build:services": "pnpm --filter './services/**' build"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "^24.10.2",
     "concurrently": "^8.2.0",
     "tsup": "^8.0.0",
     "tsx": "^4.7.0",

@@ -49,4 +49,5 @@ infrastructure/docker/redis-data/
 
 # Temporary files
 .tmp/
-.cache/
+.cache/*.tgz
+services/notification-service/vendor/

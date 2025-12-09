@@ -1,0 +1,81 @@
+# Complete Stage Three Infrastructure - All components needed for 100% deployment
+# This file brings up everything NOT already running in medi-aide-oss stack
+
+networks:
+  stage3-network:
+    external: true
+  medi-aide-oss-network:
+    external: true
+
+services:
+  # ============================================
+  # SERVICE DISCOVERY - CONSUL
+  # ============================================
+  consul:
+    image: hashicorp/consul:1.16
+    container_name: stage3-consul
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    ports:
+      - "8500:8500"    # HTTP API & UI
+      - "8600:8600/udp" # DNS
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
+  # VAULT - SECRETS MANAGEMENT (Optional but recommended)
+  # ============================================
+  vault:
+    image: vault:1.13
+    container_name: stage3-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: medi-aide-dev-token
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stage3-network
+    restart: unless-stopped
+
+  # ============================================
+  # ELASTICSEARCH - FOR SEARCH SERVICE
+  # ============================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: stage3-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - stage3-network
+    restart: unless-stopped
+
+volumes:
+  elasticsearch-data:
+

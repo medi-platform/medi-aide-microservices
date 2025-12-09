@@ -1,0 +1,649 @@
+# Stage Three Microservices - Corrected Configuration
+# Uses existing medi-aide-oss infrastructure
+
+x-common-env: &common-env
+  NODE_ENV: development
+  DB_HOST: medi-aide-oss-postgres-1
+  DB_PORT: 5432
+  DB_USER: service_user
+  DB_USERNAME: service_user
+  DB_PASSWORD: service123
+  REDIS_HOST: medi-aide-oss-redis-1
+  REDIS_PORT: 6379
+  KAFKA_BROKERS: medi-aide-oss-kafka-1:9092
+  TEMPORAL_ADDRESS: medi-aide-oss-temporal-1:7233
+  CONSUL_HOST: stage3-consul
+  CONSUL_PORT: 8500
+  JAEGER_ENDPOINT: http://stage3-jaeger:14268/api/traces
+  DISABLE_CONSUL: "true"
+  DISABLE_MQ: "true"
+
+x-healthcheck: &default-healthcheck
+  test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:${SERVICE_PORT:-4010}/ping',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))\""]
+  interval: 15s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
+networks:
+  stage3-network:
+    external: true
+  medi-aide-oss-network:
+    external: true
+
+services:
+  # ============================================
+  # CORE SERVICES
+  # ============================================
+  
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: notification-service
+    container_name: stage3-notification-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: notification-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4010
+      DB_DATABASE: notification_db
+      DATABASE_NAME: notification_db
+    ports:
+      - "4010:4010"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: auth-service
+    container_name: stage3-auth-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: auth-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4011
+      DB_DATABASE: auth_db
+      DATABASE_NAME: auth_db
+      JWT_SECRET: medi-aide-jwt-secret-change-in-prod
+    ports:
+      - "4011:4011"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: user-service
+    container_name: stage3-user-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: user-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4012
+      DB_DATABASE: user_db
+      DATABASE_NAME: user_db
+    ports:
+      - "4012:4012"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  visit-service:
+    build:
+      context: .
+      dockerfile: services/visit-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: visit-service
+    container_name: stage3-visit-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: visit-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4013
+      DB_DATABASE: visit_db
+      DATABASE_NAME: visit_db
+    ports:
+      - "4013:4013"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  wellness-service:
+    build:
+      context: .
+      dockerfile: services/wellness-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: wellness-service
+    container_name: stage3-wellness-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: wellness-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4014
+      DB_DATABASE: wellness_db
+      DATABASE_NAME: wellness_db
+    ports:
+      - "4014:4014"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: payment-service
+    container_name: stage3-payment-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: payment-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4015
+      DB_DATABASE: payment_db
+      DATABASE_NAME: payment_db
+      STRIPE_SECRET_KEY: sk_test_placeholder
+    ports:
+      - "4015:4015"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: analytics-service
+    container_name: stage3-analytics-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: analytics-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4016
+      DB_DATABASE: analytics_db
+      DATABASE_NAME: analytics_db
+    ports:
+      - "4016:4016"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  audit-service:
+    build:
+      context: .
+      dockerfile: services/audit-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: audit-service
+    container_name: stage3-audit-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: audit-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4017
+      DB_DATABASE: audit_db
+      DATABASE_NAME: audit_db
+    ports:
+      - "4017:4017"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: services/ai-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: ai-service
+    container_name: stage3-ai-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: ai-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4018
+      DB_DATABASE: ai_db
+      DATABASE_NAME: ai_db
+      OPENAI_API_KEY: placeholder
+    ports:
+      - "4018:4018"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  care-plan-service:
+    build:
+      context: .
+      dockerfile: services/care-plan-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: care-plan-service
+    container_name: stage3-care-plan-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: care-plan-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4019
+      DB_DATABASE: care_plan_db
+      DATABASE_NAME: care_plan_db
+    ports:
+      - "4019:4019"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  evv-service:
+    build:
+      context: .
+      dockerfile: services/evv-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: evv-service
+    container_name: stage3-evv-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: evv-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4020
+      DB_DATABASE: evv_db
+      DATABASE_NAME: evv_db
+    ports:
+      - "4020:4020"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  file-service:
+    build:
+      context: .
+      dockerfile: services/file-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: file-service
+    container_name: stage3-file-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: file-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4021
+      DB_DATABASE: file_db
+      DATABASE_NAME: file_db
+      MINIO_ENDPOINT: medi-aide-oss-minio-1:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "4021:4021"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  search-service:
+    build:
+      context: .
+      dockerfile: services/search-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: search-service
+    container_name: stage3-search-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: search-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4022
+      DB_DATABASE: search_db
+      DATABASE_NAME: search_db
+    ports:
+      - "4022:4022"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  matching-service:
+    build:
+      context: .
+      dockerfile: services/matching-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: matching-service
+    container_name: stage3-matching-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: matching-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4023
+      DB_DATABASE: matching_db
+      DATABASE_NAME: matching_db
+    ports:
+      - "4023:4023"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  training-service:
+    build:
+      context: .
+      dockerfile: services/training-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: training-service
+    container_name: stage3-training-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: training-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4024
+      DB_DATABASE: training_db
+      DATABASE_NAME: training_db
+      LMS_BASE_URL: https://demo.talentlms.com
+      LMS_API_ENABLED: "false"
+    ports:
+      - "4024:4024"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  feedback-service:
+    build:
+      context: .
+      dockerfile: services/feedback-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: feedback-service
+    container_name: stage3-feedback-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: feedback-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4025
+      DB_DATABASE: feedback_db
+      DATABASE_NAME: feedback_db
+    ports:
+      - "4025:4025"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  communication-service:
+    build:
+      context: .
+      dockerfile: services/communication-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: communication-service
+    container_name: stage3-communication-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: communication-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4026
+      DB_DATABASE: communication_db
+      DATABASE_NAME: communication_db
+    ports:
+      - "4026:4026"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  contract-service:
+    build:
+      context: .
+      dockerfile: services/contract-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: contract-service
+    container_name: stage3-contract-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: contract-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4027
+      DB_DATABASE: contract_db
+      DATABASE_NAME: contract_db
+    ports:
+      - "4027:4027"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
+  # ADDITIONAL SERVICES
+  # ============================================
+
+  care-network-service:
+    build:
+      context: .
+      dockerfile: services/care-network-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: care-network-service
+    container_name: stage3-care-network-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: care-network-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4033
+      DB_DATABASE: care_network_db
+      DATABASE_NAME: care_network_db
+    ports:
+      - "4033:4033"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  provincial-service:
+    build:
+      context: .
+      dockerfile: services/provincial-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: provincial-service
+    container_name: stage3-provincial-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: provincial-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4034
+      DB_DATABASE: provincial_db
+      DATABASE_NAME: provincial_db
+    ports:
+      - "4034:4034"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  mentorship-service:
+    build:
+      context: .
+      dockerfile: services/mentorship-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: mentorship-service
+    container_name: stage3-mentorship-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: mentorship-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4035
+      DB_DATABASE: mentorship_db
+      DATABASE_NAME: mentorship_db
+    ports:
+      - "4035:4035"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  admin-service:
+    build:
+      context: .
+      dockerfile: services/admin-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: admin-service
+    container_name: stage3-admin-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: admin-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4036
+      DB_DATABASE: admin_db
+      DATABASE_NAME: admin_db
+      ALLOW_DEV_ADMIN: "true"
+    ports:
+      - "4036:4036"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  moderation-service:
+    build:
+      context: .
+      dockerfile: services/moderation-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: moderation-service
+    container_name: stage3-moderation-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: moderation-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4037
+      DB_DATABASE: moderation_db
+      DATABASE_NAME: moderation_db
+    ports:
+      - "4037:4037"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  admin-analytics-service:
+    build:
+      context: .
+      dockerfile: services/admin-analytics-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: admin-analytics-service
+    container_name: stage3-admin-analytics-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: admin-analytics-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4038
+      DB_DATABASE: analytics_db
+      DATABASE_NAME: analytics_db
+    ports:
+      - "4038:4038"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  fraud-detection-service:
+    build:
+      context: .
+      dockerfile: services/fraud-detection-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: fraud-detection-service
+    container_name: stage3-fraud-detection-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: fraud-detection-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4040
+      DB_DATABASE: fraud_detection_db
+      DATABASE_NAME: fraud_detection_db
+    ports:
+      - "4040:4040"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  security-monitoring-service:
+    build:
+      context: .
+      dockerfile: services/security-monitoring-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: security-monitoring-service
+    container_name: stage3-security-monitoring-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: security-monitoring-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4041
+      DB_DATABASE: security_db
+      DATABASE_NAME: security_db
+    ports:
+      - "4041:4041"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+

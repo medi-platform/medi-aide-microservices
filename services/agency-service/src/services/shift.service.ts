@@ -59,10 +59,12 @@ export class ShiftService {
   }
 
   async unassignShift(agencyId: string, shiftId: string) {
-    await this.shiftRepo.update(shiftId, { 
-      caregiver_id: null, 
-      status: 'open' 
-    });
+    await this.shiftRepo
+      .createQueryBuilder()
+      .update()
+      .set({ caregiver_id: () => 'NULL', status: 'open' })
+      .where('id = :shiftId', { shiftId })
+      .execute();
     return this.getShift(agencyId, shiftId);
   }
 
@@ -106,4 +108,5 @@ export class ShiftService {
     };
   }
 }
+
 

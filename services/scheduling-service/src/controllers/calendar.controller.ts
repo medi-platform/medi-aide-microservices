@@ -20,3 +20,4 @@ export class CalendarController {
   getAvailability(@Query('caregiverId') caregiverId: string, @Query('date') date: string) { return this.service.getAvailability(caregiverId, date); }
 }
 
+

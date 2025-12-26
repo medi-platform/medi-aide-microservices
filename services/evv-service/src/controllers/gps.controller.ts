@@ -17,3 +17,4 @@ export class GpsController {
   validateGeofence(@Query('lat') lat: number, @Query('lng') lng: number, @Query('patientId') patientId: string) { return { within: true, distance: 0 }; }
 }
 
+

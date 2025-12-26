@@ -38,3 +38,4 @@ const entities = [Incident, IncidentReport, IncidentFollowUp];
 })
 export class IncidentModule {}
 
+

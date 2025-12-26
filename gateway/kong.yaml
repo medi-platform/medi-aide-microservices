@@ -553,6 +553,232 @@ services:
           - PATCH
           - OPTIONS
 
+  # Profile Service (user-service)
+  - name: profile-service
+    url: http://stage3-user-service:4012
+    routes:
+      - name: profile-route
+        paths:
+          - /api/v1/profiles
+          - /api/v1/settings
+          - /api/v1/identity
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # eMAR and Consent (patient-service)
+  - name: patient-extended-service
+    url: http://stage3-patient-service:4051
+    routes:
+      - name: patient-extended-route
+        paths:
+          - /api/v1/emar
+          - /api/v1/consent
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Chat and Messaging (communication-service)
+  - name: chat-messaging-service
+    url: http://stage3-communication-service:4027
+    routes:
+      - name: chat-messaging-route
+        paths:
+          - /api/v1/chat
+          - /api/v1/messaging
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Appointments and Waitlist (scheduling-service)
+  - name: scheduling-extended-service
+    url: http://stage3-scheduling-service:4053
+    routes:
+      - name: scheduling-extended-route
+        paths:
+          - /api/v1/appointments
+          - /api/v1/waitlist
+          - /api/v1/calendar
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Virtual Visits and Meetings (wellness-service)
+  - name: wellness-extended-service
+    url: http://stage3-wellness-service:4014
+    routes:
+      - name: wellness-extended-route
+        paths:
+          - /api/v1/virtual-visits
+          - /api/v1/meetings
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # FHIR and Providers (integration-service)
+  - name: integration-extended-service
+    url: http://stage3-integration-service:4055
+    routes:
+      - name: integration-extended-route
+        paths:
+          - /api/v1/fhir
+          - /api/v1/providers
+          - /api/v1/outbox
+          - /api/v1/sync
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Gamification (training-service)
+  - name: gamification-service
+    url: http://stage3-training-service:4024
+    routes:
+      - name: gamification-route
+        paths:
+          - /api/v1/gamification
+          - /api/v1/leaderboard
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Comments and Reactions (moderation-service)
+  - name: comments-service
+    url: http://stage3-moderation-service:4025
+    routes:
+      - name: comments-route
+        paths:
+          - /api/v1/comments
+          - /api/v1/reactions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Feature Flags (admin-service)
+  - name: feature-flags-service
+    url: http://stage3-admin-service:4037
+    routes:
+      - name: feature-flags-route
+        paths:
+          - /api/v1/feature-flags
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Canadian Features (provincial-service)
+  - name: canadian-features-service
+    url: http://stage3-provincial-service:4031
+    routes:
+      - name: canadian-features-route
+        paths:
+          - /api/v1/canadian
+          - /api/v1/attestation
+          - /api/v1/data-residency
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Location Services (search-service)
+  - name: location-service
+    url: http://stage3-search-service:4016
+    routes:
+      - name: location-route
+        paths:
+          - /api/v1/locations
+          - /api/v1/geocode
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Reports and Insights (analytics-service)
+  - name: reports-insights-service
+    url: http://stage3-analytics-service:4038
+    routes:
+      - name: reports-insights-route
+        paths:
+          - /api/v1/reports
+          - /api/v1/insights
+          - /api/v1/dashboards
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Compliance (audit-service)
+  - name: compliance-service
+    url: http://stage3-audit-service:4017
+    routes:
+      - name: compliance-route
+        paths:
+          - /api/v1/compliance
+          - /api/v1/hipaa
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
 # Global plugins
 plugins:
   - name: cors

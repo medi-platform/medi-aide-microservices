@@ -13,3 +13,4 @@ export class IncidentReport {
   @CreateDateColumn() created_at!: Date;
 }
 
+

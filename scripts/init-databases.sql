@@ -87,3 +87,4 @@ GRANT ALL PRIVILEGES ON DATABASE ai_db TO service_user;
 -- Grant schema permissions for each database
 -- Note: Run these commands after connecting to each database
 
+

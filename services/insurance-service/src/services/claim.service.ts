@@ -18,3 +18,4 @@ export class ClaimService {
   async submitBatch(dto: any) { return { batchId: 'batch-123', claimCount: dto.claims?.length || 0, status: 'submitted' }; }
 }
 
+

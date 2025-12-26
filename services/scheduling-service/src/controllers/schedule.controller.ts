@@ -29,3 +29,4 @@ export class ScheduleController {
   checkConflicts(@Query() query: any) { return this.service.checkConflicts(query); }
 }
 
+

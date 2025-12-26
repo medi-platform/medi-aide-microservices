@@ -17,3 +17,4 @@ export class Appointment {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

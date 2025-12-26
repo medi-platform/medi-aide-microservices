@@ -41,3 +41,4 @@ const entities = [Patient, FamilyMember, MedicalRecord, EmergencyContact];
 })
 export class PatientModule {}
 
+

@@ -20,34 +20,34 @@ import {
 @Index(['createdAt'])
 export class CaregiverMatch {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'care_request_id', type: 'uuid' })
   @Index()
-  careRequestId: string;
+  careRequestId!: string;
 
   @Column({ name: 'caregiver_id', type: 'uuid' })
   @Index()
-  caregiverId: string;
+  caregiverId!: string;
 
   @Column({ type: 'decimal', precision: 5, scale: 2 })
-  score: number;
+  score!: number;
 
   @Column({ type: 'int' })
-  rank: number;
+  rank!: number;
 
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 0.5 })
-  confidence: number;
+  confidence!: number;
 
   @Column({
     type: 'varchar',
     length: 50,
     default: 'suggested',
   })
-  status: 'suggested' | 'invited' | 'accepted' | 'declined' | 'expired' | 'cancelled';
+  status!: 'suggested' | 'invited' | 'accepted' | 'declined' | 'expired' | 'cancelled';
 
   @Column({ type: 'jsonb', name: 'score_breakdown', nullable: true })
-  scoreBreakdown: {
+  scoreBreakdown!: {
     skillMatch?: number;
     experienceMatch?: number;
     availabilityMatch?: number;
@@ -60,7 +60,7 @@ export class CaregiverMatch {
   };
 
   @Column({ type: 'jsonb', nullable: true })
-  insights: {
+  insights!: {
     matchedSkills: string[];
     distanceKm: number;
     estimatedResponseTime: number;
@@ -76,38 +76,39 @@ export class CaregiverMatch {
   };
 
   @Column({ name: 'scorer_version', type: 'varchar', length: 50, nullable: true })
-  scorerVersion: string;
+  scorerVersion!: string;
 
   @Column({ name: 'ml_model_version', type: 'varchar', length: 50, nullable: true })
-  mlModelVersion: string;
+  mlModelVersion!: string;
 
   @Column({ name: 'experiment_id', type: 'varchar', length: 100, nullable: true })
-  experimentId: string;
+  experimentId!: string;
 
   @Column({ name: 'variant_id', type: 'varchar', length: 100, nullable: true })
-  variantId: string;
+  variantId!: string;
 
   @Column({ name: 'invited_at', type: 'timestamptz', nullable: true })
-  invitedAt: Date;
+  invitedAt!: Date;
 
   @Column({ name: 'responded_at', type: 'timestamptz', nullable: true })
-  respondedAt: Date;
+  respondedAt!: Date;
 
   @Column({ name: 'expires_at', type: 'timestamptz', nullable: true })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Column({ name: 'decline_reason', type: 'text', nullable: true })
-  declineReason: string;
+  declineReason!: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
+  metadata!: Record<string, any>;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
+
 
 
 

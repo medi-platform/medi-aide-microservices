@@ -23,3 +23,4 @@ export class MedicalController {
   recordVitals(@Param('patientId', ParseUUIDPipe) patientId: string, @Body() dto: any) { return this.medicalService.recordVitals(patientId, dto); }
 }
 
+

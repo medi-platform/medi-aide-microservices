@@ -13,3 +13,4 @@ export class IncidentFollowUp {
   @CreateDateColumn() created_at!: Date;
 }
 
+

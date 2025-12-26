@@ -32,3 +32,4 @@ export class InsuranceController {
   checkEligibility(@Param('policyId', ParseUUIDPipe) policyId: string) { return this.service.checkEligibility(policyId); }
 }
 
+

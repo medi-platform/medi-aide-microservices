@@ -38,3 +38,4 @@ const entities = [InsurancePolicy, InsuranceClaim, ClaimLineItem];
 })
 export class InsuranceModule {}
 
+

@@ -14,3 +14,4 @@ export class ReportService {
   async generate(dto: any) { return this.repo.save(this.repo.create({ ...dto, status: 'generating' })); }
 }
 
+

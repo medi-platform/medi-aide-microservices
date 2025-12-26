@@ -18,65 +18,66 @@ import {
 @Index(['region'])
 export class MatchingMetric {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'care_request_id', type: 'uuid' })
-  careRequestId: string;
+  careRequestId!: string;
 
   @Column({ type: 'timestamptz' })
-  timestamp: Date;
+  timestamp!: Date;
 
   @Column({ type: 'int' })
-  duration: number; // milliseconds
+  duration!: number; // milliseconds
 
   @Column({ name: 'candidate_count', type: 'int', nullable: true })
-  candidateCount: number;
+  candidateCount!: number;
 
   @Column({ name: 'match_count', type: 'int', nullable: true })
-  matchCount: number;
+  matchCount!: number;
 
   @Column({ name: 'top_score', type: 'decimal', precision: 5, scale: 2, nullable: true })
-  topScore: number;
+  topScore!: number;
 
   @Column({ name: 'average_score', type: 'decimal', precision: 5, scale: 2, nullable: true })
-  averageScore: number;
+  averageScore!: number;
 
   @Column({ name: 'scorer_version', type: 'varchar', length: 50, nullable: true })
-  scorerVersion: string;
+  scorerVersion!: string;
 
   @Column({ name: 'cache_hit', type: 'boolean', default: false })
-  cacheHit: boolean;
+  cacheHit!: boolean;
 
   @Column({ name: 'ml_model_used', type: 'boolean', default: false })
-  mlModelUsed: boolean;
+  mlModelUsed!: boolean;
 
   @Column({ name: 'ml_model_version', type: 'varchar', length: 50, nullable: true })
-  mlModelVersion: string;
+  mlModelVersion!: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  region: string;
+  region!: string;
 
   @Column({ name: 'h3_cell_id', type: 'varchar', length: 20, nullable: true })
-  h3CellId: string;
+  h3CellId!: string;
 
   @Column({ name: 'care_type', type: 'varchar', length: 100, nullable: true })
-  careType: string;
+  careType!: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  errors: string[];
+  errors!: string[];
 
   @Column({ type: 'jsonb', nullable: true })
-  scores: number[];
+  scores!: number[];
 
   @Column({ name: 'sla_met', type: 'boolean', nullable: true })
-  slaMet: boolean;
+  slaMet!: boolean;
 
   @Column({ name: 'sla_target_ms', type: 'int', nullable: true })
-  slaTargetMs: number;
+  slaTargetMs!: number;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 }
+
 
 
 

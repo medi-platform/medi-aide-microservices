@@ -17,3 +17,4 @@ export class PasswordController {
   validateToken(@Body('token') token: string) { return { valid: true }; }
 }
 
+

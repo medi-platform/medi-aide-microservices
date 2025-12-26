@@ -16,3 +16,4 @@ export class ScheduleService {
   async checkConflicts(query: any) { return { hasConflicts: false, conflicts: [] }; }
 }
 
+

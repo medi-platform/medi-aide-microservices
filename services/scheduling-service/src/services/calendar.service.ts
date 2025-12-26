@@ -8,3 +8,4 @@ export class CalendarService {
   async getAvailability(caregiverId: string, date: string) { return { caregiverId, date, slots: [] }; }
 }
 
+

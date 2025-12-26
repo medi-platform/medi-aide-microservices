@@ -23,3 +23,4 @@ export class FamilyController {
   getEmergencyContacts(@Param('patientId', ParseUUIDPipe) patientId: string) { return this.familyService.getEmergencyContacts(patientId); }
 }
 
+

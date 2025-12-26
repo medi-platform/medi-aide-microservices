@@ -38,3 +38,4 @@ export class AgencyRegistrationProgress {
   updated_at!: Date;
 }
 
+

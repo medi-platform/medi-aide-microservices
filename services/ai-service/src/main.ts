@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { BaseService } from '@medi-aide/service-base';
-import { aiModule } from './ai.module';
+import { AIModule } from './ai.module';
 
 class UaiUservice extends BaseService {
   constructor() {
@@ -9,7 +9,7 @@ class UaiUservice extends BaseService {
     const disableGrpc = process.env.DISABLE_GRPC === 'true';
     const disableDb = process.env.DISABLE_DB === 'true';
     
-    super(aiModule, {
+    super(AIModule, {
       serviceName: 'ai-service',
       serviceVersion: process.env.SERVICE_VERSION || '1.0.0',
       defaultPort: 4018,

@@ -22,3 +22,4 @@ export class CareRequest {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

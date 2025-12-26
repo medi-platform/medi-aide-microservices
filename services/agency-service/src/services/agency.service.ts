@@ -107,12 +107,12 @@ export class AgencyService {
   }
 
   async updatePreferences(id: string, dto: any) {
-    let prefs = await this.prefsRepo.findOne({ where: { agency_id: id } });
+    const prefs = await this.prefsRepo.findOne({ where: { agency_id: id } });
     if (prefs) {
       await this.prefsRepo.update(prefs.id, dto);
     } else {
-      prefs = this.prefsRepo.create({ ...dto, agency_id: id });
-      await this.prefsRepo.save(prefs);
+      const newPrefs = this.prefsRepo.create({ ...dto, agency_id: id });
+      await this.prefsRepo.save(newPrefs);
     }
     return this.getPreferences(id);
   }
@@ -122,14 +122,15 @@ export class AgencyService {
   }
 
   async updateBranding(id: string, dto: any) {
-    let branding = await this.brandingRepo.findOne({ where: { agency_id: id } });
+    const branding = await this.brandingRepo.findOne({ where: { agency_id: id } });
     if (branding) {
       await this.brandingRepo.update(branding.id, dto);
     } else {
-      branding = this.brandingRepo.create({ ...dto, agency_id: id });
-      await this.brandingRepo.save(branding);
+      const newBranding = this.brandingRepo.create({ ...dto, agency_id: id });
+      await this.brandingRepo.save(newBranding);
     }
     return this.getBranding(id);
   }
 }
+
 

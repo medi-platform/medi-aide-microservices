@@ -49,3 +49,4 @@ export class AgencyTrainingAssignment {
   updated_at!: Date;
 }
 
+

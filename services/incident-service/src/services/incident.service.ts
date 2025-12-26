@@ -22,3 +22,4 @@ export class IncidentService {
   async close(id: string, dto: any) { await this.repo.update(id, { ...dto, status: 'closed', closed_at: new Date() }); return this.findById(id); }
 }
 
+

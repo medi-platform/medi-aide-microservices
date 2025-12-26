@@ -17,3 +17,4 @@ export class AppointmentService {
   async remove(id: string) { await this.repo.delete(id); return { deleted: true }; }
 }
 
+

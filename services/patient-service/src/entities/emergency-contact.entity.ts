@@ -13,3 +13,4 @@ export class EmergencyContact {
   @CreateDateColumn() created_at!: Date;
 }
 
+

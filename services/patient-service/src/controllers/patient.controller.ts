@@ -41,3 +41,4 @@ export class PatientController {
   updatePreferences(@Param('id', ParseUUIDPipe) id: string, @Body() dto: any) { return this.patientService.updatePreferences(id, dto); }
 }
 
+

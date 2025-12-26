@@ -1,28 +1,35 @@
-import { Controller, Get, Put, Patch, Body, Req, Post, Delete, Param } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+/**
+ * Profile Controller
+ * Manages user profiles, preferences, and personal information.
+ */
+@ApiTags('Profile')
 @Controller('profile')
-@ApiTags('profile')
 export class ProfileController {
-  @Get() @ApiOperation({ summary: 'Get current user profile' })
-  getProfile(@Req() req: any) { return { userId: req.user?.id, profile: {} }; }
 
-  @Put() @ApiOperation({ summary: 'Update profile' })
-  updateProfile(@Req() req: any, @Body() dto: any) { return { updated: true, ...dto }; }
+  @Get(':userId')
+  @ApiOperation({ summary: 'Get user profile' })
+  async getProfile(@Param('userId') userId: string) {
+    return { userId, profile: {}, lastUpdated: new Date().toISOString() };
+  }
 
-  @Patch('avatar') @ApiOperation({ summary: 'Update avatar' })
-  updateAvatar(@Req() req: any, @Body('avatarUrl') avatarUrl: string) { return { avatarUrl }; }
+  @Put(':userId')
+  @ApiOperation({ summary: 'Update user profile' })
+  async updateProfile(@Param('userId') userId: string, @Body() dto: any) {
+    return { userId, ...dto, updatedAt: new Date().toISOString() };
+  }
 
-  @Get('preferences') @ApiOperation({ summary: 'Get preferences' })
-  getPreferences(@Req() req: any) { return { preferences: {} }; }
+  @Get(':userId/avatar')
+  @ApiOperation({ summary: 'Get user avatar' })
+  async getAvatar(@Param('userId') userId: string) {
+    return { userId, avatarUrl: null };
+  }
 
-  @Put('preferences') @ApiOperation({ summary: 'Update preferences' })
-  updatePreferences(@Req() req: any, @Body() dto: any) { return dto; }
-
-  @Get('notifications/settings') @ApiOperation({ summary: 'Get notification settings' })
-  getNotificationSettings(@Req() req: any) { return { email: true, sms: true, push: true }; }
-
-  @Put('notifications/settings') @ApiOperation({ summary: 'Update notification settings' })
-  updateNotificationSettings(@Req() req: any, @Body() dto: any) { return dto; }
+  @Put(':userId/avatar')
+  @ApiOperation({ summary: 'Update user avatar' })
+  async updateAvatar(@Param('userId') userId: string, @Body() dto: { avatarUrl: string }) {
+    return { userId, avatarUrl: dto.avatarUrl, updatedAt: new Date().toISOString() };
+  }
 }
-

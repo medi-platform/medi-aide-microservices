@@ -23,3 +23,4 @@ export class ReportController {
   generate(@Body() dto: any) { return this.service.generate(dto); }
 }
 
+

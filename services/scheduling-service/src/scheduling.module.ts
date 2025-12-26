@@ -40,3 +40,4 @@ const entities = [Schedule, Appointment, RecurringPattern];
 })
 export class SchedulingModule {}
 
+

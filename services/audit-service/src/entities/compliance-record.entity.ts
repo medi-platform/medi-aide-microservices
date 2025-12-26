@@ -17,6 +17,15 @@ export class ComplianceRecord {
   @Column({ type: 'varchar' })
   status!: 'compliant' | 'non_compliant' | 'pending_review';
 
+  @Column({ type: 'varchar', default: 'medium' })
+  riskLevel!: 'critical' | 'high' | 'medium' | 'low';
+
+  @Column({ type: 'jsonb', nullable: true })
+  compensatingControls!: string[] | null;
+
+  @Column({ type: 'int', default: 90 })
+  reviewFrequencyDays!: number;
+
   @Column({ type: 'jsonb' })
   evidence!: Record<string, any>;
 

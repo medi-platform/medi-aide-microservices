@@ -21,3 +21,4 @@ export class InsurancePolicy {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

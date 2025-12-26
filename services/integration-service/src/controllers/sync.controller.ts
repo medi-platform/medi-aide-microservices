@@ -23,3 +23,4 @@ export class SyncController {
   exportData(@Param('integrationId', ParseUUIDPipe) integrationId: string, @Body() dto: any) { return this.service.exportData(integrationId, dto); }
 }
 
+

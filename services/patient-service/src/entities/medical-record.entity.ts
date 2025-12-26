@@ -12,3 +12,4 @@ export class MedicalRecord {
   @CreateDateColumn() created_at!: Date;
 }
 
+

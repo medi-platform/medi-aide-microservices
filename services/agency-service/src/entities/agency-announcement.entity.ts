@@ -37,3 +37,4 @@ export class AgencyAnnouncement {
   updated_at!: Date;
 }
 
+

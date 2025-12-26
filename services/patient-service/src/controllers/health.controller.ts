@@ -8,3 +8,4 @@ export class HealthController {
   @Get('/') info() { return { service: 'Patient Service', version: '1.0.0', status: 'operational' }; }
 }
 
+

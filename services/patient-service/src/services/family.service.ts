@@ -18,3 +18,4 @@ export class FamilyService {
   async getEmergencyContacts(patientId: string) { return this.emergencyRepo.find({ where: { patient_id: patientId } }); }
 }
 
+

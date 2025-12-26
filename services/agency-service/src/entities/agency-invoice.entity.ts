@@ -55,3 +55,4 @@ export class AgencyInvoice {
   updated_at!: Date;
 }
 
+

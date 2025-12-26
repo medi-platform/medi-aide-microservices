@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In, MoreThan } from 'typeorm';
+import { Repository, Between, In, MoreThan, IsNull } from 'typeorm';
 import { AuditLog, AuditSeverity } from '../entities/audit-log-enhanced.entity';
 import { ComplianceRecord } from '../entities/compliance-record.entity';
 import { CreateAuditLogDto, QueryAuditLogsDto } from '../dto/audit.dto';
@@ -183,7 +183,7 @@ export class AuditService {
       nextReviewDate: new Date(Date.now() + (data.reviewFrequencyDays || 90) * 24 * 60 * 60 * 1000),
     });
     
-    return this.complianceRepo.save(record);
+    return await this.complianceRepo.save(record) as unknown as ComplianceRecord;
   }
 
   async generateHIPAAReport(): Promise<any> {
@@ -252,7 +252,7 @@ export class AuditService {
       risks: {
         highRiskEvents,
         flaggedForReview: await this.auditRepo.count({ 
-          where: { flaggedForReview: true, reviewedAt: null } 
+          where: { flaggedForReview: true, reviewedAt: IsNull() } 
         })
       },
       recommendations: this.generateRecommendations(hipaaRecords, highRiskEvents)
@@ -268,7 +268,8 @@ export class AuditService {
       'BULK_DELETE', 'SECURITY_SETTING_CHANGED', 'AUDIT_LOG_ACCESSED'
     ];
     
-    if (highRiskEvents.includes(dto.eventType || dto.action)) {
+    const eventType = dto.eventType || dto.action || '';
+    if (highRiskEvents.includes(eventType)) {
       score += 30;
     }
 

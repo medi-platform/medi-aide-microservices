@@ -16,3 +16,4 @@ export class IntegrationConfig {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

@@ -258,6 +258,8 @@ export interface MatchingMetrics {
   mlModelVersion?: string;
   region?: string;
   h3CellId?: string;
+  slaMet?: boolean;
+  slaTargetMs?: number;
 }
 
 /**
@@ -380,6 +382,7 @@ export interface SurgeFactors {
   weatherFactor: number;
   eventFactor: number;
 }
+
 
 
 

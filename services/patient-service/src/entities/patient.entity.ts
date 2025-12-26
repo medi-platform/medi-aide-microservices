@@ -25,3 +25,4 @@ export class Patient {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

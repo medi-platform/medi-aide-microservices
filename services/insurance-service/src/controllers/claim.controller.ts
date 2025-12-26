@@ -35,3 +35,4 @@ export class ClaimController {
   submitBatch(@Body() dto: any) { return this.service.submitBatch(dto); }
 }
 
+

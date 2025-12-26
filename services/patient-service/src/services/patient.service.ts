@@ -32,3 +32,4 @@ export class PatientService {
   async updatePreferences(id: string, dto: any) { return { patientId: id, preferences: dto }; }
 }
 
+

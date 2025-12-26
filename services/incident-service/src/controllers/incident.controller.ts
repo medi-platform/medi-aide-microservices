@@ -35,3 +35,4 @@ export class IncidentController {
   close(@Param('id', ParseUUIDPipe) id: string, @Body() dto: any) { return this.service.close(id, dto); }
 }
 
+

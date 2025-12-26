@@ -25,3 +25,4 @@ export class Incident {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

@@ -14,3 +14,4 @@ export class MedicalService {
   async recordVitals(patientId: string, dto: any) { return { patientId, ...dto, recorded: true }; }
 }
 
+

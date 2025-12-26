@@ -22,3 +22,4 @@ export class InsuranceClaim {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

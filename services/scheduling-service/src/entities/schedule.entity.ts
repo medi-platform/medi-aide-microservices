@@ -16,3 +16,4 @@ export class Schedule {
   @UpdateDateColumn() updated_at!: Date;
 }
 
+

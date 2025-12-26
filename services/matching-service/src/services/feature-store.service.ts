@@ -91,9 +91,9 @@ export class FeatureStoreService implements OnModuleInit {
       serviceRadiusKm: candidate.preferences.maxDistanceKm,
       
       // Rate features
-      hourlyRateMin: candidate.preferences.hourlyRateMin || 0,
-      hourlyRateMax: candidate.preferences.hourlyRateMax || 0,
-      avgHourlyRate: (candidate.preferences.hourlyRateMin || 0 + candidate.preferences.hourlyRateMax || 0) / 2,
+      hourlyRateMin: candidate.preferences?.hourlyRateMin ?? 0,
+      hourlyRateMax: candidate.preferences?.hourlyRateMax ?? 0,
+      avgHourlyRate: ((candidate.preferences?.hourlyRateMin ?? 0) + (candidate.preferences?.hourlyRateMax ?? 0)) / 2,
       
       // Derived features
       reliabilityScore: this.calculateReliabilityScore(candidate),
@@ -246,8 +246,9 @@ export class FeatureStoreService implements OnModuleInit {
       const values = await this.redis.mget(...keys);
       
       for (let i = 0; i < caregiverIds.length; i++) {
-        if (values[i]) {
-          result.set(caregiverIds[i], JSON.parse(values[i]));
+        const value = values[i];
+        if (value) {
+          result.set(caregiverIds[i], JSON.parse(value));
         }
       }
     } catch (error) {
@@ -407,6 +408,7 @@ export interface MatchFeatures {
   previousMatchCount: number;
   previousSuccessRate: number;
 }
+
 
 
 

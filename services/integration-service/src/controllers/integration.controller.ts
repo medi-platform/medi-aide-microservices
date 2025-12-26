@@ -35,3 +35,4 @@ export class IntegrationController {
   remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
 }
 
+

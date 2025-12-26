@@ -26,3 +26,4 @@ export class RoleController {
   updatePermissions(@Param('id', ParseUUIDPipe) id: string, @Body('permissions') permissions: string[]) { return { roleId: id, permissions }; }
 }
 
+

@@ -14,3 +14,4 @@ export class SyncService {
   async exportData(integrationId: string, dto: any) { return { integrationId, exported: true, ...dto }; }
 }
 
+

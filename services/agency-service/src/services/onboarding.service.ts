@@ -18,8 +18,9 @@ export class OnboardingService {
       ...dto,
       onboarding_status: 'in_progress',
       onboarding_started_at: new Date(),
-    });
-    const savedAgency = await this.agencyRepo.save(agency);
+    } as Partial<AgencyProfile>);
+    const result = await this.agencyRepo.save(agency);
+    const savedAgency = Array.isArray(result) ? result[0] : result;
 
     const progress = this.progressRepo.create({
       agency_id: savedAgency.id,
@@ -90,4 +91,5 @@ export class OnboardingService {
     });
   }
 }
+
 

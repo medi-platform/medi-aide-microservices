@@ -12,11 +12,17 @@ x-common-env: &common-env
   REDIS_PORT: 6379
   KAFKA_BROKERS: medi-aide-oss-kafka-1:9092
   TEMPORAL_ADDRESS: medi-aide-oss-temporal-1:7233
+  TEMPORAL_NAMESPACE: default
   CONSUL_HOST: stage3-consul
   CONSUL_PORT: 8500
   JAEGER_ENDPOINT: http://stage3-jaeger:14268/api/traces
   DISABLE_CONSUL: "true"
   DISABLE_MQ: "true"
+  # Phase 2: Service-to-Service JWT Auth
+  SERVICE_JWT_SECRET: ${SERVICE_JWT_SECRET:-medi-aide-service-jwt-secret-change-in-production}
+  # Phase 2: Kafka configuration
+  KAFKA_GROUP_ID_SUFFIX: -group
+  KAFKA_DLQ_ENABLED: "true"
 
 x-healthcheck: &default-healthcheck
   test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:${SERVICE_PORT:-4010}/ping',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))\""]
@@ -912,6 +918,46 @@ services:
       - stage3-network
       - medi-aide-oss-network
     restart: unless-stopped
+
+  # ============================================
+  # TEMPORAL WORKER (Phase 2)
+  # ============================================
+  
+  temporal-worker:
+    build:
+      context: .
+      dockerfile: services/temporal-worker/Dockerfile
+    container_name: stage3-temporal-worker
+    environment:
+      <<: *common-env
+      TEMPORAL_TASK_QUEUE: medi-aide-care-workflows
+      TEMPORAL_NAMESPACE: default
+      METRICS_PORT: 9000
+      HEALTH_PORT: 8080
+      # Service JWT for inter-service communication
+      SERVICE_JWT_SECRET: ${SERVICE_JWT_SECRET:-medi-aide-service-jwt-secret}
+    ports:
+      - "9100:9000"  # Metrics
+      - "8180:8080"  # Health
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
 volumes:
   ai-ml-models:

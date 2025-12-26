@@ -67,6 +67,11 @@ const entities = [
   AgencyOperationalMetrics,
 ];
 
+// Phase 2: Enterprise packages
+import { MigrationModule } from '@medi-aide/database-migrations';
+import { KafkaModule } from '@medi-aide/kafka-client';
+import { ServiceAuthModule } from '@medi-aide/service-auth';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -86,10 +91,40 @@ const entities = [
         synchronize: config.get('NODE_ENV') !== 'production',
         logging: config.get('DB_LOGGING', 'false') === 'true',
         ssl: config.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+        migrationsRun: true,
       }),
     }),
     TypeOrmModule.forFeature(entities),
     TerminusModule,
+    // Phase 2: Database Migrations
+    MigrationModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        serviceName: 'agency-service',
+        transactionPerMigration: true,
+      }),
+    }),
+    // Phase 2: Kafka Event Publishing
+    KafkaModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        clientId: 'agency-service',
+        brokers: (config.get('KAFKA_BROKERS', 'stage3-kafka:9092')).split(','),
+        groupId: 'agency-service-group',
+        retry: { maxRetries: 5, initialDelayMs: 100 },
+        deadLetterQueue: { enabled: true, topicSuffix: '.dlq', maxRetries: 3 },
+      }),
+    }),
+    // Phase 2: Service-to-Service Auth
+    ServiceAuthModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        serviceName: 'agency-service',
+        jwtSecret: config.get('SERVICE_JWT_SECRET', 'service-secret'),
+        tokenExpirationSeconds: 300,
+        allowedServices: ['auth-service', 'caregiver-service', 'scheduling-service', 'billing-service'],
+      }),
+    }),
   ],
   controllers: [
     HealthController,

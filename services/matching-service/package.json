@@ -8,11 +8,16 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "test": "jest",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migration:run": "ts-node src/migrations/runner.ts"
   },
   "dependencies": {
     "@medi-aide/consul-integration": "workspace:^",
+    "@medi-aide/database-migrations": "workspace:^",
+    "@medi-aide/event-contracts": "workspace:^",
     "@medi-aide/health-check": "workspace:^",
+    "@medi-aide/kafka-client": "workspace:^",
+    "@medi-aide/service-auth": "workspace:^",
     "@medi-aide/service-base": "workspace:^",
     "@medi-aide/service-framework": "workspace:^",
     "@nestjs/common": "^10.0.0",

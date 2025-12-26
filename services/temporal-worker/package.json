@@ -1,0 +1,30 @@
+{
+  "name": "@medi-aide/temporal-worker-service",
+  "version": "1.0.0",
+  "description": "Temporal Workflow Worker Service",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@medi-aide/temporal-worker": "workspace:^",
+    "@medi-aide/temporal-workflows-examples": "workspace:^",
+    "@medi-aide/event-contracts": "workspace:^",
+    "@medi-aide/kafka-client": "workspace:^",
+    "@temporalio/worker": "^1.9.0",
+    "@temporalio/workflow": "^1.9.0",
+    "@temporalio/activity": "^1.9.0",
+    "@temporalio/client": "^1.9.0",
+    "express": "^4.18.2",
+    "prom-client": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  }
+}
+

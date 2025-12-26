@@ -290,6 +290,269 @@ services:
           - PATCH
           - OPTIONS
 
+  # AI/ML Service - Matching
+  - name: ai-ml-matching
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-matching-route
+        paths:
+          - /api/v1/ai/matching
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Recommendations
+  - name: ai-ml-recommendations
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-recommendations-route
+        paths:
+          - /api/v1/ai/recommendations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Text Analysis
+  - name: ai-ml-text-analysis
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-text-analysis-route
+        paths:
+          - /api/v1/ai/text-analysis
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Chat
+  - name: ai-ml-chat
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-chat-route
+        paths:
+          - /api/v1/ai/chat
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - DELETE
+          - OPTIONS
+
+  # AI/ML Service - Schedule Optimization
+  - name: ai-ml-schedule
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-schedule-route
+        paths:
+          - /api/v1/ai/schedule
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Wellness AI
+  - name: ai-ml-wellness
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-wellness-route
+        paths:
+          - /api/v1/ai/wellness
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Care Plans AI
+  - name: ai-ml-care-plans
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-care-plans-route
+        paths:
+          - /api/v1/ai/care-plans
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Compliance Prediction
+  - name: ai-ml-compliance
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-compliance-route
+        paths:
+          - /api/v1/ai/compliance
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Explainability
+  - name: ai-ml-explainability
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-explainability-route
+        paths:
+          - /api/v1/ai/explainability
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Predictive Analytics
+  - name: ai-ml-predictive
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-predictive-route
+        paths:
+          - /api/v1/ai/predictive
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # Agency Service - B2B Critical
+  - name: agency-service
+    url: http://stage3-agency-service:4050
+    routes:
+      - name: agency-route
+        paths:
+          - /api/v1/agencies
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Caregiver Service
+  - name: caregiver-service
+    url: http://stage3-caregiver-service:4051
+    routes:
+      - name: caregiver-route
+        paths:
+          - /api/v1/caregivers
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Patient Service
+  - name: patient-service
+    url: http://stage3-patient-service:4052
+    routes:
+      - name: patient-route
+        paths:
+          - /api/v1/patients
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Care Request Service
+  - name: care-request-service
+    url: http://stage3-care-request-service:4053
+    routes:
+      - name: care-request-route
+        paths:
+          - /api/v1/care-requests
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Scheduling Service
+  - name: scheduling-service
+    url: http://stage3-scheduling-service:4054
+    routes:
+      - name: scheduling-route
+        paths:
+          - /api/v1/schedules
+          - /api/v1/appointments
+          - /api/v1/calendar
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Integration Service
+  - name: integration-service
+    url: http://stage3-integration-service:4055
+    routes:
+      - name: integration-route
+        paths:
+          - /api/v1/integrations
+          - /api/v1/webhooks
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Incident Service
+  - name: incident-service
+    url: http://stage3-incident-service:4056
+    routes:
+      - name: incident-route
+        paths:
+          - /api/v1/incidents
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Insurance Service
+  - name: insurance-service
+    url: http://stage3-insurance-service:4057
+    routes:
+      - name: insurance-route
+        paths:
+          - /api/v1/insurance
+          - /api/v1/claims
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
 # Global plugins
 plugins:
   - name: cors

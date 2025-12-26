@@ -4,6 +4,7 @@ import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs
 export class HealthController {
   constructor(private health: HealthCheckService, private db: TypeOrmHealthIndicator) {}
   @Get('health') @HealthCheck() check() { return this.health.check([() => this.db.pingCheck('database')]); }
-  @Get('ping') ping() { return { status: 'ok', service: 'evv-service', timestamp: new Date().toISOString() }; }
-  @Get('/') info() { return { service: 'EVV Service', version: '1.0.0', status: 'operational' }; }
+  @Get('ping') ping() { return { status: 'ok', service: 'auth-service', timestamp: new Date().toISOString() }; }
+  @Get('/') info() { return { service: 'Auth Service', version: '1.0.0', status: 'operational' }; }
 }
+

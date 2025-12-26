@@ -1,0 +1,172 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: medi-aide-microservices
+    env: production
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  # ============================================================================
+  # PROMETHEUS SELF-MONITORING
+  # ============================================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ============================================================================
+  # MICROSERVICES
+  # ============================================================================
+  - job_name: 'notification-service'
+    static_configs:
+      - targets: ['stage3-notification-service:4010']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['stage3-auth-service:4011']
+    metrics_path: /metrics
+
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['stage3-user-service:4012']
+    metrics_path: /metrics
+
+  - job_name: 'visit-service'
+    static_configs:
+      - targets: ['stage3-visit-service:4013']
+    metrics_path: /metrics
+
+  - job_name: 'wellness-service'
+    static_configs:
+      - targets: ['stage3-wellness-service:4014']
+    metrics_path: /metrics
+
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['stage3-payment-service:4015']
+    metrics_path: /metrics
+
+  - job_name: 'search-service'
+    static_configs:
+      - targets: ['stage3-search-service:4016']
+    metrics_path: /metrics
+
+  - job_name: 'audit-service'
+    static_configs:
+      - targets: ['stage3-audit-service:4017']
+    metrics_path: /metrics
+
+  - job_name: 'matching-service'
+    static_configs:
+      - targets: ['stage3-matching-service:4023']
+    metrics_path: /metrics
+
+  - job_name: 'evv-service'
+    static_configs:
+      - targets: ['stage3-evv-service:4020']
+    metrics_path: /metrics
+
+  - job_name: 'care-plan-service'
+    static_configs:
+      - targets: ['stage3-care-plan-service:4019']
+    metrics_path: /metrics
+
+  - job_name: 'agency-service'
+    static_configs:
+      - targets: ['stage3-agency-service:4050']
+    metrics_path: /metrics
+
+  - job_name: 'caregiver-service'
+    static_configs:
+      - targets: ['stage3-caregiver-service:4051']
+    metrics_path: /metrics
+
+  - job_name: 'patient-service'
+    static_configs:
+      - targets: ['stage3-patient-service:4052']
+    metrics_path: /metrics
+
+  - job_name: 'care-request-service'
+    static_configs:
+      - targets: ['stage3-care-request-service:4053']
+    metrics_path: /metrics
+
+  - job_name: 'scheduling-service'
+    static_configs:
+      - targets: ['stage3-scheduling-service:4054']
+    metrics_path: /metrics
+
+  - job_name: 'ai-ml-service'
+    static_configs:
+      - targets: ['stage3-ai-ml-service:8005']
+    metrics_path: /metrics
+
+  # ============================================================================
+  # INFRASTRUCTURE
+  # ============================================================================
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['medi-aide-oss-postgres-exporter-1:9187']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+
+  - job_name: 'kong'
+    static_configs:
+      - targets: ['kong:8001']
+    metrics_path: /metrics
+
+  - job_name: 'consul'
+    static_configs:
+      - targets: ['stage3-consul:8500']
+    metrics_path: /v1/agent/metrics
+    params:
+      format: ['prometheus']
+
+  - job_name: 'temporal'
+    static_configs:
+      - targets: ['temporal:9090']
+
+  # ============================================================================
+  # KUBERNETES (when deployed)
+  # ============================================================================
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+

@@ -1,0 +1,21 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if $serviceConfig.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $serviceName }}-service
+  labels:
+    {{- include "medi-aide.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+spec:
+  minAvailable: {{ $.Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "medi-aide.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $serviceName }}
+{{- end }}
+{{- end }}
+{{- end }}
+

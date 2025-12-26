@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "medi-aide.fullname" . }}-config
+  labels:
+    {{- include "medi-aide.labels" . | nindent 4 }}
+data:
+  # Database configuration
+  DB_HOST: {{ .Values.database.host | quote }}
+  DB_PORT: {{ .Values.database.port | quote }}
+  DB_SSL: {{ .Values.database.ssl | quote }}
+
+  # Redis configuration
+  REDIS_HOST: {{ .Values.redis.host | quote }}
+  REDIS_PORT: {{ .Values.redis.port | quote }}
+
+  # Kafka configuration
+  KAFKA_BROKERS: {{ .Values.kafka.brokers | quote }}
+  KAFKA_SSL: {{ .Values.kafka.ssl | quote }}
+
+  # Temporal configuration
+  TEMPORAL_ADDRESS: "{{ .Values.temporal.host }}:{{ .Values.temporal.port }}"
+  TEMPORAL_NAMESPACE: {{ .Values.temporal.namespace | quote }}
+
+  # Observability
+  JAEGER_ENDPOINT: "http://jaeger-collector:14268/api/traces"
+  JAEGER_SAMPLER_TYPE: "probabilistic"
+  JAEGER_SAMPLER_PARAM: "0.1"
+
+  # Service Discovery
+  CONSUL_HOST: "consul"
+  CONSUL_PORT: "8500"
+
+  # Feature flags
+  ENABLE_DISTRIBUTED_TRACING: "true"
+  ENABLE_METRICS: "true"
+  ENABLE_AUDIT_LOGGING: "true"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "medi-aide.fullname" . }}-kong-config
+  labels:
+    {{- include "medi-aide.labels" . | nindent 4 }}
+data:
+  kong.yml: |
+    _format_version: "3.0"
+    _transform: true
+
+    services:
+      {{- range $serviceName, $serviceConfig := .Values.services }}
+      {{- if $serviceConfig.enabled }}
+      - name: {{ $serviceName }}-service
+        url: http://{{ $serviceName }}-service:{{ $serviceConfig.port }}
+        routes:
+          - name: {{ $serviceName }}-route
+            paths:
+              - /api/v1/{{ $serviceName | lower }}
+            strip_path: true
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+      {{- end }}
+      {{- end }}
+
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - PATCH
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Version
+            - Content-Type
+            - Authorization
+            - X-Request-Id
+            - X-Correlation-Id
+          exposed_headers:
+            - X-Request-Id
+            - X-Correlation-Id
+          credentials: true
+          max_age: 3600
+
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+
+      - name: prometheus
+        config:
+          per_consumer: true
+          status_code_metrics: true
+          latency_metrics: true
+          bandwidth_metrics: true
+          upstream_health_metrics: true
+

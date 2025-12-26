@@ -1,13 +1,20 @@
 /**
  * @medi-aide/service-auth
  * 
- * Service-to-service JWT authentication for microservices architecture.
- * Implements zero-trust security between internal services.
+ * Enterprise-grade service-to-service JWT authentication.
+ * 
+ * Features:
+ * - Secure JWT token generation and validation
+ * - Scope-based authorization
+ * - Service allowlist support
+ * - Token caching for performance
+ * - NestJS guard integration
+ * - Decorators for easy configuration
  */
 
 export * from './service-auth.module';
-export * from './service-auth.guard';
 export * from './service-auth.service';
-export * from './decorators';
+export * from './service-auth.guard';
 export * from './interfaces';
-
+export * from './decorators';
+export * from './http-client';

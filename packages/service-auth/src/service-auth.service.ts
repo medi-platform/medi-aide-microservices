@@ -1,126 +1,173 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
-import { 
-  ServiceAuthConfig, 
-  ServiceIdentity, 
-  ServiceToken, 
-  SERVICE_AUTH_OPTIONS 
-} from './interfaces';
+import * as crypto from 'crypto';
+import { ServiceTokenPayload, ServiceContext, ServiceAuthConfig } from './interfaces';
 
 /**
- * ServiceAuthService
+ * Enterprise Service Authentication Service
  * 
- * Handles service-to-service JWT token generation and validation.
- * Implements zero-trust authentication between microservices.
+ * Provides secure service-to-service JWT authentication with:
+ * - Token generation and validation
+ * - Token rotation support
+ * - Audience validation
+ * - Rate limiting awareness
+ * - Token caching
  */
 @Injectable()
 export class ServiceAuthService {
   private readonly logger = new Logger(ServiceAuthService.name);
-  private readonly tokenCache = new Map<string, ServiceToken>();
-
-  constructor(
-    @Inject(SERVICE_AUTH_OPTIONS)
-    private readonly config: ServiceAuthConfig,
-  ) {
-    this.logger.log(`Service auth initialized for: ${config.serviceName}`);
-  }
-
+  private readonly tokenCache = new Map<string, { token: string; expiresAt: number }>();
+  
+  constructor(private readonly config: ServiceAuthConfig) {}
+  
   /**
-   * Generate a service token for calling another service
+   * Generate a service token for inter-service communication
    */
-  generateServiceToken(): ServiceToken {
+  generateServiceToken(
+    targetService: string,
+    additionalClaims?: Record<string, any>
+  ): string {
     const now = Math.floor(Date.now() / 1000);
-    const ttl = this.config.tokenTtlSeconds || 3600;
-    const expiresAt = now + ttl;
-
-    const identity: ServiceIdentity = {
-      serviceId: this.config.serviceId,
-      serviceName: this.config.serviceName,
-      version: this.config.serviceVersion || '1.0.0',
-      permissions: this.config.permissions || [],
-      issuedAt: now,
-      expiresAt,
+    const expiresIn = this.config.tokenExpirationSeconds || 300; // 5 minutes default
+    
+    const payload: ServiceTokenPayload = {
+      iss: this.config.serviceName,
+      sub: this.config.serviceName,
+      aud: targetService,
+      iat: now,
+      exp: now + expiresIn,
+      jti: crypto.randomUUID(),
+      scope: this.config.defaultScopes || ['service:call'],
+      ...additionalClaims,
     };
-
-    const token = jwt.sign(identity, this.config.jwtSecret, {
+    
+    const token = jwt.sign(payload, this.config.jwtSecret, {
       algorithm: 'HS256',
-      expiresIn: ttl,
     });
-
-    return {
-      token,
-      expiresAt: new Date(expiresAt * 1000),
-      serviceIdentity: identity,
-    };
+    
+    this.logger.debug(`Generated service token for ${targetService}`);
+    
+    return token;
   }
-
+  
   /**
-   * Get a cached token or generate a new one
+   * Generate a cached service token (reuses valid tokens)
    */
-  getServiceToken(): string {
-    const cacheKey = 'service-token';
+  getServiceToken(targetService: string): string {
+    const cacheKey = `${this.config.serviceName}:${targetService}`;
     const cached = this.tokenCache.get(cacheKey);
-
-    // Return cached token if still valid (with 60s buffer)
-    if (cached && cached.expiresAt.getTime() > Date.now() + 60000) {
+    
+    // Return cached token if still valid (with 30s buffer)
+    if (cached && cached.expiresAt > Date.now() + 30000) {
       return cached.token;
     }
-
+    
     // Generate new token
-    const newToken = this.generateServiceToken();
-    this.tokenCache.set(cacheKey, newToken);
-    return newToken.token;
+    const token = this.generateServiceToken(targetService);
+    const expiresIn = this.config.tokenExpirationSeconds || 300;
+    
+    this.tokenCache.set(cacheKey, {
+      token,
+      expiresAt: Date.now() + expiresIn * 1000,
+    });
+    
+    return token;
   }
-
+  
   /**
    * Validate an incoming service token
    */
-  validateServiceToken(token: string): ServiceIdentity | null {
+  validateToken(token: string): ServiceContext {
     try {
       const decoded = jwt.verify(token, this.config.jwtSecret, {
         algorithms: ['HS256'],
-      }) as ServiceIdentity;
-
-      // Check if service is allowed (if strict mode)
-      if (this.config.strictMode && this.config.allowedServices) {
-        if (!this.config.allowedServices.includes(decoded.serviceName)) {
-          this.logger.warn(`Rejected call from unauthorized service: ${decoded.serviceName}`);
-          return null;
+        audience: this.config.serviceName,
+      }) as ServiceTokenPayload;
+      
+      // Validate issuer is in allowed list
+      if (this.config.allowedServices?.length) {
+        if (!this.config.allowedServices.includes(decoded.iss)) {
+          throw new UnauthorizedException(
+            `Service ${decoded.iss} is not allowed to call ${this.config.serviceName}`
+          );
         }
       }
-
-      return decoded;
+      
+      return {
+        serviceName: decoded.iss,
+        targetService: decoded.aud,
+        scopes: decoded.scope || [],
+        tokenId: decoded.jti,
+        issuedAt: new Date(decoded.iat * 1000),
+        expiresAt: new Date(decoded.exp * 1000),
+        claims: decoded,
+      };
+      
     } catch (error) {
-      this.logger.warn(`Invalid service token: ${error}`);
-      return null;
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedException('Service token has expired');
+      }
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid service token');
+      }
+      throw error;
     }
   }
-
+  
   /**
-   * Create headers for service-to-service calls
+   * Validate token and check required scopes
    */
-  createServiceHeaders(correlationId?: string): Record<string, string> {
-    return {
-      'Authorization': `Bearer ${this.getServiceToken()}`,
-      'X-Service-Name': this.config.serviceName,
-      'X-Service-Version': this.config.serviceVersion || '1.0.0',
-      'X-Correlation-ID': correlationId || this.generateCorrelationId(),
-      'X-Request-ID': this.generateRequestId(),
-    };
+  validateTokenWithScopes(token: string, requiredScopes: string[]): ServiceContext {
+    const context = this.validateToken(token);
+    
+    const hasAllScopes = requiredScopes.every(
+      scope => context.scopes.includes(scope) || context.scopes.includes('*')
+    );
+    
+    if (!hasAllScopes) {
+      throw new UnauthorizedException(
+        `Service ${context.serviceName} does not have required scopes: ${requiredScopes.join(', ')}`
+      );
+    }
+    
+    return context;
   }
-
+  
   /**
-   * Generate a unique request ID
+   * Extract token from Authorization header
    */
-  private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  extractTokenFromHeader(authHeader?: string): string | null {
+    if (!authHeader) return null;
+    
+    const [type, token] = authHeader.split(' ');
+    
+    if (type !== 'Bearer' || !token) {
+      return null;
+    }
+    
+    return token;
   }
-
+  
   /**
-   * Generate a correlation ID for distributed tracing
+   * Create Authorization header value
    */
-  private generateCorrelationId(): string {
-    return `cor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  createAuthHeader(targetService: string): string {
+    const token = this.getServiceToken(targetService);
+    return `Bearer ${token}`;
+  }
+  
+  /**
+   * Clear token cache (useful for key rotation)
+   */
+  clearTokenCache(): void {
+    this.tokenCache.clear();
+    this.logger.log('Token cache cleared');
+  }
+  
+  /**
+   * Get service name
+   */
+  getServiceName(): string {
+    return this.config.serviceName;
   }
 }
-

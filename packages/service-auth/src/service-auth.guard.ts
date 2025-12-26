@@ -3,91 +3,102 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  Logger,
+  SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ServiceAuthService } from './service-auth.service';
-import { ServiceCallContext, SERVICE_CALL_CONTEXT } from './interfaces';
-import { REQUIRED_PERMISSIONS_KEY, IS_PUBLIC_KEY } from './decorators';
+import { ServiceContext } from './interfaces';
 
 /**
- * ServiceAuthGuard
+ * Metadata key for required scopes
+ */
+export const REQUIRED_SCOPES_KEY = 'requiredScopes';
+export const ALLOW_SERVICES_KEY = 'allowServices';
+export const PUBLIC_KEY = 'isPublic';
+
+/**
+ * Decorator to mark endpoint as public (no auth required)
+ */
+export const Public = () => SetMetadata(PUBLIC_KEY, true);
+
+/**
+ * Decorator to require specific scopes
+ */
+export const RequireScopes = (...scopes: string[]) =>
+  SetMetadata(REQUIRED_SCOPES_KEY, scopes);
+
+/**
+ * Decorator to allow only specific services
+ */
+export const AllowServices = (...services: string[]) =>
+  SetMetadata(ALLOW_SERVICES_KEY, services);
+
+/**
+ * Service Authentication Guard
  * 
- * Guards routes that require service-to-service authentication.
- * Validates incoming service tokens and sets the call context.
+ * Validates service-to-service JWT tokens on incoming requests.
  */
 @Injectable()
 export class ServiceAuthGuard implements CanActivate {
-  private readonly logger = new Logger(ServiceAuthGuard.name);
-
   constructor(
     private readonly authService: ServiceAuthService,
     private readonly reflector: Reflector,
   ) {}
-
+  
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Check if route is public
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+    // Check if endpoint is public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-
+    
     if (isPublic) {
       return true;
     }
-
+    
     const request = context.switchToHttp().getRequest();
+    
+    // Extract token from header
     const authHeader = request.headers['authorization'];
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing service authentication token');
+    const token = this.authService.extractTokenFromHeader(authHeader);
+    
+    if (!token) {
+      throw new UnauthorizedException('No service token provided');
     }
-
-    const token = authHeader.substring(7);
-    const serviceIdentity = this.authService.validateServiceToken(token);
-
-    if (!serviceIdentity) {
-      throw new UnauthorizedException('Invalid service authentication token');
+    
+    // Get required scopes from decorator
+    const requiredScopes = this.reflector.getAllAndOverride<string[]>(
+      REQUIRED_SCOPES_KEY,
+      [context.getHandler(), context.getClass()],
+    ) || [];
+    
+    // Validate token
+    let serviceContext: ServiceContext;
+    
+    if (requiredScopes.length > 0) {
+      serviceContext = this.authService.validateTokenWithScopes(token, requiredScopes);
+    } else {
+      serviceContext = this.authService.validateToken(token);
     }
-
-    // Check required permissions
-    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
-      REQUIRED_PERMISSIONS_KEY,
+    
+    // Check allowed services
+    const allowedServices = this.reflector.getAllAndOverride<string[]>(
+      ALLOW_SERVICES_KEY,
       [context.getHandler(), context.getClass()],
     );
-
-    if (requiredPermissions && requiredPermissions.length > 0) {
-      const hasAllPermissions = requiredPermissions.every((perm) =>
-        serviceIdentity.permissions.includes(perm),
-      );
-
-      if (!hasAllPermissions) {
-        this.logger.warn(
-          `Service ${serviceIdentity.serviceName} lacks required permissions: ${requiredPermissions.join(', ')}`,
+    
+    if (allowedServices?.length) {
+      if (!allowedServices.includes(serviceContext.serviceName)) {
+        throw new UnauthorizedException(
+          `Service ${serviceContext.serviceName} is not allowed to access this endpoint`
         );
-        throw new UnauthorizedException('Insufficient service permissions');
       }
     }
-
-    // Set the service call context
-    const callContext: ServiceCallContext = {
-      caller: serviceIdentity,
-      requestId: request.headers['x-request-id'] || this.generateRequestId(),
-      correlationId: request.headers['x-correlation-id'],
-      timestamp: new Date(),
-    };
-
-    request[SERVICE_CALL_CONTEXT] = callContext;
-
-    this.logger.debug(
-      `Authenticated call from ${serviceIdentity.serviceName} (${serviceIdentity.serviceId})`,
-    );
-
+    
+    // Attach service context to request
+    request.serviceContext = serviceContext;
+    request.callingService = serviceContext.serviceName;
+    
     return true;
   }
-
-  private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
 }
-

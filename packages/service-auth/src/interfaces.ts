@@ -1,58 +1,94 @@
 /**
- * Service-to-Service Authentication Interfaces
+ * Service Authentication Configuration
  */
-
-export interface ServiceIdentity {
-  serviceId: string;
-  serviceName: string;
-  version: string;
-  permissions: string[];
-  issuedAt: number;
-  expiresAt: number;
-}
-
 export interface ServiceAuthConfig {
-  /** Secret key for signing service tokens */
+  /** This service's name */
+  serviceName: string;
+  
+  /** JWT secret for signing/verifying tokens */
   jwtSecret: string;
   
-  /** Token expiration time in seconds (default: 3600) */
-  tokenTtlSeconds?: number;
+  /** Token expiration in seconds (default: 300) */
+  tokenExpirationSeconds?: number;
   
-  /** This service's identity */
-  serviceId: string;
-  serviceName: string;
-  serviceVersion?: string;
-  
-  /** Permissions this service has */
-  permissions?: string[];
-  
-  /** Services this service is allowed to call */
+  /** List of services allowed to call this service (empty = allow all) */
   allowedServices?: string[];
   
-  /** Enable strict mode - reject unknown services */
-  strictMode?: boolean;
+  /** Default scopes for generated tokens */
+  defaultScopes?: string[];
+  
+  /** Enable strict audience validation */
+  strictAudience?: boolean;
 }
 
-export interface ServiceToken {
-  token: string;
+/**
+ * JWT Payload for service tokens
+ */
+export interface ServiceTokenPayload {
+  /** Issuer - the calling service */
+  iss: string;
+  
+  /** Subject - the calling service */
+  sub: string;
+  
+  /** Audience - the target service */
+  aud: string;
+  
+  /** Issued at timestamp */
+  iat: number;
+  
+  /** Expiration timestamp */
+  exp: number;
+  
+  /** JWT ID for tracking */
+  jti: string;
+  
+  /** Granted scopes */
+  scope: string[];
+  
+  /** Additional claims */
+  [key: string]: any;
+}
+
+/**
+ * Service Context extracted from token
+ */
+export interface ServiceContext {
+  /** Name of the calling service */
+  serviceName: string;
+  
+  /** Name of the target service */
+  targetService: string;
+  
+  /** Granted scopes */
+  scopes: string[];
+  
+  /** Unique token ID */
+  tokenId: string;
+  
+  /** When token was issued */
+  issuedAt: Date;
+  
+  /** When token expires */
   expiresAt: Date;
-  serviceIdentity: ServiceIdentity;
+  
+  /** Full token claims */
+  claims: ServiceTokenPayload;
 }
 
-export interface ServiceCallContext {
-  /** The calling service's identity */
-  caller: ServiceIdentity;
+/**
+ * Service call options
+ */
+export interface ServiceCallOptions {
+  /** Target service name */
+  service: string;
   
-  /** Request ID for tracing */
-  requestId: string;
+  /** Required scopes for this call */
+  requiredScopes?: string[];
   
-  /** Correlation ID for distributed tracing */
-  correlationId?: string;
+  /** Request timeout in milliseconds */
+  timeout?: number;
   
-  /** Timestamp of the call */
-  timestamp: Date;
+  /** Number of retries */
+  retries?: number;
 }
-
-export const SERVICE_AUTH_OPTIONS = 'SERVICE_AUTH_OPTIONS';
-export const SERVICE_CALL_CONTEXT = 'SERVICE_CALL_CONTEXT';
-

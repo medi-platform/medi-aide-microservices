@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@medi-aide/temporal-worker": "workspace:^",
-    "@medi-aide/temporal-workflows-examples": "workspace:^",
+    "@medi-aide/temporal-workflows": "workspace:^",
     "@medi-aide/event-contracts": "workspace:^",
     "@medi-aide/kafka-client": "workspace:^",
     "@temporalio/worker": "^1.9.0",

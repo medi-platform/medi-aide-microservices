@@ -39,10 +39,10 @@ export interface KafkaConfig {
   
   /** Retry configuration */
   retry?: {
-    maxRetries: number;
-    initialDelayMs: number;
-    maxDelayMs: number;
-    factor: number;
+    maxRetries?: number;
+    initialDelayMs?: number;
+    maxDelayMs?: number;
+    factor?: number;
   };
   
   /** Dead letter queue configuration */

@@ -121,7 +121,7 @@ export class AuthenticatedHttpClient {
         throw new Error(`Service call failed: ${response.status} ${error}`);
       }
       
-      return response.json();
+      return response.json() as Promise<T>;
       
     } catch (error) {
       const duration = Date.now() - startTime;

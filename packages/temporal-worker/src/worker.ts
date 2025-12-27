@@ -88,7 +88,7 @@ export async function startWorker(config?: TemporalWorkerConfig): Promise<void> 
     connection,
     namespace: cfg.namespace,
     taskQueue: cfg.taskQueue,
-    workflowsPath: require.resolve('@medi-aide/temporal-workflows-examples'),
+    workflowsPath: require.resolve('@medi-aide/temporal-workflows'),
     activities,
     maxConcurrentActivityTaskExecutions: cfg.maxConcurrentActivities,
     maxConcurrentWorkflowTaskExecutions: cfg.maxConcurrentWorkflows,

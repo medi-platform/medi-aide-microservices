@@ -10,7 +10,7 @@
     "dev": "ts-node src/worker.ts"
   },
   "dependencies": {
-    "@medi-aide/temporal-workflows-examples": "workspace:^",
+    "@medi-aide/temporal-workflows": "workspace:^",
     "@temporalio/worker": "^1.9.0",
     "@temporalio/client": "^1.9.0",
     "@temporalio/activity": "^1.9.0",

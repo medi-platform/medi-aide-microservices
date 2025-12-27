@@ -16,7 +16,7 @@
     "@medi-aide/event-contracts": "workspace:^",
     "@medi-aide/kafka-client": "workspace:^",
     "@medi-aide/service-auth": "workspace:^",
-    "@medi-aide/temporal-workflows-examples": "workspace:^",
+    "@medi-aide/temporal-workflows": "workspace:^",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.0.0",

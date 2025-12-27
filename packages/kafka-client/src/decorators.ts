@@ -16,7 +16,7 @@ export interface EventHandlerMetadata {
  * 
  * @example
  * ```typescript
- * @EventHandler({
+ * @KafkaEventHandler({
  *   eventType: 'user.created',
  *   schema: UserCreatedEventSchema,
  * })
@@ -25,7 +25,7 @@ export interface EventHandlerMetadata {
  * }
  * ```
  */
-export function EventHandler(metadata: EventHandlerMetadata): MethodDecorator {
+export function KafkaEventHandler(metadata: EventHandlerMetadata): MethodDecorator {
   return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const existingHandlers = Reflect.getMetadata(EVENT_HANDLER_METADATA_KEY, target.constructor) || [];
     existingHandlers.push({

@@ -8,8 +8,8 @@ export interface MigrationConfig {
   /** Service name for audit logging */
   serviceName: string;
   
-  /** Database connection options */
-  database: {
+  /** Database connection options (optional - can use TypeORM connection) */
+  database?: {
     host: string;
     port: number;
     username: string;
@@ -18,8 +18,8 @@ export interface MigrationConfig {
     ssl?: boolean;
   };
   
-  /** Path to migration files */
-  migrationsPath: string;
+  /** Path to migration files (optional) */
+  migrationsPath?: string;
   
   /** Table name for tracking migrations */
   migrationsTable?: string;
@@ -83,7 +83,7 @@ export interface MigrationLock {
   expiresAt: Date;
 }
 
-export interface BaseMigration {
+export interface IMigration {
   name: string;
   timestamp: number;
   up(queryRunner: any): Promise<void>;

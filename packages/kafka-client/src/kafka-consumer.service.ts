@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { Kafka, Consumer, EachMessagePayload, KafkaMessage } from 'kafkajs';
+import { Kafka, Consumer, EachMessagePayload, KafkaMessage, SASLOptions, IHeaders } from 'kafkajs';
 import { Counter, Histogram } from 'prom-client';
 import { z } from 'zod';
 import {
@@ -10,6 +10,22 @@ import {
   ConsumeContext,
   ConsumeResult,
 } from './interfaces';
+
+/**
+ * Convert IHeaders to a simple string record
+ */
+function headersToRecord(headers?: IHeaders): Record<string, string> {
+  if (!headers) return {};
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (value) {
+      result[key] = Array.isArray(value) 
+        ? value.map(v => typeof v === 'string' ? v : v.toString()).join(',')
+        : typeof value === 'string' ? value : value.toString();
+    }
+  }
+  return result;
+}
 
 /**
  * Enterprise Kafka Consumer Service
@@ -42,11 +58,11 @@ export class KafkaConsumerService implements OnModuleDestroy {
       clientId: config.clientId,
       brokers: config.brokers,
       ssl: config.ssl?.enabled ? {
-        ca: config.ssl.ca,
+        ca: config.ssl.ca ? [config.ssl.ca] : undefined,
         cert: config.ssl.cert,
         key: config.ssl.key,
       } : undefined,
-      sasl: config.sasl,
+      sasl: config.sasl as SASLOptions | undefined,
       connectionTimeout: config.connectionTimeout || 10000,
       requestTimeout: config.requestTimeout || 30000,
     });
@@ -318,13 +334,17 @@ export class KafkaConsumerService implements OnModuleDestroy {
   /**
    * Parse message headers
    */
-  private parseHeaders(headers?: Record<string, Buffer | string | undefined>): Record<string, string> {
+  private parseHeaders(headers?: IHeaders): Record<string, string> {
     if (!headers) return {};
     
     const result: Record<string, string> = {};
     for (const [key, value] of Object.entries(headers)) {
       if (value) {
-        result[key] = Buffer.isBuffer(value) ? value.toString() : value;
+        if (Array.isArray(value)) {
+          result[key] = value.map(v => typeof v === 'string' ? v : v.toString()).join(',');
+        } else {
+          result[key] = Buffer.isBuffer(value) ? value.toString() : value;
+        }
       }
     }
     return result;

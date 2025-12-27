@@ -7,7 +7,7 @@ import {
   MigrationResult,
   MigrationStatus,
   MigrationLock,
-  BaseMigration as IMigration,
+  IMigration,
 } from './interfaces';
 
 /**

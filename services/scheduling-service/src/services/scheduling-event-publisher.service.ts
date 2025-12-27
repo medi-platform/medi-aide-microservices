@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { KafkaProducerService } from '@medi-aide/kafka-client';
-import { KafkaTopics } from '@medi-aide/event-contracts';
+import { KAFKA_TOPICS } from '@medi-aide/event-contracts';
 
 /**
  * Scheduling Event Publisher
@@ -28,7 +28,7 @@ export class SchedulingEventPublisher {
   }): Promise<void> {
     try {
       await this.kafkaProducer.publish(
-        KafkaTopics.SCHEDULING,
+        'medi-aide.scheduling',
         'schedule.created',
         data,
         { key: data.scheduleId },
@@ -55,7 +55,7 @@ export class SchedulingEventPublisher {
   }): Promise<void> {
     try {
       await this.kafkaProducer.publish(
-        KafkaTopics.SCHEDULING,
+        'medi-aide.scheduling',
         'shift.assigned',
         data,
         { key: data.shiftId },
@@ -79,7 +79,7 @@ export class SchedulingEventPublisher {
   }): Promise<void> {
     try {
       await this.kafkaProducer.publish(
-        KafkaTopics.SCHEDULING,
+        'medi-aide.scheduling',
         'shift.started',
         data,
         { key: data.shiftId },
@@ -105,7 +105,7 @@ export class SchedulingEventPublisher {
   }): Promise<void> {
     try {
       await this.kafkaProducer.publish(
-        KafkaTopics.SCHEDULING,
+        'medi-aide.scheduling',
         'shift.completed',
         data,
         { key: data.shiftId },
@@ -131,7 +131,7 @@ export class SchedulingEventPublisher {
   }): Promise<void> {
     try {
       await this.kafkaProducer.publish(
-        KafkaTopics.SCHEDULING,
+        'medi-aide.scheduling',
         'shift.cancelled',
         data,
         { key: data.shiftId },

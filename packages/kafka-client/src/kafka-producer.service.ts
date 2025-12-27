@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { Kafka, Producer, ProducerRecord, RecordMetadata } from 'kafkajs';
+import { Kafka, Producer, ProducerRecord, RecordMetadata, SASLOptions } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
 import { Counter, Histogram, register } from 'prom-client';
 import { KafkaConfig, EventEnvelope, PublishOptions } from './interfaces';
@@ -31,11 +31,11 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
       clientId: config.clientId,
       brokers: config.brokers,
       ssl: config.ssl?.enabled ? {
-        ca: config.ssl.ca,
+        ca: config.ssl.ca ? [config.ssl.ca] : undefined,
         cert: config.ssl.cert,
         key: config.ssl.key,
       } : undefined,
-      sasl: config.sasl,
+      sasl: config.sasl as SASLOptions | undefined,
       connectionTimeout: config.connectionTimeout || 10000,
       requestTimeout: config.requestTimeout || 30000,
       retry: {

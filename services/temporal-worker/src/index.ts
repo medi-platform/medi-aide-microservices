@@ -6,7 +6,7 @@
  */
 
 import { Worker, NativeConnection } from '@temporalio/worker';
-import * as activities from '@medi-aide/temporal-workflows-examples/activities';
+import * as activities from '@medi-aide/temporal-workflows/activities';
 import express from 'express';
 import { Counter, Histogram, register } from 'prom-client';
 
@@ -50,7 +50,7 @@ async function startWorker(): Promise<void> {
     connection,
     namespace: TEMPORAL_NAMESPACE,
     taskQueue: TASK_QUEUE,
-    workflowsPath: require.resolve('@medi-aide/temporal-workflows-examples'),
+    workflowsPath: require.resolve('@medi-aide/temporal-workflows'),
     activities,
     maxConcurrentActivityTaskExecutions: 100,
     maxConcurrentWorkflowTaskExecutions: 100,

@@ -779,6 +779,48 @@ services:
           - PATCH
           - OPTIONS
 
+  # =============================================================================
+  # MONOLITH FALLBACK (Strangler Fig Pattern)
+  # Routes any unmatched /api/* requests to the existing monolith
+  # This ensures seamless operation during microservices migration
+  # Priority is lowest (regex_priority: 0) so specific routes match first
+  # =============================================================================
+  - name: monolith-fallback
+    url: http://host.docker.internal:3000
+    routes:
+      - name: monolith-api-v1-fallback
+        paths:
+          - /api/v1
+        strip_path: false
+        regex_priority: 0
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: monolith-api-v2-fallback
+        paths:
+          - /api/v2
+        strip_path: false
+        regex_priority: 0
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: monolith-health-check
+        paths:
+          - /health
+          - /api/health
+        strip_path: false
+        methods:
+          - GET
+          - OPTIONS
+
 # Global plugins
 plugins:
   - name: cors

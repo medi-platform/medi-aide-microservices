@@ -17,6 +17,7 @@ x-common-env: &common-env
   CONSUL_PORT: 8500
   JAEGER_ENDPOINT: http://stage3-jaeger:14268/api/traces
   DISABLE_CONSUL: "true"
+  DISABLE_GRPC: "true"
   DISABLE_MQ: "true"
   # Phase 2: Service-to-Service JWT Auth
   SERVICE_JWT_SECRET: ${SERVICE_JWT_SECRET:-medi-aide-service-jwt-secret-change-in-production}
@@ -937,8 +938,8 @@ services:
       # Service JWT for inter-service communication
       SERVICE_JWT_SECRET: ${SERVICE_JWT_SECRET:-medi-aide-service-jwt-secret}
     ports:
-      - "9100:9000"  # Metrics
-      - "8180:8080"  # Health
+      - "9200:9000"  # Metrics
+      - "8280:8080"  # Health
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
       interval: 15s

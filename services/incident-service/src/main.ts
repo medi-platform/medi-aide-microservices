@@ -6,7 +6,7 @@ import { IncidentModule } from './incident.module';
 async function bootstrap() {
   const logger = new Logger('IncidentService');
   const app = await NestFactory.create(IncidentModule);
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', { exclude: ['health', 'ping', '/'] });
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   app.enableCors({ origin: '*', credentials: true });
 

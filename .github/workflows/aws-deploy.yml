@@ -1,0 +1,192 @@
+name: AWS Deployment Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  AWS_REGION: ca-central-1  # Montreal, Canada - Required for healthcare data compliance
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ca-central-1.amazonaws.com
+  PROJECT_NAME: medi-aide
+
+jobs:
+  # ============================================================================
+  # BUILD AND PUSH TO ECR
+  # ============================================================================
+  build-and-push:
+    name: Build & Push to ECR
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - notification-service
+          - auth-service
+          - user-service
+          - visit-service
+          - wellness-service
+          - payment-service
+          - search-service
+          - audit-service
+          - matching-service
+          - evv-service
+          - care-plan-service
+          - file-service
+          - training-service
+          - feedback-service
+          - communication-service
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/Dockerfile.pnpm
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:${{ github.sha }}
+            ${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:latest
+          build-args: |
+            SERVICE_NAME=${{ matrix.service }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # DEPLOY TO STAGING (EKS)
+  # ============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.medi-aide.com
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig (Canada)
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name medi-aide-staging
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Deploy services to staging
+        run: |
+          for service in notification-service auth-service user-service visit-service wellness-service payment-service search-service audit-service matching-service evv-service care-plan-service file-service training-service feedback-service communication-service; do
+            echo "Deploying $service..."
+            helm upgrade --install $service ./charts/nest-service \
+              --namespace medi-aide-staging \
+              --create-namespace \
+              --set image.repository=${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/$service \
+              --set image.tag=${{ github.sha }} \
+              --set env[0].name=NODE_ENV \
+              --set env[0].value=staging \
+              --set env[1].name=SERVICE_NAME \
+              --set env[1].value=$service \
+              --wait --timeout 5m0s || echo "Failed to deploy $service, continuing..."
+          done
+
+      - name: Verify deployments
+        run: |
+          kubectl get pods -n medi-aide-staging
+          kubectl get services -n medi-aide-staging
+
+  # ============================================================================
+  # DEPLOY TO PRODUCTION (EKS)
+  # ============================================================================
+  deploy-production:
+    name: Deploy to Production
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://medi-aide.com
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig (Canada)
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name medi-aide-prod
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Deploy services to production
+        run: |
+          for service in notification-service auth-service user-service visit-service wellness-service payment-service search-service audit-service matching-service evv-service care-plan-service file-service training-service feedback-service communication-service; do
+            echo "Deploying $service..."
+            helm upgrade --install $service ./charts/nest-service \
+              --namespace medi-aide \
+              --create-namespace \
+              --set image.repository=${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/$service \
+              --set image.tag=${{ github.sha }} \
+              --set env[0].name=NODE_ENV \
+              --set env[0].value=production \
+              --set env[1].name=SERVICE_NAME \
+              --set env[1].value=$service \
+              --wait --timeout 5m0s
+          done
+
+      - name: Verify deployments
+        run: |
+          kubectl get pods -n medi-aide
+          kubectl get services -n medi-aide
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Production deployment completed successfully"
+          echo "Services deployed: notification, auth, user, visit, wellness, payment, search, audit, matching, evv, care-plan, file, training, feedback, communication"
+

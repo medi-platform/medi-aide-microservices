@@ -24,8 +24,10 @@ async function bootstrap() {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
-  // Global prefix
-  app.setGlobalPrefix('api/v1');
+  // Global prefix - exclude health check routes
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['health', 'ping', '/'],
+  });
 
   // Validation pipe
   app.useGlobalPipes(

@@ -1,0 +1,98 @@
+# Medi-Aide AWS Infrastructure Configuration (Canada)
+# Copy this file to terraform.tfvars and fill in your values
+#
+# IMPORTANT: Using ca-central-1 (Montreal) for Canadian data residency
+# This ensures compliance with PIPEDA and provincial health data regulations
+
+# AWS Configuration
+aws_region   = "ca-central-1"  # Montreal, Canada - Required for healthcare data compliance
+environment  = "production"    # or "staging", "development"
+project_name = "medi-aide"
+
+# Domain - REQUIRED: You must own this domain and have it in Route53
+domain_name = "medi-aide.ca"  # Replace with your actual domain (.ca recommended for Canada)
+
+# VPC Configuration
+vpc_cidr             = "10.0.0.0/16"
+private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
+# EKS Configuration
+cluster_name    = "medi-aide-prod"
+cluster_version = "1.29"
+
+# Node groups configuration
+node_groups = {
+  # General purpose nodes for most services
+  general = {
+    name           = "general"
+    instance_types = ["t3.xlarge"]
+    min_size       = 3
+    max_size       = 10
+    desired_size   = 3
+    
+    labels = {
+      "node-type" = "general"
+    }
+  }
+  
+  # Spot instances for cost savings (non-critical workloads)
+  spot = {
+    name           = "spot"
+    instance_types = ["t3.xlarge", "t3a.xlarge", "t2.xlarge"]
+    capacity_type  = "SPOT"
+    min_size       = 0
+    max_size       = 5
+    desired_size   = 2
+    
+    labels = {
+      "node-type" = "spot"
+    }
+    
+    taints = [
+      {
+        key    = "spot"
+        value  = "true"
+        effect = "NO_SCHEDULE"
+      }
+    ]
+  }
+  
+  # High-memory nodes for AI/ML services
+  ai_ml = {
+    name           = "ai-ml"
+    instance_types = ["r5.xlarge"]
+    min_size       = 1
+    max_size       = 3
+    desired_size   = 1
+    
+    labels = {
+      "node-type" = "ai-ml"
+    }
+  }
+}
+
+# RDS Configuration
+database_name      = "medi_aide_db"
+database_username  = "postgres"
+rds_instance_class = "db.r6g.large"  # Use db.t3.medium for development
+
+# Redis Configuration
+redis_node_type       = "cache.r6g.large"  # Use cache.t3.medium for development
+redis_num_cache_nodes = 2
+
+# Kafka Configuration
+kafka_instance_type = "kafka.t3.small"  # Use kafka.t3.small for development
+
+# Cost Optimization
+enable_spot_instances = true
+enable_auto_scaling   = true
+
+# Security
+enable_guardduty    = true
+enable_security_hub = true
+enable_config       = true
+
+# Alerts
+alert_email = "your-email@example.com"  # Replace with your alert email
+

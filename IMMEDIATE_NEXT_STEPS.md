@@ -119,16 +119,21 @@ watch -n 2 'kubectl -n medi-aide top pods'
 # 25% → 50% → 100%
 ```
 
-## 🏗️ Week 2: AWS Infrastructure
+## 🏗️ Week 2: AWS Infrastructure (Canada)
 
 ```bash
-# 1. Create S3 bucket for Terraform state
-aws s3 mb s3://medi-aide-terraform-state
+# 1. Create S3 bucket for Terraform state (Canada region)
+aws s3api create-bucket \
+  --bucket medi-aide-terraform-state-ca \
+  --region ca-central-1 \
+  --create-bucket-configuration LocationConstraint=ca-central-1
+
 aws dynamodb create-table \
   --table-name medi-aide-terraform-locks \
+  --region ca-central-1 \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
-  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+  --billing-mode PAY_PER_REQUEST
 
 # 2. Initialize Terraform
 cd aws/terraform
@@ -136,12 +141,12 @@ terraform init
 
 # 3. Create development environment first
 cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
+# Edit terraform.tfvars with your values (domain, email, etc.)
 
 # 4. Plan and review
 terraform plan -out=tfplan
 
-# 5. Apply infrastructure
+# 5. Apply infrastructure (takes ~30 minutes)
 terraform apply tfplan
 ```
 

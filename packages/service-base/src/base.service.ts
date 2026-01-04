@@ -75,9 +75,12 @@ export abstract class BaseService {
       this.config = this.app.get(ConfigService);
 
       // Set global prefix (allow empty string to mean no prefix)
+      // Exclude health check routes from the prefix so Docker healthchecks work
       const globalPrefix = this.options.globalPrefix ?? this.options.serviceName.replace('-service', '');
       if (globalPrefix !== '') {
-        this.app.setGlobalPrefix(globalPrefix);
+        this.app.setGlobalPrefix(globalPrefix, {
+          exclude: ['health', 'ping', '/'],
+        });
       }
 
       // Enable security headers

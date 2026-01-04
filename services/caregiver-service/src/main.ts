@@ -22,7 +22,7 @@ async function bootstrap() {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', { exclude: ['health', 'ping', '/'] });
 
   app.useGlobalPipes(
     new ValidationPipe({

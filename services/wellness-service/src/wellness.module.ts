@@ -30,7 +30,10 @@ const moduleImports = [
   ...(consulEnabled ? [ConsulModule] : []),
 ];
 
-const controllersArr = dbEnabled ? [WellnessController] : [SimpleHealthController];
+// Always include SimpleHealthController for /health and /ping endpoints
+const controllersArr = dbEnabled 
+  ? [WellnessController, SimpleHealthController] 
+  : [SimpleHealthController];
 const providersArr = dbEnabled ? [WellnessService] : [];
 
 @Module({

@@ -7,6 +7,11 @@ export class SimpleHealthController {
     return { status: 'ok', service: 'wellness-service', timestamp: new Date().toISOString() };
   }
 
+  @Get('/ping')
+  getPing() {
+    return { status: 'ok', service: 'wellness-service', timestamp: new Date().toISOString() };
+  }
+
   // Fallback path to support Kong when it forwards the full prefixed path
   @Get('/api/v1/wellness/health')
   getPrefixedHealth() {

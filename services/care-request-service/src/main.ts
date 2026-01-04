@@ -6,7 +6,7 @@ import { CareRequestModule } from './care-request.module';
 async function bootstrap() {
   const logger = new Logger('CareRequestService');
   const app = await NestFactory.create(CareRequestModule);
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', { exclude: ['health', 'ping', '/'] });
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   app.enableCors({ origin: '*', credentials: true });
 

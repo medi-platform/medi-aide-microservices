@@ -31,6 +31,7 @@ import { TrainingService } from './services/training.service';
 import { ShiftService } from './services/shift.service';
 import { AnalyticsService } from './services/analytics.service';
 import { OnboardingService } from './services/onboarding.service';
+import { ProvincialRulesService } from './services/provincial-rules.service';
 
 // Entities
 import { AgencyProfile } from './entities/agency-profile.entity';
@@ -148,6 +149,7 @@ import { ServiceAuthModule } from '@medi-aide/service-auth';
     ShiftService,
     AnalyticsService,
     OnboardingService,
+    ProvincialRulesService,
   ],
 })
 export class AgencyModule {}

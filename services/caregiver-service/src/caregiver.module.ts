@@ -14,6 +14,7 @@ import { AvailabilityController } from './controllers/availability.controller';
 import { CertificationController } from './controllers/certification.controller';
 import { PerformanceController } from './controllers/performance.controller';
 import { DocumentController } from './controllers/document.controller';
+import { LifecycleController, LifecycleStatsController } from './controllers/lifecycle.controller';
 
 // Services
 import { CaregiverService } from './services/caregiver.service';
@@ -21,6 +22,7 @@ import { AvailabilityService } from './services/availability.service';
 import { CertificationService } from './services/certification.service';
 import { PerformanceService } from './services/performance.service';
 import { DocumentService } from './services/document.service';
+import { LifecycleService } from './services/lifecycle.service';
 
 // Entities
 import { CaregiverProfile } from './entities/caregiver-profile.entity';
@@ -29,6 +31,7 @@ import { CaregiverCertification } from './entities/caregiver-certification.entit
 import { CaregiverPerformance } from './entities/caregiver-performance.entity';
 import { CaregiverDocument } from './entities/caregiver-document.entity';
 import { CaregiverSkill } from './entities/caregiver-skill.entity';
+import { CaregiverLifecycleEntity } from './entities/caregiver-lifecycle.entity';
 
 const entities = [
   CaregiverProfile,
@@ -37,6 +40,7 @@ const entities = [
   CaregiverPerformance,
   CaregiverDocument,
   CaregiverSkill,
+  CaregiverLifecycleEntity,
 ];
 
 @Module({
@@ -70,6 +74,8 @@ const entities = [
     CertificationController,
     PerformanceController,
     DocumentController,
+    LifecycleController,
+    LifecycleStatsController,
   ],
   providers: [
     CaregiverService,
@@ -77,6 +83,7 @@ const entities = [
     CertificationService,
     PerformanceService,
     DocumentService,
+    LifecycleService,
   ],
 })
 export class CaregiverModule {}

@@ -51,3 +51,16 @@ infrastructure/docker/redis-data/
 .tmp/
 .cache/*.tgz
 services/notification-service/vendor/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Build artifacts (non-essential)
+build-logs/
+build-status/
+build-output.log
+build-output-fixed.log
+build-final.log
+full-build.log

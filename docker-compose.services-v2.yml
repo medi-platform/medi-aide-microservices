@@ -709,7 +709,9 @@ services:
       AI_BURNOUT_HIGH_RISK_THRESHOLD: 0.7
       AI_SCHEDULE_MAX_TRAVEL_MINUTES: 45
     ports:
-      - "8005:8005"
+      # NOTE: When running the legacy monolith (which also uses host :8005),
+      # set AI_ML_SERVICE_HOST_PORT=18005 (or any free port) to avoid conflicts.
+      - "${AI_ML_SERVICE_HOST_PORT:-8005}:8005"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8005/health/live"]
       interval: 30s

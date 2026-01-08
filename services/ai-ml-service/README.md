@@ -62,6 +62,10 @@ docker build -t medi-aide-ai-ml-service .
 
 # Run container
 docker run -p 8005:8005 --env-file .env medi-aide-ai-ml-service
+
+# If you're running the legacy monolith on the same machine (it also uses host :8005),
+# publish the container on an alternate host port (container still listens on 8005):
+docker run -p 18005:8005 --env-file .env medi-aide-ai-ml-service
 ```
 
 ### With Docker Compose (Full Stack)
@@ -101,6 +105,9 @@ docker compose -f docker-compose.services-v2.yml up ai-ml-service
 - **Swagger UI**: http://localhost:8005/docs (development only)
 - **ReDoc**: http://localhost:8005/redoc (development only)
 - **OpenAPI JSON**: http://localhost:8005/openapi.json
++
+If you published the container on an alternate host port (e.g. `18005:8005`), use:
+- **Swagger UI**: http://localhost:18005/docs
 
 ## Configuration
 

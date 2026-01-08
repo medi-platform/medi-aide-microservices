@@ -142,5 +142,139 @@ export class SchedulingEventPublisher {
       throw error;
     }
   }
+
+  /**
+   * Publish when availability is created
+   */
+  async publishAvailabilityCreated(data: {
+    id: string;
+    caregiverId: string;
+    startTime: Date;
+    endTime: Date;
+    [key: string]: any;
+  }): Promise<void> {
+    try {
+      await this.kafkaProducer.publish(
+        'medi-aide.scheduling',
+        'availability.created',
+        data,
+        { key: data.id },
+      );
+      this.logger.log(`Published availability.created event for ${data.id}`);
+    } catch (error) {
+      this.logger.error(`Failed to publish availability.created event`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish when a slot is reserved
+   */
+  async publishSlotReserved(data: {
+    slotId: string;
+    caregiverId: string;
+    visitId: string;
+    startTime: Date;
+    endTime: Date;
+  }): Promise<void> {
+    try {
+      await this.kafkaProducer.publish(
+        'medi-aide.scheduling',
+        'slot.reserved',
+        data,
+        { key: data.slotId },
+      );
+      this.logger.log(`Published slot.reserved event for ${data.slotId}`);
+    } catch (error) {
+      this.logger.error(`Failed to publish slot.reserved event`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish when a slot is released
+   */
+  async publishSlotReleased(data: {
+    slotId: string;
+    caregiverId: string;
+    visitId: string;
+  }): Promise<void> {
+    try {
+      await this.kafkaProducer.publish(
+        'medi-aide.scheduling',
+        'slot.released',
+        data,
+        { key: data.slotId },
+      );
+      this.logger.log(`Published slot.released event for ${data.slotId}`);
+    } catch (error) {
+      this.logger.error(`Failed to publish slot.released event`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish when a task is created
+   */
+  async publishTaskCreated(data: {
+    id: string;
+    title: string;
+    [key: string]: any;
+  }): Promise<void> {
+    try {
+      await this.kafkaProducer.publish(
+        'medi-aide.scheduling',
+        'task.created',
+        data,
+        { key: data.id },
+      );
+      this.logger.log(`Published task.created event for ${data.id}`);
+    } catch (error) {
+      this.logger.error(`Failed to publish task.created event`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish when a task is started
+   */
+  async publishTaskStarted(data: {
+    id: string;
+    [key: string]: any;
+  }): Promise<void> {
+    try {
+      await this.kafkaProducer.publish(
+        'medi-aide.scheduling',
+        'task.started',
+        data,
+        { key: data.id },
+      );
+      this.logger.log(`Published task.started event for ${data.id}`);
+    } catch (error) {
+      this.logger.error(`Failed to publish task.started event`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish when a task is completed
+   */
+  async publishTaskCompleted(data: {
+    id: string;
+    [key: string]: any;
+  }): Promise<void> {
+    try {
+      await this.kafkaProducer.publish(
+        'medi-aide.scheduling',
+        'task.completed',
+        data,
+        { key: data.id },
+      );
+      this.logger.log(`Published task.completed event for ${data.id}`);
+    } catch (error) {
+      this.logger.error(`Failed to publish task.completed event`, error);
+      throw error;
+    }
+  }
 }
 

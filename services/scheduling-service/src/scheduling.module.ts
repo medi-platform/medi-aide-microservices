@@ -12,12 +12,17 @@ import { CalendarService } from './services/calendar.service';
 import { Schedule } from './entities/schedule.entity';
 import { Appointment } from './entities/appointment.entity';
 import { RecurringPattern } from './entities/recurring-pattern.entity';
+import { AvailabilitySlot } from './entities/availability-slot.entity';
+import { Task } from './entities/task.entity';
+import { CalendarIntegration } from './entities/calendar-integration.entity';
 import { MigrationModule } from '@medi-aide/database-migrations';
 import { KafkaModule } from '@medi-aide/kafka-client';
 import { ServiceAuthModule } from '@medi-aide/service-auth';
 import { SchedulingEventPublisher } from './services/scheduling-event-publisher.service';
+import { AvailabilityService } from './services/availability.service';
+import { TaskService } from './services/task.service';
 
-const entities = [Schedule, Appointment, RecurringPattern];
+const entities = [Schedule, Appointment, RecurringPattern, AvailabilitySlot, Task, CalendarIntegration];
 
 @Module({
   imports: [
@@ -70,8 +75,22 @@ const entities = [Schedule, Appointment, RecurringPattern];
     }),
   ],
   controllers: [HealthController, ScheduleController, AppointmentController, CalendarController],
-  providers: [ScheduleService, AppointmentService, CalendarService, SchedulingEventPublisher],
-  exports: [ScheduleService, SchedulingEventPublisher],
+  providers: [
+    ScheduleService,
+    AppointmentService,
+    CalendarService,
+    SchedulingEventPublisher,
+    AvailabilityService,
+    TaskService,
+  ],
+  exports: [
+    ScheduleService,
+    AppointmentService,
+    CalendarService,
+    SchedulingEventPublisher,
+    AvailabilityService,
+    TaskService,
+  ],
 })
 export class SchedulingModule {}
 

@@ -1902,12 +1902,18 @@ importers:
       '@nestjs/platform-express':
         specifier: ^10.0.0
         version: 10.4.20(@nestjs/common@10.4.20)(@nestjs/core@10.4.20)
+      '@nestjs/typeorm':
+        specifier: ^10.0.2
+        version: 10.0.2(@nestjs/common@10.4.20)(@nestjs/core@10.4.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
       class-validator:
         specifier: ^0.14.0
         version: 0.14.3
+      pg:
+        specifier: ^8.11.0
+        version: 8.16.3
       prom-client:
         specifier: ^14.0.0
         version: 14.2.0
@@ -1917,6 +1923,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      typeorm:
+        specifier: ^0.3.20
+        version: 0.3.28(ioredis@5.8.2)(pg@8.16.3)
     devDependencies:
       '@types/node':
         specifier: ^20.10.0

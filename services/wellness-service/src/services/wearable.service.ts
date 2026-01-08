@@ -272,8 +272,8 @@ export class WearableService {
         await this.refreshDeviceToken(device);
       }
 
-      // Mock data sync (real implementation would fetch from device API)
-      const recordsSaved = 0;
+      // Fetch data from device API based on device type
+      const recordsSaved = await this.syncDeviceData(device, job);
 
       // Update device last sync
       device.lastSyncAt = new Date();
@@ -297,6 +297,202 @@ export class WearableService {
       await this.syncJobRepo.save(job);
       throw error;
     }
+  }
+
+  /**
+   * Sync data from device API based on device type
+   */
+  private async syncDeviceData(
+    device: WearableDevice,
+    job: WearableSyncJob,
+  ): Promise<number> {
+    if (!device.accessToken) {
+      throw new UnauthorizedException('Device not authenticated');
+    }
+
+    let recordsSaved = 0;
+    const startDate = job.syncStartDate.toISOString().split('T')[0];
+    const endDate = job.syncEndDate.toISOString().split('T')[0];
+
+    switch (device.deviceType) {
+      case WearableDeviceType.FITBIT:
+        recordsSaved = await this.syncFitbitData(device, startDate, endDate, job.dataType);
+        break;
+      case WearableDeviceType.GARMIN:
+        recordsSaved = await this.syncGarminData(device, startDate, endDate, job.dataType);
+        break;
+      case WearableDeviceType.APPLE_WATCH:
+        // Apple HealthKit requires on-device sync via mobile app
+        this.logger.warn('Apple Watch sync requires mobile app integration');
+        break;
+      case WearableDeviceType.SAMSUNG_HEALTH:
+        recordsSaved = await this.syncSamsungData(device, startDate, endDate, job.dataType);
+        break;
+      default:
+        this.logger.warn(`Unsupported device type: ${device.deviceType}`);
+    }
+
+    return recordsSaved;
+  }
+
+  private async syncFitbitData(
+    device: WearableDevice,
+    startDate: string,
+    endDate: string,
+    dataType: SyncDataType,
+  ): Promise<number> {
+    let recordsSaved = 0;
+    const baseUrl = 'https://api.fitbit.com/1/user/-';
+    const headers = { Authorization: `Bearer ${device.accessToken}` };
+
+    try {
+      // Sync heart rate data
+      if (dataType === SyncDataType.ALL || dataType === SyncDataType.HEART_RATE) {
+        const hrResponse = await firstValueFrom(
+          this.httpService.get(`${baseUrl}/activities/heart/date/${startDate}/${endDate}.json`, { headers }),
+        );
+        if (hrResponse.data?.['activities-heart']) {
+          for (const day of hrResponse.data['activities-heart']) {
+            await this.saveWearableData(device.userId, device.id, 'heart_rate', day);
+            recordsSaved++;
+          }
+        }
+      }
+
+      // Sync steps data
+      if (dataType === SyncDataType.ALL || dataType === SyncDataType.ACTIVITY) {
+        const stepsResponse = await firstValueFrom(
+          this.httpService.get(`${baseUrl}/activities/steps/date/${startDate}/${endDate}.json`, { headers }),
+        );
+        if (stepsResponse.data?.['activities-steps']) {
+          for (const day of stepsResponse.data['activities-steps']) {
+            await this.saveWearableData(device.userId, device.id, 'steps', day);
+            recordsSaved++;
+          }
+        }
+      }
+
+      // Sync sleep data
+      if (dataType === SyncDataType.ALL || dataType === SyncDataType.SLEEP) {
+        const sleepResponse = await firstValueFrom(
+          this.httpService.get(`${baseUrl}/sleep/date/${startDate}/${endDate}.json`, { headers }),
+        );
+        if (sleepResponse.data?.sleep) {
+          for (const sleepLog of sleepResponse.data.sleep) {
+            await this.saveWearableData(device.userId, device.id, 'sleep', sleepLog);
+            recordsSaved++;
+          }
+        }
+      }
+    } catch (error: any) {
+      this.logger.error(`Fitbit API error: ${error.message}`);
+      throw error;
+    }
+
+    return recordsSaved;
+  }
+
+  private async syncGarminData(
+    device: WearableDevice,
+    startDate: string,
+    endDate: string,
+    dataType: SyncDataType,
+  ): Promise<number> {
+    // Garmin uses push-based webhooks for data sync
+    // This implementation handles on-demand pulls for historical data
+    const baseUrl = 'https://apis.garmin.com/wellness-api/rest';
+    const headers = { Authorization: `Bearer ${device.accessToken}` };
+    let recordsSaved = 0;
+
+    try {
+      if (dataType === SyncDataType.ALL || dataType === SyncDataType.ACTIVITY) {
+        const response = await firstValueFrom(
+          this.httpService.get(`${baseUrl}/dailies?uploadStartTimeInSeconds=${Date.parse(startDate) / 1000}&uploadEndTimeInSeconds=${Date.parse(endDate) / 1000}`, { headers }),
+        );
+        if (response.data) {
+          for (const daily of response.data) {
+            await this.saveWearableData(device.userId, device.id, 'activity', daily);
+            recordsSaved++;
+          }
+        }
+      }
+
+      if (dataType === SyncDataType.ALL || dataType === SyncDataType.SLEEP) {
+        const response = await firstValueFrom(
+          this.httpService.get(`${baseUrl}/sleeps?uploadStartTimeInSeconds=${Date.parse(startDate) / 1000}&uploadEndTimeInSeconds=${Date.parse(endDate) / 1000}`, { headers }),
+        );
+        if (response.data) {
+          for (const sleep of response.data) {
+            await this.saveWearableData(device.userId, device.id, 'sleep', sleep);
+            recordsSaved++;
+          }
+        }
+      }
+    } catch (error: any) {
+      this.logger.error(`Garmin API error: ${error.message}`);
+      throw error;
+    }
+
+    return recordsSaved;
+  }
+
+  private async syncSamsungData(
+    device: WearableDevice,
+    startDate: string,
+    endDate: string,
+    dataType: SyncDataType,
+  ): Promise<number> {
+    // Samsung Health data is typically synced via Samsung Health SDK on mobile
+    // Server-side sync requires Samsung Health Partner API access
+    const baseUrl = 'https://api.health.samsung.com';
+    const headers = { Authorization: `Bearer ${device.accessToken}` };
+    let recordsSaved = 0;
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${baseUrl}/data?startDate=${startDate}&endDate=${endDate}`, { headers }),
+      );
+      if (response.data?.items) {
+        for (const item of response.data.items) {
+          await this.saveWearableData(device.userId, device.id, item.type, item);
+          recordsSaved++;
+        }
+      }
+    } catch (error: any) {
+      this.logger.error(`Samsung Health API error: ${error.message}`);
+      throw error;
+    }
+
+    return recordsSaved;
+  }
+
+  private async saveWearableData(
+    userId: string,
+    deviceId: string,
+    dataType: string,
+    data: any,
+  ): Promise<void> {
+    // Find or create WearableData integration record
+    let integration = await this.dataRepo.findOne({
+      where: { userId, source: dataType },
+    });
+
+    if (!integration) {
+      integration = this.dataRepo.create({
+        userId,
+        source: dataType,
+        enabled: true,
+      });
+    }
+
+    integration.lastSync = new Date();
+    integration.metadata = {
+      ...integration.metadata,
+      lastData: data,
+      deviceId,
+    };
+
+    await this.dataRepo.save(integration);
   }
 
   private async refreshDeviceToken(device: WearableDevice): Promise<void> {

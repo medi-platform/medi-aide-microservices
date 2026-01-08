@@ -58,6 +58,9 @@ export class WearableData {
   @Column({ type: 'timestamptz', name: 'encrypted_at', nullable: true })
   encryptedAt?: Date;
 
+  @Column({ type: 'jsonb', nullable: true })
+  metadata?: Record<string, any>;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

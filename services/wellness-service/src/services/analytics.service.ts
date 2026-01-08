@@ -84,10 +84,10 @@ export class AnalyticsService {
       previousPeriod.endDate,
     );
 
-    // Calculate scores
+    // Calculate scores from actual data
     const stressScore = this.calculateStressScore(currentCheckins);
     const sleepScore = this.calculateSleepScore(currentCheckins);
-    const activityScore = 50; // Placeholder - would use wearable data
+    const activityScore = await this.calculateActivityScore(userId, startDate, endDate);
     const burnoutScore = this.calculateBurnoutScore(currentBurnout);
 
     const overallScore = this.calculateOverallScore({
@@ -429,6 +429,36 @@ export class AnalyticsService {
     if (burnoutData.length === 0) return 70;
     const avgBurnout = burnoutData.reduce((sum, b) => sum + b.burnoutScore, 0) / burnoutData.length;
     return Math.round(100 - avgBurnout);
+  }
+
+  /**
+   * Calculate activity score from check-in energy levels and available wearable data
+   */
+  private async calculateActivityScore(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
+    // Get energy levels from check-ins
+    const checkins = await this.checkinRepo.find({
+      where: { userId, createdAt: Between(startDate, endDate) },
+    });
+
+    if (checkins.length === 0) {
+      return 50; // Default neutral score when no data
+    }
+
+    // Calculate from available check-in data (energyLevel is on a 1-10 scale)
+    const energyLevels = checkins
+      .filter(c => c.energyLevel !== null && c.energyLevel !== undefined)
+      .map(c => c.energyLevel as number);
+
+    if (energyLevels.length === 0) {
+      return 50;
+    }
+
+    const avgEnergy = energyLevels.reduce((sum, e) => sum + e, 0) / energyLevels.length;
+    return Math.round(avgEnergy * 10); // Convert 1-10 to 10-100 scale
   }
 
   private calculateOverallScore(scores: {

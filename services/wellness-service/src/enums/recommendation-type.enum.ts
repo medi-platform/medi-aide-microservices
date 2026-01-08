@@ -40,6 +40,12 @@ export enum InterventionType {
   STRETCH_REMINDER = 'stretch_reminder',
   PEER_SUPPORT = 'peer_support',
   ESCALATION = 'escalation',
+  SLEEP_HYGIENE = 'sleep_hygiene',
+  PROFESSIONAL_SUPPORT = 'professional_support',
+  PHYSICAL_ACTIVITY = 'physical_activity',
+  SOCIAL_CONNECTION = 'social_connection',
+  GRATITUDE_PRACTICE = 'gratitude_practice',
+  WORK_BOUNDARY = 'work_boundary',
 }
 
 /**

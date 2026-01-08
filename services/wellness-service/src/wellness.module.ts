@@ -6,7 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 
-// Entities
+// Entities - Core
 import { WellnessMetric } from './entities/wellness-metric.entity';
 import { WellnessCheckin } from './entities/wellness-checkin.entity';
 import { BurnoutRisk } from './entities/burnout-risk.entity';
@@ -17,21 +17,40 @@ import { PhysioSample } from './entities/physio-sample.entity';
 import { WellnessIntervention } from './entities/wellness-intervention.entity';
 import { UserConsent } from './entities/user-consent.entity';
 
-// Controllers
+// Entities - Phase 2
+import { WearableDevice } from './entities/wearable-device.entity';
+import { WearableSyncJob } from './entities/wearable-sync-job.entity';
+import { WellnessAlert } from './entities/wellness-alert.entity';
+import { WellnessGoal } from './entities/wellness-goal.entity';
+import { WellnessAnalytics } from './entities/wellness-analytics.entity';
+
+// Controllers - Core
 import { WellnessController } from './controllers/wellness.controller';
 import { SimpleHealthController } from './controllers/health.controller';
 
-// Services
+// Controllers - Phase 2
+import { WearableController } from './controllers/wearable.controller';
+import { AnalyticsController } from './controllers/analytics.controller';
+import { InterventionController } from './controllers/intervention.controller';
+
+// Services - Core
 import { WellnessService } from './services/wellness.service';
 import { CheckinService } from './services/checkin.service';
 import { VitalsService } from './services/vitals.service';
 import { RecommendationsService } from './services/recommendations.service';
+
+// Services - Phase 2
+import { WearableService } from './services/wearable.service';
+import { AnalyticsService } from './services/analytics.service';
+import { InterventionService } from './services/intervention.service';
+import { ConsentService } from './services/consent.service';
 
 const dbEnabled = process.env.DISABLE_DB !== 'true';
 const consulEnabled = process.env.DISABLE_CONSUL !== 'true';
 
 // All entities for the wellness service
 const entities = [
+  // Core entities
   WellnessMetric,
   WellnessCheckin,
   BurnoutRisk,
@@ -41,6 +60,12 @@ const entities = [
   PhysioSample,
   WellnessIntervention,
   UserConsent,
+  // Phase 2 entities
+  WearableDevice,
+  WearableSyncJob,
+  WellnessAlert,
+  WellnessGoal,
+  WellnessAnalytics,
 ];
 
 const moduleImports = [
@@ -73,16 +98,29 @@ const moduleImports = [
 
 // Controllers - always include health controller
 const controllersArr = dbEnabled 
-  ? [WellnessController, SimpleHealthController] 
+  ? [
+      WellnessController,
+      SimpleHealthController,
+      // Phase 2 controllers
+      WearableController,
+      AnalyticsController,
+      InterventionController,
+    ] 
   : [SimpleHealthController];
 
-// Providers - core services
+// Providers - core and Phase 2 services
 const providersArr = dbEnabled 
   ? [
+      // Core services
       WellnessService,
       CheckinService,
       VitalsService,
       RecommendationsService,
+      // Phase 2 services
+      WearableService,
+      AnalyticsService,
+      InterventionService,
+      ConsentService,
     ] 
   : [];
 
@@ -92,10 +130,16 @@ const providersArr = dbEnabled
   providers: providersArr,
   exports: dbEnabled 
     ? [
+        // Core services
         WellnessService,
         CheckinService,
         VitalsService,
         RecommendationsService,
+        // Phase 2 services
+        WearableService,
+        AnalyticsService,
+        InterventionService,
+        ConsentService,
       ] 
     : [],
 })

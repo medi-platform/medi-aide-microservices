@@ -8,3 +8,10 @@ export * from './physio-sample.entity';
 export * from './wellness-intervention.entity';
 export * from './user-consent.entity';
 
+// Phase 2 entities
+export * from './wearable-device.entity';
+export * from './wearable-sync-job.entity';
+export * from './wellness-alert.entity';
+export * from './wellness-goal.entity';
+export * from './wellness-analytics.entity';
+

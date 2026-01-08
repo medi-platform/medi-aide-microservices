@@ -12,6 +12,8 @@ import { MatchingController } from './controllers/matching.controller';
 import { CaregiverMatch } from './entities/caregiver-match.entity';
 import { MatchingMetric } from './entities/matching-metrics.entity';
 import { CaregiverLocation } from './entities/caregiver-location.entity';
+import { MatchHistory } from './entities/match-history.entity';
+import { CulturalProfile } from './entities/cultural-profile.entity';
 
 // Services
 import { AIScoringService } from './services/ai-scoring.service';
@@ -23,6 +25,8 @@ import { MatchingMetricsService } from './services/matching-metrics.service';
 import { FeatureStoreService } from './services/feature-store.service';
 import { MLModelServingService } from './services/ml-model-serving.service';
 import { ABTestingService } from './services/ab-testing.service';
+import { CulturalMatchingService } from './services/cultural-matching.service';
+import { MatchHistoryService } from './services/match-history.service';
 
 // Consul integration
 import { ConsulModule } from './consul.module';
@@ -53,14 +57,14 @@ import { ServiceAuthModule } from '@medi-aide/service-auth';
         username: configService.get('DB_USER', 'service_user'),
         password: configService.get('DB_PASSWORD', 'service123'),
         database: configService.get('DB_DATABASE', 'matching_db'),
-        entities: [CaregiverMatch, MatchingMetric, CaregiverLocation],
+        entities: [CaregiverMatch, MatchingMetric, CaregiverLocation, MatchHistory, CulturalProfile],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
         migrationsRun: true,
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([CaregiverMatch, MatchingMetric, CaregiverLocation]),
+    TypeOrmModule.forFeature([CaregiverMatch, MatchingMetric, CaregiverLocation, MatchHistory, CulturalProfile]),
     ConsulModule,
     // Phase 2: Database Migrations
     MigrationModule.forRootAsync({
@@ -119,6 +123,10 @@ import { ServiceAuthModule } from '@medi-aide/service-auth';
     FeatureStoreService,
     MLModelServingService,
     ABTestingService,
+    
+    // Phase 2: Enhanced Matching Services
+    CulturalMatchingService,
+    MatchHistoryService,
   ],
   exports: [
     MatchingOrchestratorService,
@@ -128,6 +136,8 @@ import { ServiceAuthModule } from '@medi-aide/service-auth';
     FeatureStoreService,
     MLModelServingService,
     ABTestingService,
+    CulturalMatchingService,
+    MatchHistoryService,
   ],
 })
 export class AppModule {}

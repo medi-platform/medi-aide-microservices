@@ -9,12 +9,26 @@ import { MedicalController } from './controllers/medical.controller';
 import { PatientService } from './services/patient.service';
 import { FamilyService } from './services/family.service';
 import { MedicalService } from './services/medical.service';
+import { SettingsService } from './services/settings.service';
+import { ShortlistService } from './services/shortlist.service';
+import { CareStatusService } from './services/care-status.service';
 import { Patient } from './entities/patient.entity';
 import { FamilyMember } from './entities/family-member.entity';
 import { MedicalRecord } from './entities/medical-record.entity';
 import { EmergencyContact } from './entities/emergency-contact.entity';
+import { PatientSettings } from './entities/patient-settings.entity';
+import { CaregiverShortlist } from './entities/caregiver-shortlist.entity';
+import { CareStatus } from './entities/care-status.entity';
 
-const entities = [Patient, FamilyMember, MedicalRecord, EmergencyContact];
+const entities = [
+  Patient,
+  FamilyMember,
+  MedicalRecord,
+  EmergencyContact,
+  PatientSettings,
+  CaregiverShortlist,
+  CareStatus,
+];
 
 @Module({
   imports: [
@@ -37,7 +51,22 @@ const entities = [Patient, FamilyMember, MedicalRecord, EmergencyContact];
     TerminusModule,
   ],
   controllers: [HealthController, PatientController, FamilyController, MedicalController],
-  providers: [PatientService, FamilyService, MedicalService],
+  providers: [
+    PatientService,
+    FamilyService,
+    MedicalService,
+    SettingsService,
+    ShortlistService,
+    CareStatusService,
+  ],
+  exports: [
+    PatientService,
+    FamilyService,
+    MedicalService,
+    SettingsService,
+    ShortlistService,
+    CareStatusService,
+  ],
 })
 export class PatientModule {}
 

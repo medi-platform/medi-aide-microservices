@@ -1884,6 +1884,9 @@ importers:
       '@medi-aide/health-check':
         specifier: workspace:^
         version: link:../../packages/health-check
+      '@medi-aide/service-auth':
+        specifier: workspace:^
+        version: link:../../packages/service-auth
       '@medi-aide/service-base':
         specifier: workspace:^
         version: link:../../packages/service-base
@@ -6168,7 +6171,7 @@ packages:
       '@nestjs/core': 10.4.20(@nestjs/common@10.4.20)(@nestjs/microservices@10.4.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
-      typeorm: 0.3.28(pg@8.16.3)(ts-node@10.9.2)
+      typeorm: 0.3.28(ioredis@5.8.2)(pg@8.16.3)
       uuid: 9.0.1
 
   /@next/env@15.5.9:
@@ -14524,6 +14527,7 @@ packages:
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
+    dev: false
 
   /typescript@5.7.2:
     resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}

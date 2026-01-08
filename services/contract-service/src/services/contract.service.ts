@@ -5,12 +5,14 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Contract, ContractStatus, ContractType } from '../entities/contract.entity';
 import { ContractSignature, SignatureStatus, SignerRole } from '../entities/contract-signature.entity';
 import { ContractTemplate } from '../entities/contract-template.entity';
 import { ContractEvent, ContractEventType } from '../entities/contract-event.entity';
+import { ServiceAuthService } from '@medi-aide/service-auth';
 
 interface CreateContractDto {
   careRequestId: string;
@@ -42,6 +44,8 @@ export class ContractService {
     private readonly templateRepo: Repository<ContractTemplate>,
     @InjectRepository(ContractEvent)
     private readonly eventRepo: Repository<ContractEvent>,
+    private readonly configService: ConfigService,
+    private readonly serviceAuth: ServiceAuthService,
   ) {}
 
   /**
@@ -70,7 +74,7 @@ export class ContractService {
       ...dto,
       type: dto.type || (template?.type ?? ContractType.CARE_AGREEMENT),
       status: ContractStatus.DRAFT,
-      templateVersionId: template?.id,
+      templateId: template?.id ?? dto.templateId,
       terms: dto.terms || template?.defaultTerms,
     });
 
@@ -322,11 +326,74 @@ export class ContractService {
       return existing;
     }
 
-    // This would typically fetch care request details
-    // For now, create a placeholder
-    throw new BadRequestException(
-      'Care request details required to create contract. Use createContract with full details.',
+    const careRequest = await this.fetchCareRequest(careRequestId);
+    const patientId = String(careRequest.patientId ?? careRequest.patient_id ?? '');
+    const caregiverId = String(careRequest.caregiverId ?? careRequest.caregiver_id ?? '');
+
+    if (!patientId) {
+      throw new BadRequestException(`Care request ${careRequestId} is missing patientId`);
+    }
+    if (!caregiverId) {
+      throw new BadRequestException(
+        `Care request ${careRequestId} is not assigned to a caregiver yet`,
+      );
+    }
+
+    const effectiveDateRaw = careRequest.start_date ?? careRequest.startDate;
+    const expirationDateRaw = careRequest.end_date ?? careRequest.endDate;
+
+    const effectiveDate = effectiveDateRaw ? new Date(effectiveDateRaw) : undefined;
+    const expirationDate = expirationDateRaw ? new Date(expirationDateRaw) : undefined;
+
+    const terms: Contract['terms'] = {
+      paymentFrequency: careRequest.frequency ?? undefined,
+      specialConditions: Array.isArray(careRequest.care_types) ? careRequest.care_types : undefined,
+    };
+
+    // Create contract using real care request data
+    return this.createContract(
+      {
+        careRequestId,
+        caregiverId,
+        patientId,
+        effectiveDate,
+        expirationDate,
+        terms,
+      },
+      this.configService.get('SYSTEM_USER_ID'),
     );
+  }
+
+  private async fetchCareRequest(careRequestId: string): Promise<any> {
+    const baseUrl = this.configService.get<string>(
+      'CARE_REQUEST_SERVICE_URL',
+      'http://care-request-service:4053',
+    );
+    const url = new URL(`/api/v1/care-requests/${careRequestId}`, baseUrl).toString();
+
+    const controller = new AbortController();
+    const timeoutMs = Number(this.configService.get('CARE_REQUEST_SERVICE_TIMEOUT_MS', '5000'));
+    const timeout = setTimeout(() => controller.abort(), Number.isFinite(timeoutMs) ? timeoutMs : 5000);
+
+    try {
+      const headers = new Headers();
+      headers.set('Accept', 'application/json');
+      headers.set('Authorization', this.serviceAuth.createAuthHeader('care-request-service'));
+      headers.set('X-Calling-Service', this.serviceAuth.getServiceName());
+
+      const res = await fetch(url, { method: 'GET', headers, signal: controller.signal });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`care-request-service GET ${url} -> ${res.status} ${body}`);
+      }
+
+      return await res.json();
+    } catch (err: any) {
+      this.logger.error(`Failed to fetch care request ${careRequestId}: ${err?.message ?? err}`);
+      throw new BadRequestException(`Unable to fetch care request ${careRequestId}`);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   /**

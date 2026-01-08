@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServiceAuthModule } from '@medi-aide/service-auth';
 
 // Entities
 import { Contract } from './entities/contract.entity';
@@ -31,6 +32,18 @@ const entities = [
       isGlobal: true,
       cache: true,
       expandVariables: true,
+    }),
+    ServiceAuthModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        serviceName: 'contract-service',
+        jwtSecret: config.get('SERVICE_JWT_SECRET', 'service-secret'),
+        tokenExpirationSeconds: 300,
+        allowedServices: (config.get('ALLOWED_SERVICES', 'api-gateway,care-request-service') as string)
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean),
+      }),
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

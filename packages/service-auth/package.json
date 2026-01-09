@@ -9,9 +9,9 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^3.0.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/core": "^11.0.0",
     "@nestjs/jwt": "^10.0.0",
     "axios": "^1.6.0",
     "jsonwebtoken": "^9.0.0"
@@ -22,8 +22,8 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0"
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0"
   }
 }
 

@@ -12,7 +12,7 @@
     "migration:status": "ts-node src/cli/migration-status.ts"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^3.2.0",
     "@nestjs/typeorm": "^10.0.0",
     "commander": "^11.1.0",

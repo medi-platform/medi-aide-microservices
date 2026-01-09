@@ -11,8 +11,8 @@
     "extract": "ts-node scripts/extract-translations.ts"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/config": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
     "date-fns": "^3.0.0",
     "intl-messageformat": "^10.5.0"
   },

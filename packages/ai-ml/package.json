@@ -10,8 +10,8 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/config": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
     "ml-matrix": "^6.11.0",
     "natural": "^6.10.0"
   },

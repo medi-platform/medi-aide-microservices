@@ -9,7 +9,7 @@
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
   "dependencies": {
-    "@nestjs/swagger": "^7.0.0",
+    "@nestjs/swagger": "^11.0.0",
     "swagger-ui-express": "^5.0.0",
     "@medi-aide/consul-integration": "workspace:*",
     "@medi-aide/health-check": "workspace:*",
@@ -28,8 +28,8 @@
     "@types/node": "^18.0.0",
     "tsup": "^8.5.0",
     "typescript": "^5.0.0",
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
     "@nestjs/config": "^3.0.0",
     "@nestjs/microservices": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
@@ -37,8 +37,8 @@
     "@nestjs/typeorm": "^10.0.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
     "@nestjs/config": "^3.0.0",
     "@nestjs/microservices": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",

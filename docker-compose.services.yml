@@ -529,10 +529,22 @@ services:
       SERVICE_NAME: provincial-service
       SERVICE_VERSION: 1.0.0
       SERVICE_PORT: 4034
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: provincial_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
     ports:
       - "4034:4034"
     networks:
       - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
 
   mentorship-service:
     build:
@@ -563,10 +575,24 @@ services:
       SERVICE_NAME: fraud-detection-service
       SERVICE_VERSION: 1.0.0
       SERVICE_PORT: 4040
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: fraud_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      ML_MODEL_ENDPOINT: http://ai-ml-service:8005/api/v1/ai/fraud
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
     ports:
       - "4040:4040"
     networks:
       - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
 
   security-monitoring-service:
     build:
@@ -580,10 +606,52 @@ services:
       SERVICE_NAME: security-monitoring-service
       SERVICE_VERSION: 1.0.0
       SERVICE_PORT: 4041
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: security_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
     ports:
       - "4041:4041"
     networks:
       - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
+
+  feature-flags-service:
+    build:
+      context: .
+      dockerfile: services/feature-flags-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: feature-flags-service
+    container_name: stage3-feature-flags-service
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: feature-flags-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4042
+      DB_HOST: stage3-postgres
+      DB_PORT: 5432
+      DB_DATABASE: flags_db
+      DB_USER: service_user
+      DB_USERNAME: service_user
+      DB_PASSWORD: service123
+      REDIS_HOST: stage3-redis
+      REDIS_PORT: 6379
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    ports:
+      - "4042:4042"
+    networks:
+      - stage3-network
+    depends_on:
+      - stage3-postgres
+      - stage3-redis
 
   search-service:
     build:

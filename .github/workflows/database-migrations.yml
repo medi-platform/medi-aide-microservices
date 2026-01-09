@@ -1,0 +1,107 @@
+##############################################################################
+# Database Migrations Workflow
+# Phase 8: CI/CD Pipeline Enhancements
+#
+# Run database migrations for any service
+##############################################################################
+
+name: Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to migrate (or "all")'
+        required: true
+        type: choice
+        options:
+          - all
+          - agency-service
+          - caregiver-service
+          - patient-service
+          - scheduling-service
+          - residential-service
+          - communication-service
+          - feedback-service
+          - reports-service
+          - training-service
+          - wellness-service
+          - mentorship-service
+          - incident-service
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      action:
+        description: 'Migration action'
+        required: true
+        type: choice
+        options:
+          - run
+          - revert
+          - show
+
+env:
+  AWS_REGION: ca-central-1
+
+jobs:
+  migrate:
+    name: Migrate ${{ inputs.service }} in ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          CLUSTER_NAME="medi-aide-${{ inputs.environment }}"
+          [ "${{ inputs.environment }}" = "production" ] && CLUSTER_NAME="medi-aide-prod"
+          aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ env.AWS_REGION }}
+
+      - name: Get database credentials
+        id: db-creds
+        run: |
+          SECRET_NAME="medi-aide/${{ inputs.environment }}/database"
+          CREDS=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query SecretString --output text)
+          echo "::add-mask::$(echo $CREDS | jq -r '.password')"
+          echo "DB_HOST=$(echo $CREDS | jq -r '.host')" >> $GITHUB_OUTPUT
+          echo "DB_USER=$(echo $CREDS | jq -r '.username')" >> $GITHUB_OUTPUT
+          echo "DB_PASSWORD=$(echo $CREDS | jq -r '.password')" >> $GITHUB_OUTPUT
+
+      - name: Run migrations
+        run: |
+          SERVICE="${{ inputs.service }}"
+          ACTION="${{ inputs.action }}"
+          
+          if [ "$SERVICE" = "all" ]; then
+            ./scripts/run-migrations.sh all $ACTION
+          else
+            ./scripts/run-migrations.sh $SERVICE $ACTION
+          fi
+        env:
+          DB_HOST: ${{ steps.db-creds.outputs.DB_HOST }}
+          DB_USER: ${{ steps.db-creds.outputs.DB_USER }}
+          DB_PASSWORD: ${{ steps.db-creds.outputs.DB_PASSWORD }}
+          DB_PORT: 5432
+
+      - name: Report results
+        run: |
+          echo "## Migration Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service:** ${{ inputs.service }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action:** ${{ inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ✅ Complete" >> $GITHUB_STEP_SUMMARY

@@ -10,8 +10,24 @@ import { ReportService } from './services/report.service';
 import { Incident } from './entities/incident.entity';
 import { IncidentReport } from './entities/incident-report.entity';
 import { IncidentFollowUp } from './entities/incident-follow-up.entity';
+// Phase 5I: New entities
+import { IncidentCategory } from './entities/incident-category.entity';
+import { IncidentWitness } from './entities/incident-witness.entity';
+import { IncidentInvestigation } from './entities/incident-investigation.entity';
+// Phase 5I: Services
+import { InvestigationService } from './services/investigation.service';
+// Phase 5I: Controllers
+import { InvestigationController } from './controllers/investigation.controller';
 
-const entities = [Incident, IncidentReport, IncidentFollowUp];
+const entities = [
+  Incident,
+  IncidentReport,
+  IncidentFollowUp,
+  // Phase 5I
+  IncidentCategory,
+  IncidentWitness,
+  IncidentInvestigation,
+];
 
 @Module({
   imports: [
@@ -33,8 +49,8 @@ const entities = [Incident, IncidentReport, IncidentFollowUp];
     TypeOrmModule.forFeature(entities),
     TerminusModule,
   ],
-  controllers: [HealthController, IncidentController, ReportController],
-  providers: [IncidentService, ReportService],
+  controllers: [HealthController, IncidentController, ReportController, InvestigationController],
+  providers: [IncidentService, ReportService, InvestigationService],
 })
 export class IncidentModule {}
 

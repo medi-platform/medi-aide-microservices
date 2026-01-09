@@ -1,0 +1,118 @@
+##############################################################################
+# Rollback Workflow
+# Phase 8: CI/CD Pipeline Enhancements
+#
+# Quick rollback for any service in any environment
+##############################################################################
+
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to rollback (or "all" for entire release)'
+        required: true
+        type: string
+        default: 'all'
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      revision:
+        description: 'Revision to rollback to (default: previous)'
+        required: false
+        default: '0'
+
+env:
+  AWS_REGION: ca-central-1
+
+jobs:
+  rollback:
+    name: Rollback ${{ inputs.service }} in ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          CLUSTER_NAME="medi-aide-${{ inputs.environment }}"
+          [ "${{ inputs.environment }}" = "production" ] && CLUSTER_NAME="medi-aide-prod"
+          aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ env.AWS_REGION }}
+
+      - name: Get current revision
+        id: current
+        run: |
+          SERVICE="${{ inputs.service }}"
+          NAMESPACE="medi-aide-${{ inputs.environment }}"
+          
+          if [ "$SERVICE" = "all" ]; then
+            echo "Rolling back all services..."
+            CURRENT=$(helm list -n $NAMESPACE -o json | jq -r '.[0].revision // "1"')
+          else
+            CURRENT=$(helm history $SERVICE -n $NAMESPACE -o json | jq -r '.[-1].revision // "1"')
+          fi
+          
+          echo "current_revision=$CURRENT" >> $GITHUB_OUTPUT
+
+      - name: Rollback with Helm
+        run: |
+          SERVICE="${{ inputs.service }}"
+          NAMESPACE="medi-aide-${{ inputs.environment }}"
+          REVISION="${{ inputs.revision }}"
+          
+          if [ "$SERVICE" = "all" ]; then
+            # Rollback all services
+            for svc in $(helm list -n $NAMESPACE -q); do
+              echo "Rolling back $svc..."
+              if [ "$REVISION" = "0" ]; then
+                helm rollback $svc -n $NAMESPACE
+              else
+                helm rollback $svc $REVISION -n $NAMESPACE
+              fi
+            done
+          else
+            # Rollback single service
+            if [ "$REVISION" = "0" ]; then
+              helm rollback $SERVICE -n $NAMESPACE
+            else
+              helm rollback $SERVICE $REVISION -n $NAMESPACE
+            fi
+          fi
+
+      - name: Verify rollback
+        run: |
+          NAMESPACE="medi-aide-${{ inputs.environment }}"
+          kubectl get pods -n $NAMESPACE -l app.kubernetes.io/part-of=medi-aide
+
+      - name: Create incident report
+        if: inputs.environment == 'production'
+        run: |
+          echo "## Rollback Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service:** ${{ inputs.service }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Previous Revision:** ${{ steps.current.outputs.current_revision }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered By:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "⚠️ ROLLBACK: ${{ inputs.service }} in ${{ inputs.environment }} by ${{ github.actor }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

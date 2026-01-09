@@ -10,7 +10,7 @@ import { CareTeamMember } from './entities/care-team-member.entity';
 import { CarePlanRevision } from './entities/care-plan-revision.entity';
 
 // Controllers
-import { CarePlanController } from './controllers/care-plan.controller';
+import { CarePlanController, MobileCarePlanController } from './controllers/care-plan.controller';
 import { MetricsController } from './controllers/metrics.controller';
 import { PingController } from './controllers/ping.controller';
 
@@ -56,6 +56,7 @@ const entities = [
   ],
   controllers: [
     CarePlanController,
+    MobileCarePlanController,
     MetricsController,
     PingController,
   ],

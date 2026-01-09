@@ -1,0 +1,131 @@
+##############################################################################
+# Deploy Single Service Workflow
+# Phase 8: CI/CD Pipeline Enhancements
+#
+# Allows deploying a single service to any environment
+##############################################################################
+
+name: Deploy Single Service
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - auth-service
+          - user-service
+          - agency-service
+          - caregiver-service
+          - patient-service
+          - scheduling-service
+          - residential-service
+          - visit-service
+          - evv-service
+          - care-plan-service
+          - care-request-service
+          - contract-service
+          - payment-service
+          - notification-service
+          - communication-service
+          - feedback-service
+          - training-service
+          - wellness-service
+          - mentorship-service
+          - incident-service
+          - reports-service
+          - matching-service
+          - search-service
+          - file-service
+          - audit-service
+          - ai-ml-service
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      image_tag:
+        description: 'Image tag to deploy (default: latest)'
+        required: false
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+  AWS_REGION: ca-central-1
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.service }} to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          CLUSTER_NAME="medi-aide-${{ inputs.environment }}"
+          [ "${{ inputs.environment }}" = "production" ] && CLUSTER_NAME="medi-aide-prod"
+          aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ env.AWS_REGION }}
+
+      - name: Deploy service
+        run: |
+          SERVICE="${{ inputs.service }}"
+          ENV="${{ inputs.environment }}"
+          TAG="${{ inputs.image_tag }}"
+          
+          # Determine values file
+          VALUES_FILE="charts/nest-service/values-${SERVICE}.yaml"
+          if [ ! -f "$VALUES_FILE" ]; then
+            VALUES_FILE="charts/nest-service/values.yaml"
+          fi
+          
+          # Environment-specific values
+          ENV_VALUES="charts/nest-service/values-${ENV}.yaml"
+          
+          # Deploy with Helm
+          helm upgrade --install $SERVICE charts/nest-service \
+            --namespace medi-aide-${ENV} \
+            --create-namespace \
+            -f $VALUES_FILE \
+            -f $ENV_VALUES \
+            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${SERVICE} \
+            --set image.tag=${TAG} \
+            --set environment=${ENV} \
+            --wait --timeout 10m
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ inputs.service }} \
+            --namespace medi-aide-${{ inputs.environment }} \
+            --timeout=5m
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} ${{ inputs.service }} deployed to ${{ inputs.environment }} by ${{ github.actor }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

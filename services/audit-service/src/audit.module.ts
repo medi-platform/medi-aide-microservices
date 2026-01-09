@@ -10,6 +10,7 @@ import { AuditService } from './services/audit.service';
 import { PingController } from './controllers/ping.controller';
 import { SchemaInitService } from './services/schema-init.service';
 import { MetricsController } from './controllers/metrics.controller';
+import { PrivacyController } from './controllers/privacy.controller';
 // Phase 2: Enterprise packages
 import { MigrationModule } from '@medi-aide/database-migrations';
 import { KafkaModule } from '@medi-aide/kafka-client';
@@ -62,7 +63,7 @@ const kafkaEnabled = process.env.DISABLE_KAFKA !== 'true';
       allowedServices: [],
     }),
   ],
-  controllers: dbEnabled ? [AuditController, PingController, MetricsController] : [PingController, MetricsController],
+  controllers: dbEnabled ? [AuditController, PrivacyController, PingController, MetricsController] : [PingController, MetricsController],
   providers: dbEnabled ? [AuditService, SchemaInitService] : [],
 })
 export class AuditModule {}

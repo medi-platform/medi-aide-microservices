@@ -1,0 +1,112 @@
+##############################################################################
+# ArgoCD Application for Medi-Aide Services
+# Phase 8: CI/CD Pipeline Enhancements - GitOps
+##############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: medi-aide-services
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          # Core Services
+          - service: auth-service
+            port: "4000"
+          - service: user-service
+            port: "4005"
+          - service: agency-service
+            port: "4001"
+          - service: caregiver-service
+            port: "4002"
+          - service: patient-service
+            port: "4003"
+          
+          # Business Services
+          - service: scheduling-service
+            port: "4004"
+          - service: residential-service
+            port: "4020"
+          - service: visit-service
+            port: "4006"
+          - service: evv-service
+            port: "4007"
+          - service: care-plan-service
+            port: "4008"
+          - service: care-request-service
+            port: "4009"
+          - service: contract-service
+            port: "4018"
+          - service: payment-service
+            port: "4017"
+          
+          # Supporting Services
+          - service: notification-service
+            port: "4010"
+          - service: communication-service
+            port: "4019"
+          - service: feedback-service
+            port: "4021"
+          - service: training-service
+            port: "4024"
+          - service: wellness-service
+            port: "4025"
+          - service: mentorship-service
+            port: "4026"
+          - service: incident-service
+            port: "4027"
+          - service: reports-service
+            port: "4028"
+          
+          # Infrastructure Services
+          - service: matching-service
+            port: "4014"
+          - service: search-service
+            port: "4015"
+          - service: file-service
+            port: "4016"
+          - service: audit-service
+            port: "4011"
+  
+  template:
+    metadata:
+      name: '{{service}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/part-of: medi-aide
+        app.kubernetes.io/component: '{{service}}'
+    spec:
+      project: medi-aide
+      source:
+        repoURL: https://github.com/medi-platform/medi-aide-microservices.git
+        targetRevision: HEAD
+        path: charts/nest-service
+        helm:
+          valueFiles:
+            - values.yaml
+            - 'values-{{service}}.yaml'
+          parameters:
+            - name: nameOverride
+              value: '{{service}}'
+            - name: service.port
+              value: '{{port}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: medi-aide-prod
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - ApplyOutOfSyncOnly=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      revisionHistoryLimit: 10

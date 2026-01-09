@@ -1,0 +1,42 @@
+# Residential Service Dockerfile
+FROM node:20-alpine AS base
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
+
+WORKDIR /app
+
+# Copy workspace files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY services/residential-service/package.json ./services/residential-service/
+COPY packages/ ./packages/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --filter @medi-aide/residential-service...
+
+# Copy source
+COPY services/residential-service/ ./services/residential-service/
+
+# Build
+WORKDIR /app/services/residential-service
+RUN pnpm build
+
+# Production stage
+FROM node:20-alpine AS production
+
+RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
+
+WORKDIR /app
+
+# Copy built artifacts
+COPY --from=base /app/services/residential-service/dist ./dist
+COPY --from=base /app/services/residential-service/package.json ./
+COPY --from=base /app/node_modules ./node_modules
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${SERVICE_PORT:-4060}/api/v1/health || exit 1
+
+EXPOSE ${SERVICE_PORT:-4060}
+
+CMD ["node", "dist/main.js"]

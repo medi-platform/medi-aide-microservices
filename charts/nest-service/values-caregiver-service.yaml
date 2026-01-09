@@ -1,0 +1,41 @@
+# Caregiver Service Values
+nameOverride: "caregiver-service"
+fullnameOverride: "caregiver-service"
+
+image:
+  repository: ghcr.io/medi-aide/caregiver-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4002
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  - name: SERVICE_NAME
+    value: "caregiver-service"
+  - name: SERVICE_PORT
+    value: "4002"
+
+extraEnvFrom:
+  - secretRef:
+      name: caregiver-service-secrets
+  - configMapRef:
+      name: common-config
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70

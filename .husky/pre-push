@@ -1,0 +1,53 @@
+#!/bin/sh
+# ============================================================================
+# PRE-PUSH HOOK: Monolith Change Detection
+# ============================================================================
+# This hook runs before git push and warns developers when they're pushing
+# monolith changes that may require microservice updates.
+#
+# Install with: npx husky install
+# ============================================================================
+
+. "$(dirname "$0")/_/husky.sh"
+
+# Colors (may not work in all terminals)
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Check if monolith files are being pushed
+MONOLITH_CHANGES=$(git diff --name-only @{push}..HEAD -- apps/medi-aide-backend/ 2>/dev/null | head -5)
+
+if [ -n "$MONOLITH_CHANGES" ]; then
+    echo ""
+    echo "============================================================================"
+    echo "⚠️  MONOLITH CHANGES DETECTED"
+    echo "============================================================================"
+    echo ""
+    echo "You are pushing changes to the monolith:"
+    echo "$MONOLITH_CHANGES"
+    echo ""
+    echo "REMINDER: These changes may require updates to Stage 3 microservices."
+    echo ""
+    echo "After pushing, the Parity Check workflow will:"
+    echo "  1. Identify affected microservices"
+    echo "  2. Create GitHub issues for tracking"
+    echo "  3. Notify the team via Slack"
+    echo ""
+    echo "To manually check before pushing:"
+    echo "  ./scripts/detect-monolith-changes.sh HEAD~1"
+    echo "  ./scripts/check-parity.sh"
+    echo ""
+    echo "============================================================================"
+    echo ""
+    
+    # Don't block, just warn
+    # To make this blocking, uncomment:
+    # read -p "Continue with push? (y/n) " -n 1 -r
+    # echo
+    # if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    #     exit 1
+    # fi
+fi
+
+exit 0

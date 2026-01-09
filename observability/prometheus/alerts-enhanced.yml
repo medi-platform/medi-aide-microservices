@@ -1,0 +1,287 @@
+##############################################################################
+# Enhanced Prometheus Alerting Rules
+# Phase 10: Observability
+##############################################################################
+
+groups:
+  # ==========================================================================
+  # Service Health Alerts
+  # ==========================================================================
+  - name: service-health
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"medi-aide.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Service {{ $labels.service }} is down"
+          description: "Service {{ $labels.service }} has been down for more than 1 minute."
+          runbook_url: "https://runbooks.medi-aide.com/service-down"
+
+      - alert: ServiceHighRestartRate
+        expr: increase(kube_pod_container_status_restarts_total{namespace=~"medi-aide.*"}[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Pod {{ $labels.pod }} is restarting frequently"
+          description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour."
+
+      - alert: ServiceHighMemoryUsage
+        expr: container_memory_usage_bytes{namespace=~"medi-aide.*"} / container_spec_memory_limit_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High memory usage in {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of its memory limit."
+
+      - alert: ServiceHighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{namespace=~"medi-aide.*"}[5m]) / container_spec_cpu_quota * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High CPU usage in {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} is using {{ $value | printf \"%.1f\" }}% of its CPU limit."
+
+  # ==========================================================================
+  # HTTP Performance Alerts
+  # ==========================================================================
+  - name: http-performance
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(medi_aide_http_requests_total{status_code=~"5.."}[5m])) / sum(rate(medi_aide_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(medi_aide_http_request_duration_seconds_bucket[5m])) by (le, service)) > 1
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High latency in {{ $labels.service }}"
+          description: "P95 latency is {{ $value | humanizeDuration }} (threshold: 1s)"
+
+      - alert: HighRequestRate
+        expr: sum(rate(medi_aide_http_requests_total[1m])) by (service) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Unusually high request rate in {{ $labels.service }}"
+          description: "Request rate is {{ $value | printf \"%.0f\" }} req/s"
+
+      - alert: NoRequestsReceived
+        expr: sum(rate(medi_aide_http_requests_total[5m])) by (service) == 0
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "No requests received by {{ $labels.service }}"
+          description: "Service {{ $labels.service }} has not received any requests in 10 minutes."
+
+  # ==========================================================================
+  # Database Alerts
+  # ==========================================================================
+  - name: database
+    rules:
+      - alert: DatabaseSlowQueries
+        expr: histogram_quantile(0.95, sum(rate(medi_aide_db_query_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Slow database queries detected"
+          description: "P95 query latency is {{ $value | humanizeDuration }}"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: medi_aide_db_connections_active / medi_aide_db_connections_idle < 0.1
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Only {{ $value | humanizePercentage }} of connections are idle."
+
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding."
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection usage high"
+          description: "PostgreSQL is using {{ $value | humanizePercentage }} of max connections."
+
+  # ==========================================================================
+  # Cache Alerts
+  # ==========================================================================
+  - name: cache
+    rules:
+      - alert: LowCacheHitRate
+        expr: sum(rate(medi_aide_cache_hits_total[5m])) / (sum(rate(medi_aide_cache_hits_total[5m])) + sum(rate(medi_aide_cache_misses_total[5m]))) < 0.7
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 70%)"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory."
+
+  # ==========================================================================
+  # Kafka Alerts
+  # ==========================================================================
+  - name: kafka
+    rules:
+      - alert: KafkaConsumerLag
+        expr: medi_aide_kafka_consumer_lag > 10000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High Kafka consumer lag"
+          description: "Consumer group {{ $labels.group_id }} has lag of {{ $value }} messages on topic {{ $labels.topic }}."
+
+      - alert: KafkaNoMessagesConsumed
+        expr: sum(rate(medi_aide_kafka_messages_consumed_total[5m])) by (topic) == 0
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "No messages consumed from {{ $labels.topic }}"
+          description: "No messages have been consumed from topic {{ $labels.topic }} in 15 minutes."
+
+  # ==========================================================================
+  # Business Alerts
+  # ==========================================================================
+  - name: business
+    rules:
+      - alert: HighBusinessErrorRate
+        expr: sum(rate(medi_aide_business_operations_total{status="error"}[5m])) / sum(rate(medi_aide_business_operations_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "High business operation error rate"
+          description: "{{ $value | humanizePercentage }} of business operations are failing."
+
+      - alert: NoActiveShifts
+        expr: sum(medi_aide_active_shifts) == 0
+        for: 1h
+        labels:
+          severity: info
+          team: business
+        annotations:
+          summary: "No active shifts"
+          description: "There are currently no active caregiver shifts."
+
+  # ==========================================================================
+  # Security Alerts
+  # ==========================================================================
+  - name: security
+    rules:
+      - alert: HighAuthenticationFailures
+        expr: sum(rate(medi_aide_http_requests_total{status_code="401"}[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High rate of authentication failures"
+          description: "{{ $value | printf \"%.0f\" }} authentication failures per second."
+
+      - alert: RateLimitExceeded
+        expr: sum(rate(medi_aide_http_requests_total{status_code="429"}[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Rate limiting being triggered frequently"
+          description: "{{ $value | printf \"%.0f\" }} rate limit responses per second."
+
+      - alert: PHIAccessSpike
+        expr: sum(rate(medi_aide_business_operations_total{operation="phi_access"}[5m])) > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+          compliance: hipaa
+        annotations:
+          summary: "Unusual spike in PHI access"
+          description: "PHI access rate is {{ $value | printf \"%.0f\" }} per second."
+
+  # ==========================================================================
+  # Infrastructure Alerts
+  # ==========================================================================
+  - name: infrastructure
+    rules:
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.1
+        for: 10m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Disk space low on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining."
+
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 100000000
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High network traffic"
+          description: "Network receive rate is {{ $value | humanize1024 }}B/s."

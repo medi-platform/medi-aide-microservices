@@ -1,10 +1,11 @@
 import { ConsulModule } from './consul.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
+import configuration from './config/configuration';
 
 // Entities - Core
 import { WellnessMetric } from './entities/wellness-metric.entity';
@@ -23,6 +24,11 @@ import { WearableSyncJob } from './entities/wearable-sync-job.entity';
 import { WellnessAlert } from './entities/wellness-alert.entity';
 import { WellnessGoal } from './entities/wellness-goal.entity';
 import { WellnessAnalytics } from './entities/wellness-analytics.entity';
+
+// Entities - Phase 5I
+import { WellnessProgram } from './entities/wellness-program.entity';
+import { WellnessActivity } from './entities/wellness-activity.entity';
+import { WellnessChallenge } from './entities/wellness-challenge.entity';
 
 // Controllers - Core
 import { WellnessController } from './controllers/wellness.controller';
@@ -45,6 +51,12 @@ import { AnalyticsService } from './services/analytics.service';
 import { InterventionService } from './services/intervention.service';
 import { ConsentService } from './services/consent.service';
 
+// Services - Phase 5I
+import { ProgramService } from './services/program.service';
+
+// Controllers - Phase 5I
+import { ProgramController } from './controllers/program.controller';
+
 const dbEnabled = process.env.DISABLE_DB !== 'true';
 const consulEnabled = process.env.DISABLE_CONSUL !== 'true';
 
@@ -66,10 +78,19 @@ const entities = [
   WellnessAlert,
   WellnessGoal,
   WellnessAnalytics,
+  // Phase 5I entities
+  WellnessProgram,
+  WellnessActivity,
+  WellnessChallenge,
 ];
 
 const moduleImports = [
-  ConfigModule.forRoot({ isGlobal: true }),
+  ConfigModule.forRoot({ 
+    isGlobal: true,
+    load: [configuration],
+    cache: true,
+    expandVariables: true,
+  }),
   ScheduleModule.forRoot(),
   HttpModule,
   CacheModule.register({
@@ -78,17 +99,21 @@ const moduleImports = [
   }),
   ...(dbEnabled
     ? [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: process.env.DATABASE_HOST || process.env.DB_HOST || 'stage3-postgres',
-          port: Number(process.env.DATABASE_PORT || process.env.DB_PORT || 5432),
-          username: process.env.DATABASE_USER || process.env.DB_USER || 'postgres',
-          password: process.env.DATABASE_PASSWORD || process.env.DB_PASSWORD || 'postgres',
-          database: process.env.DATABASE_NAME || process.env.DB_DATABASE || 'wellness_db',
-          entities,
-          synchronize: process.env.NODE_ENV !== 'production', // Disable in production
-          logging: process.env.NODE_ENV === 'development',
-          ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+        TypeOrmModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (config: ConfigService) => ({
+            type: 'postgres',
+            host: config.get('database.host', 'stage3-postgres'),
+            port: config.get<number>('database.port', 5432),
+            username: config.get('database.username', 'service_user'),
+            password: config.get('database.password', 'service123'),
+            database: config.get('database.database', 'wellness_db'),
+            entities,
+            synchronize: config.get('database.synchronize', true),
+            logging: config.get('database.logging', false),
+            ssl: config.get('database.ssl') ? { rejectUnauthorized: false } : false,
+          }),
         }),
         TypeOrmModule.forFeature(entities),
       ]
@@ -105,6 +130,8 @@ const controllersArr = dbEnabled
       WearableController,
       AnalyticsController,
       InterventionController,
+      // Phase 5I controllers
+      ProgramController,
     ] 
   : [SimpleHealthController];
 
@@ -121,6 +148,8 @@ const providersArr = dbEnabled
       AnalyticsService,
       InterventionService,
       ConsentService,
+      // Phase 5I services
+      ProgramService,
     ] 
   : [];
 
@@ -140,6 +169,8 @@ const providersArr = dbEnabled
         AnalyticsService,
         InterventionService,
         ConsentService,
+        // Phase 5I services
+        ProgramService,
       ] 
     : [],
 })

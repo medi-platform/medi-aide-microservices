@@ -4,19 +4,28 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
+import configuration from './config/configuration';
 import { User } from './entities/user.entity';
+import { IdentityVerification } from './entities/identity-verification.entity';
 import { UserController } from './controllers/user.controller';
+import { IdentityController } from './controllers/identity.controller';
 import { UserService } from './services/user.service';
+import { IdentityVerificationService } from './services/identity-verification.service';
 import { HealthController } from './controllers/health.controller';
 import { MigrationModule } from '@medi-aide/database-migrations';
 import { KafkaModule } from '@medi-aide/kafka-client';
 import { ServiceAuthModule } from '@medi-aide/service-auth';
 
-const entities = [User];
+const entities = [User, IdentityVerification];
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ 
+      isGlobal: true, 
+      cache: true, 
+      expandVariables: true,
+      load: [configuration],
+    }),
     TerminusModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -63,8 +72,8 @@ const entities = [User];
       }),
     }),
   ],
-  controllers: [UserController, HealthController],
-  providers: [UserService],
-  exports: [UserService],
+  controllers: [UserController, HealthController, IdentityController],
+  providers: [UserService, IdentityVerificationService],
+  exports: [UserService, IdentityVerificationService],
 })
 export class UserModule {}

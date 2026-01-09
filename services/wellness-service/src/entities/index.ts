@@ -15,3 +15,8 @@ export * from './wellness-alert.entity';
 export * from './wellness-goal.entity';
 export * from './wellness-analytics.entity';
 
+
+// Phase 5I: New entities
+export * from './wellness-program.entity';
+export * from './wellness-activity.entity';
+export * from './wellness-challenge.entity';

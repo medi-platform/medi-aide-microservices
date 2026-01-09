@@ -1,0 +1,25 @@
+# Dockerfile for Reports Service
+# Phase 5H: Reports Service
+FROM node:20-alpine AS base
+RUN npm install -g pnpm@8
+
+FROM base AS dependencies
+WORKDIR /app
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod=false
+
+FROM base AS build
+WORKDIR /app
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY . .
+RUN pnpm run build
+
+FROM base AS production
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY package.json ./
+
+EXPOSE 4070
+CMD ["node", "dist/main"]

@@ -1,0 +1,219 @@
+##############################################################################
+# Network Policies
+# Phase 9: Security Hardening
+##############################################################################
+
+# Default deny all ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: medi-aide-prod
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+# Default deny all egress (except DNS)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: medi-aide-prod
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+# Allow ingress from Kong/Ingress controller
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-from-kong
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: medi-aide
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: kong
+      ports:
+        - protocol: TCP
+          port: 4000
+        - protocol: TCP
+          port: 4001
+        - protocol: TCP
+          port: 4002
+        - protocol: TCP
+          port: 4003
+        - protocol: TCP
+          port: 4004
+
+# Allow inter-service communication
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-inter-service
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: medi-aide
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: medi-aide
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: medi-aide
+
+# Allow egress to PostgreSQL
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: medi-aide
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: medi-aide-infra
+          podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+# Allow egress to Redis
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-redis
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: medi-aide
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: medi-aide-infra
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+# Allow egress to Kafka
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kafka
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: medi-aide
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: medi-aide-infra
+          podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+
+# Allow egress to Elasticsearch
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-elasticsearch
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: search-service
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: medi-aide-infra
+          podSelector:
+            matchLabels:
+              app: elasticsearch
+      ports:
+        - protocol: TCP
+          port: 9200
+
+# Allow monitoring access
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: medi-aide
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: observability
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+# Allow external HTTPS (for external APIs)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-https
+  namespace: medi-aide-prod
+spec:
+  podSelector:
+    matchLabels:
+      needs-external-access: "true"
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 443

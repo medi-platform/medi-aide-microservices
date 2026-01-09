@@ -1,0 +1,66 @@
+# Agency Service Values
+# Phase 8: CI/CD Pipeline Enhancements
+
+nameOverride: "agency-service"
+fullnameOverride: "agency-service"
+
+image:
+  repository: ghcr.io/medi-aide/agency-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4001
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  - name: NODE_ENV
+    value: production
+  - name: SERVICE_NAME
+    value: "agency-service"
+  - name: SERVICE_VERSION
+    value: "2.0.0"
+  - name: SERVICE_PORT
+    value: "4001"
+
+extraEnvFrom:
+  - secretRef:
+      name: agency-service-secrets
+  - configMapRef:
+      name: common-config
+
+livenessProbe:
+  path: /health
+  initialDelaySeconds: 20
+  periodSeconds: 10
+
+readinessProbe:
+  path: /health/ready
+  initialDelaySeconds: 15
+  periodSeconds: 10
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  path: /metrics

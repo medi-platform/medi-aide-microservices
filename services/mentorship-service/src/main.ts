@@ -5,6 +5,11 @@ import { MentorshipModule } from './mentorship.module';
 async function bootstrap() {
   const app = await NestFactory.create(MentorshipModule, { bufferLogs: true });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.setGlobalPrefix('api/v1', { exclude: ['health', 'ping', '/'] });
+  app.enableCors({
+    origin: process.env.CORS_ORIGINS?.split(',') || '*',
+    credentials: true,
+  });
   const port = parseInt(process.env.SERVICE_PORT || '4035', 10);
   await app.listen(port, '0.0.0.0');
   // eslint-disable-next-line no-console

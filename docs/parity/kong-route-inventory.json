@@ -1,0 +1,399 @@
+{
+  "service_count": 61,
+  "services": {
+    "auth-service": [
+      "/api/v1/auth"
+    ],
+    "user-service": [
+      "/api/v1/users"
+    ],
+    "visit-service": [
+      "/api/v1/visits"
+    ],
+    "wellness-service": [
+      "/api/v1/wellness"
+    ],
+    "payment-service": [
+      "/api/v1/payments"
+    ],
+    "notification-service": [
+      "/api/v1/notifications"
+    ],
+    "analytics-service": [
+      "/api/v1/analytics"
+    ],
+    "audit-service": [
+      "/api/v1/audit"
+    ],
+    "ai-service": [
+      "/api/v1/ai"
+    ],
+    "care-plan-service": [
+      "/api/v1/care-plans"
+    ],
+    "evv-service": [
+      "/api/v1/evv"
+    ],
+    "file-service": [
+      "/api/v1/files"
+    ],
+    "search-service": [
+      "/api/v1/search"
+    ],
+    "matching-service": [
+      "/api/v1/matching"
+    ],
+    "training-service": [
+      "/api/v1/training"
+    ],
+    "feedback-service": [
+      "/api/v1/aggregations",
+      "/api/v1/feedback",
+      "/api/v1/feedback-requests",
+      "/api/v1/nps",
+      "/api/v1/ratings",
+      "/api/v1/sentiment",
+      "/api/v1/surveys",
+      "/api/v1/testimonials"
+    ],
+    "communication-service": [
+      "/api/v1/communication",
+      "/api/v1/conversations",
+      "/api/v1/messages",
+      "/api/v1/notifications",
+      "/api/v1/reactions",
+      "/api/v1/scheduled-messages",
+      "/api/v1/templates",
+      "/api/v1/threads"
+    ],
+    "patients-wellness": [
+      "/api/v1/patients"
+    ],
+    "ai-ml-matching": [
+      "/api/v1/ai/matching"
+    ],
+    "ai-ml-recommendations": [
+      "/api/v1/ai/recommendations"
+    ],
+    "ai-ml-text-analysis": [
+      "/api/v1/ai/text-analysis"
+    ],
+    "ai-ml-chat": [
+      "/api/v1/ai/chat"
+    ],
+    "ai-ml-schedule": [
+      "/api/v1/ai/schedule"
+    ],
+    "ai-ml-wellness": [
+      "/api/v1/ai/wellness"
+    ],
+    "ai-ml-care-plans": [
+      "/api/v1/ai/care-plans"
+    ],
+    "ai-ml-compliance": [
+      "/api/v1/ai/compliance"
+    ],
+    "ai-ml-explainability": [
+      "/api/v1/ai/explainability"
+    ],
+    "ai-ml-predictive": [
+      "/api/v1/ai/predictive"
+    ],
+    "agency-service": [
+      "/api/v1/agencies",
+      "/api/v1/applications",
+      "/api/v1/integrations",
+      "/api/v1/interviews",
+      "/api/v1/job-postings",
+      "/api/v1/labor-rules",
+      "/api/v1/support-tickets"
+    ],
+    "caregiver-service": [
+      "/api/v1/caregiver-compliance",
+      "/api/v1/caregiver-incidents",
+      "/api/v1/caregiver-registration",
+      "/api/v1/caregiver-schedules",
+      "/api/v1/caregiver-shifts",
+      "/api/v1/caregiver-trainings",
+      "/api/v1/caregiver-vacations",
+      "/api/v1/caregivers"
+    ],
+    "patient-service": [
+      "/api/v1/patients"
+    ],
+    "care-request-service": [
+      "/api/v1/care-requests"
+    ],
+    "scheduling-service": [
+      "/api/v1/appointments",
+      "/api/v1/calendar",
+      "/api/v1/schedules"
+    ],
+    "integration-service": [
+      "/api/v1/integrations",
+      "/api/v1/webhooks"
+    ],
+    "incident-service": [
+      "/api/v1/incidents"
+    ],
+    "insurance-service": [
+      "/api/v1/claims",
+      "/api/v1/insurance"
+    ],
+    "residential-service": [
+      "/api/v1/assignments",
+      "/api/v1/daily-notes",
+      "/api/v1/guardians",
+      "/api/v1/observations",
+      "/api/v1/residences",
+      "/api/v1/residential-shifts",
+      "/api/v1/residential-tasks",
+      "/api/v1/serious-occurrences"
+    ],
+    "profile-service": [
+      "/api/v1/identity",
+      "/api/v1/profiles",
+      "/api/v1/settings"
+    ],
+    "patient-extended-service": [
+      "/api/v1/allergies",
+      "/api/v1/assessments",
+      "/api/v1/care-plan-goals",
+      "/api/v1/clinical",
+      "/api/v1/clinical-notes",
+      "/api/v1/consent",
+      "/api/v1/diagnoses",
+      "/api/v1/emar",
+      "/api/v1/vitals"
+    ],
+    "chat-messaging-service": [
+      "/api/v1/chat",
+      "/api/v1/messaging"
+    ],
+    "scheduling-extended-service": [
+      "/api/v1/appointments",
+      "/api/v1/calendar",
+      "/api/v1/waitlist"
+    ],
+    "wellness-extended-service": [
+      "/api/v1/meetings",
+      "/api/v1/virtual-visits"
+    ],
+    "integration-extended-service": [
+      "/api/v1/fhir",
+      "/api/v1/outbox",
+      "/api/v1/providers",
+      "/api/v1/sync"
+    ],
+    "gamification-service": [
+      "/api/v1/gamification",
+      "/api/v1/leaderboard"
+    ],
+    "comments-service": [
+      "/api/v1/comments",
+      "/api/v1/reactions"
+    ],
+    "feature-flags-service": [
+      "/api/v1/feature-flags",
+      "/api/v1/flags"
+    ],
+    "canadian-features-service": [
+      "/api/v1/attestation",
+      "/api/v1/canadian",
+      "/api/v1/data-residency"
+    ],
+    "location-service": [
+      "/api/v1/geocode",
+      "/api/v1/locations"
+    ],
+    "reports-service": [
+      "/api/v1/reports/definitions",
+      "/api/v1/reports/executions",
+      "/api/v1/reports/schedules",
+      "/api/v1/reports/subscriptions"
+    ],
+    "insights-service": [
+      "/api/v1/dashboards",
+      "/api/v1/insights"
+    ],
+    "compliance-service": [
+      "/api/v1/compliance",
+      "/api/v1/hipaa"
+    ],
+    "contract-service": [
+      "/api/v1/agency-contracts",
+      "/api/v1/amendments",
+      "/api/v1/clauses",
+      "/api/v1/contracts",
+      "/api/v1/disputes",
+      "/api/v1/renewals",
+      "/api/v1/versions"
+    ],
+    "mentorship-service": [
+      "/api/v1/mentorship"
+    ],
+    "care-network-service": [
+      "/api/v1/care-network",
+      "/api/v1/coffee-meets",
+      "/api/v1/groups"
+    ],
+    "fraud-detection-service": [
+      "/api/v1/fraud-detection"
+    ],
+    "security-monitoring-service": [
+      "/api/v1/alerts",
+      "/api/v1/audit",
+      "/api/v1/security-monitoring"
+    ],
+    "provincial-service": [
+      "/api/v1/attestations",
+      "/api/v1/canadian",
+      "/api/v1/labor-rules",
+      "/api/v1/provincial"
+    ],
+    "monolith-fallback": [
+      "/api/health",
+      "/api/v1",
+      "/api/v2",
+      "/health"
+    ],
+    "cors": [],
+    "request-size-limiting": [],
+    "rate-limiting": []
+  },
+  "non_fallback_paths": [
+    "/api/v1/agencies",
+    "/api/v1/agency-contracts",
+    "/api/v1/aggregations",
+    "/api/v1/ai",
+    "/api/v1/ai/care-plans",
+    "/api/v1/ai/chat",
+    "/api/v1/ai/compliance",
+    "/api/v1/ai/explainability",
+    "/api/v1/ai/matching",
+    "/api/v1/ai/predictive",
+    "/api/v1/ai/recommendations",
+    "/api/v1/ai/schedule",
+    "/api/v1/ai/text-analysis",
+    "/api/v1/ai/wellness",
+    "/api/v1/alerts",
+    "/api/v1/allergies",
+    "/api/v1/amendments",
+    "/api/v1/analytics",
+    "/api/v1/applications",
+    "/api/v1/appointments",
+    "/api/v1/assessments",
+    "/api/v1/assignments",
+    "/api/v1/attestation",
+    "/api/v1/attestations",
+    "/api/v1/audit",
+    "/api/v1/auth",
+    "/api/v1/calendar",
+    "/api/v1/canadian",
+    "/api/v1/care-network",
+    "/api/v1/care-plan-goals",
+    "/api/v1/care-plans",
+    "/api/v1/care-requests",
+    "/api/v1/caregiver-compliance",
+    "/api/v1/caregiver-incidents",
+    "/api/v1/caregiver-registration",
+    "/api/v1/caregiver-schedules",
+    "/api/v1/caregiver-shifts",
+    "/api/v1/caregiver-trainings",
+    "/api/v1/caregiver-vacations",
+    "/api/v1/caregivers",
+    "/api/v1/chat",
+    "/api/v1/claims",
+    "/api/v1/clauses",
+    "/api/v1/clinical",
+    "/api/v1/clinical-notes",
+    "/api/v1/coffee-meets",
+    "/api/v1/comments",
+    "/api/v1/communication",
+    "/api/v1/compliance",
+    "/api/v1/consent",
+    "/api/v1/contracts",
+    "/api/v1/conversations",
+    "/api/v1/daily-notes",
+    "/api/v1/dashboards",
+    "/api/v1/data-residency",
+    "/api/v1/diagnoses",
+    "/api/v1/disputes",
+    "/api/v1/emar",
+    "/api/v1/evv",
+    "/api/v1/feature-flags",
+    "/api/v1/feedback",
+    "/api/v1/feedback-requests",
+    "/api/v1/fhir",
+    "/api/v1/files",
+    "/api/v1/flags",
+    "/api/v1/fraud-detection",
+    "/api/v1/gamification",
+    "/api/v1/geocode",
+    "/api/v1/groups",
+    "/api/v1/guardians",
+    "/api/v1/hipaa",
+    "/api/v1/identity",
+    "/api/v1/incidents",
+    "/api/v1/insights",
+    "/api/v1/insurance",
+    "/api/v1/integrations",
+    "/api/v1/interviews",
+    "/api/v1/job-postings",
+    "/api/v1/labor-rules",
+    "/api/v1/leaderboard",
+    "/api/v1/locations",
+    "/api/v1/matching",
+    "/api/v1/meetings",
+    "/api/v1/mentorship",
+    "/api/v1/messages",
+    "/api/v1/messaging",
+    "/api/v1/notifications",
+    "/api/v1/nps",
+    "/api/v1/observations",
+    "/api/v1/outbox",
+    "/api/v1/patients",
+    "/api/v1/payments",
+    "/api/v1/profiles",
+    "/api/v1/providers",
+    "/api/v1/provincial",
+    "/api/v1/ratings",
+    "/api/v1/reactions",
+    "/api/v1/renewals",
+    "/api/v1/reports/definitions",
+    "/api/v1/reports/executions",
+    "/api/v1/reports/schedules",
+    "/api/v1/reports/subscriptions",
+    "/api/v1/residences",
+    "/api/v1/residential-shifts",
+    "/api/v1/residential-tasks",
+    "/api/v1/scheduled-messages",
+    "/api/v1/schedules",
+    "/api/v1/search",
+    "/api/v1/security-monitoring",
+    "/api/v1/sentiment",
+    "/api/v1/serious-occurrences",
+    "/api/v1/settings",
+    "/api/v1/support-tickets",
+    "/api/v1/surveys",
+    "/api/v1/sync",
+    "/api/v1/templates",
+    "/api/v1/testimonials",
+    "/api/v1/threads",
+    "/api/v1/training",
+    "/api/v1/users",
+    "/api/v1/versions",
+    "/api/v1/virtual-visits",
+    "/api/v1/visits",
+    "/api/v1/vitals",
+    "/api/v1/waitlist",
+    "/api/v1/webhooks",
+    "/api/v1/wellness"
+  ],
+  "fallback_paths": [
+    "/api/health",
+    "/api/v1",
+    "/api/v2",
+    "/health"
+  ]
+}

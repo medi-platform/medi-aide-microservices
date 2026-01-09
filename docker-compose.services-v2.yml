@@ -923,6 +923,71 @@ services:
     restart: unless-stopped
 
   # ============================================
+  # PHASE 5B - RESIDENTIAL SERVICE (NEW)
+  # ============================================
+
+  residential-service:
+    build:
+      context: .
+      dockerfile: services/residential-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: residential-service
+    container_name: stage3-residential-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: residential-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4060
+      DB_DATABASE: residential_db
+      DATABASE_NAME: residential_db
+      # Guardian notification settings
+      GUARDIAN_NOTIFICATIONS_ENABLED: "true"
+      ESCALATION_TIMEOUT_MINUTES: "30"
+      SERIOUS_OCCURRENCE_AUTO_REPORT: "true"
+      # Staffing settings
+      MIN_COVERAGE_RATIO: "1.0"
+      ALERT_THRESHOLD_HOURS: "24"
+      OVERTIME_ALERT_ENABLED: "true"
+    ports:
+      - "4060:4060"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
+  # PHASE 5H - REPORTS SERVICE (NEW)
+  # ============================================
+
+  reports-service:
+    build:
+      context: .
+      dockerfile: services/reports-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: reports-service
+    container_name: stage3-reports-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: reports-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4070
+      DB_DATABASE: reports_db
+      DATABASE_NAME: reports_db
+      # Storage settings
+      REPORTS_BUCKET: medi-aide-reports
+      REPORTS_RETENTION_DAYS: "90"
+    ports:
+      - "4070:4070"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
   # TEMPORAL WORKER (Phase 2)
   # ============================================
   

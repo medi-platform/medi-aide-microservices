@@ -18,6 +18,10 @@ env:
   AWS_REGION: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ca-west-1' }}
   PROJECT_NAME: medi-aide
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   # ============================================================================
   # BUILD AND PUSH TO ECR
@@ -25,6 +29,9 @@ jobs:
   build-and-push:
     name: Build & Push to ECR
     runs-on: ubuntu-latest
+    env:
+      AWS_ROLE_TO_ASSUME: ${{ github.ref == 'refs/heads/main' && (secrets.AWS_ROLE_TO_ASSUME_PRODUCTION || secrets.AWS_ROLE_TO_ASSUME || '') || (secrets.AWS_ROLE_TO_ASSUME_STAGING || secrets.AWS_ROLE_TO_ASSUME || '') }}
+      EXPECTED_AWS_ACCOUNT_ID: ${{ github.ref == 'refs/heads/main' && (secrets.AWS_ACCOUNT_ID_PRODUCTION || vars.AWS_ACCOUNT_ID_PRODUCTION || '') || (secrets.AWS_ACCOUNT_ID_STAGING || vars.AWS_ACCOUNT_ID_STAGING || '946769779647') }}
     strategy:
       fail-fast: false
       matrix:
@@ -49,12 +56,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (static keys)
+        if: env.AWS_ROLE_TO_ASSUME == ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS account
+        run: |
+          set -euo pipefail
+          actual_account="$(aws sts get-caller-identity --query Account --output text)"
+          if [[ -n "${EXPECTED_AWS_ACCOUNT_ID:-}" && "$actual_account" != "$EXPECTED_AWS_ACCOUNT_ID" ]]; then
+            echo "::error::AWS credentials resolved to account ${actual_account}, expected ${EXPECTED_AWS_ACCOUNT_ID}."
+            exit 1
+          fi
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -106,17 +130,36 @@ jobs:
       ECS_SERVICE_MAP: ${{ secrets.ECS_SERVICE_MAP_STAGING || vars.ECS_SERVICE_MAP_STAGING || secrets.ECS_SERVICE_MAP || vars.ECS_SERVICE_MAP || '{}' }}
       ECS_DEPLOY_REQUIRE_ALL: ${{ vars.ECS_DEPLOY_REQUIRE_ALL || 'true' }}
       IMAGE_TAG: ${{ github.sha }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING || secrets.AWS_ROLE_TO_ASSUME || '' }}
+      EXPECTED_AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID_STAGING || vars.AWS_ACCOUNT_ID_STAGING || '946769779647' }}
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (static keys)
+        if: env.AWS_ROLE_TO_ASSUME == ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS account
+        run: |
+          set -euo pipefail
+          actual_account="$(aws sts get-caller-identity --query Account --output text)"
+          if [[ "$actual_account" != "$EXPECTED_AWS_ACCOUNT_ID" ]]; then
+            echo "::error::AWS credentials resolved to account ${actual_account}, expected ${EXPECTED_AWS_ACCOUNT_ID}."
+            exit 1
+          fi
 
       - name: Resolve ECR registry
         id: ecr
@@ -163,17 +206,36 @@ jobs:
       ECS_SERVICE_MAP: ${{ secrets.ECS_SERVICE_MAP_PRODUCTION || vars.ECS_SERVICE_MAP_PRODUCTION || secrets.ECS_SERVICE_MAP || vars.ECS_SERVICE_MAP || '{}' }}
       ECS_DEPLOY_REQUIRE_ALL: ${{ vars.ECS_DEPLOY_REQUIRE_ALL || 'true' }}
       IMAGE_TAG: ${{ github.sha }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME_PRODUCTION || secrets.AWS_ROLE_TO_ASSUME || '' }}
+      EXPECTED_AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID_PRODUCTION || vars.AWS_ACCOUNT_ID_PRODUCTION || '' }}
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (static keys)
+        if: env.AWS_ROLE_TO_ASSUME == ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS account
+        run: |
+          set -euo pipefail
+          actual_account="$(aws sts get-caller-identity --query Account --output text)"
+          if [[ -n "${EXPECTED_AWS_ACCOUNT_ID:-}" && "$actual_account" != "$EXPECTED_AWS_ACCOUNT_ID" ]]; then
+            echo "::error::AWS credentials resolved to account ${actual_account}, expected ${EXPECTED_AWS_ACCOUNT_ID}."
+            exit 1
+          fi
 
       - name: Resolve ECR registry
         id: ecr

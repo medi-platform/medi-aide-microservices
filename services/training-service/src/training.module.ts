@@ -22,7 +22,7 @@ import { AchievementDefinition } from './entities/achievement-definition.entity'
 import { UserAchievement } from './entities/user-achievement.entity';
 // Phase 5I: Training entities
 import { TrainingCourse } from './entities/training-course.entity';
-import { TrainingModule } from './entities/training-module.entity';
+import { TrainingModule as TrainingModuleEntity } from './entities/training-module.entity';
 import { TrainingEnrollment } from './entities/training-enrollment.entity';
 import { TrainingCertificate } from './entities/training-certificate.entity';
 
@@ -41,7 +41,7 @@ const entities = [
   UserAchievement,
   // Phase 5I
   TrainingCourse,
-  TrainingModule,
+  TrainingModuleEntity,
   TrainingEnrollment,
   TrainingCertificate,
 ];
@@ -71,5 +71,4 @@ const entities = [
   exports: [TrainingService, GamificationService, CourseService],
 })
 export class TrainingModule {}
-
 

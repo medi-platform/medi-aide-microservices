@@ -1,28 +1,29 @@
 import { v4 as uuid } from 'uuid';
 
+const testConfig: Record<string, unknown> = {
+  NODE_ENV: 'test',
+  PORT: 3000,
+  DB_HOST: 'localhost',
+  DB_PORT: 5432,
+  DB_USER: 'postgres',
+  DB_PASSWORD: 'postgres',
+  DB_DATABASE: 'test_db',
+  JWT_SECRET: 'test-secret',
+  SERVICE_JWT_SECRET: 'service-test-secret',
+  KAFKA_BROKERS: 'localhost:9092',
+  REDIS_HOST: 'localhost',
+  REDIS_PORT: 6379,
+};
+
 /**
  * Mock ConfigService
  */
 export const mockConfigService = {
-  get: jest.fn((key: string, defaultValue?: any) => {
-    const config: Record<string, any> = {
-      NODE_ENV: 'test',
-      PORT: 3000,
-      DB_HOST: 'localhost',
-      DB_PORT: 5432,
-      DB_USER: 'postgres',
-      DB_PASSWORD: 'postgres',
-      DB_DATABASE: 'test_db',
-      JWT_SECRET: 'test-secret',
-      SERVICE_JWT_SECRET: 'service-test-secret',
-      KAFKA_BROKERS: 'localhost:9092',
-      REDIS_HOST: 'localhost',
-      REDIS_PORT: 6379,
-    };
-    return config[key] ?? defaultValue;
+  get: jest.fn((key: string, defaultValue?: unknown): unknown => {
+    return testConfig[key] ?? defaultValue;
   }),
-  getOrThrow: jest.fn((key: string) => {
-    const value = mockConfigService.get(key);
+  getOrThrow: jest.fn((key: string): unknown => {
+    const value = testConfig[key];
     if (value === undefined) {
       throw new Error(`Configuration key "${key}" not found`);
     }
@@ -39,7 +40,7 @@ export function createMockRepository<T = any>() {
     findOne: jest.fn().mockResolvedValue(null),
     findOneBy: jest.fn().mockResolvedValue(null),
     findAndCount: jest.fn().mockResolvedValue([[], 0]),
-    save: jest.fn().mockImplementation((entity) => 
+    save: jest.fn().mockImplementation((entity) =>
       Promise.resolve({ id: uuid(), ...entity })
     ),
     create: jest.fn().mockImplementation((entity) => entity),

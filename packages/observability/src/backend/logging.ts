@@ -1,7 +1,7 @@
 import { Injectable, LoggerService, Scope, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 

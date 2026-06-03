@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { Observable, tap } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import { MetricsService, createTimer } from './metrics';
@@ -75,16 +75,22 @@ export class LoggingMiddleware implements NestMiddleware {
 
     res.on('finish', () => {
       const duration = Date.now() - startTime;
-      const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
-
-      this.logger[level]('Request completed', {
+      const context = {
         requestId,
         method: req.method,
         path: req.path,
         statusCode: res.statusCode,
         duration,
         contentLength: res.get('content-length'),
-      });
+      };
+
+      if (res.statusCode >= 500) {
+        this.logger.error('Request completed', undefined, context);
+      } else if (res.statusCode >= 400) {
+        this.logger.warn('Request completed', context);
+      } else {
+        this.logger.info('Request completed', context);
+      }
     });
 
     next();

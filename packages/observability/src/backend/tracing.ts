@@ -78,7 +78,12 @@ export class TracingService implements OnModuleInit, OnModuleDestroy {
         spanProcessor: new BatchSpanProcessor(exporter),
         instrumentations: [
           new HttpInstrumentation({
-            ignoreIncomingPaths: ['/health', '/ping', '/metrics'],
+            ignoreIncomingRequestHook: (request) => {
+              const path = request.url ?? '';
+              return ['/health', '/ping', '/metrics'].some((ignoredPath) =>
+                path.startsWith(ignoredPath),
+              );
+            },
           }),
           new ExpressInstrumentation(),
           new NestInstrumentation(),

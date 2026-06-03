@@ -6,7 +6,7 @@ import { CacheConfig, CacheEntry, CacheOptions, CacheStats, CacheTTL, DEFAULT_CA
 
 /**
  * Enterprise Cache Service
- * 
+ *
  * Features:
  * - Redis for distributed caching
  * - In-memory LRU cache for hot data
@@ -21,7 +21,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   private redis: Redis | null = null;
   private localCache: LRUCache<string, any>;
   private config: CacheConfig;
-  
+
   // Statistics
   private stats = {
     hits: 0,
@@ -30,7 +30,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     redisHits: 0,
     errors: 0,
   };
-  
+
   // Circuit breaker
   private circuitBreakerOpen = false;
   private circuitBreakerResetTime = 0;
@@ -40,7 +40,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly configService: ConfigService) {
     this.config = this.loadConfig();
-    
+
     // Initialize local LRU cache
     this.localCache = new LRUCache({
       max: 1000,
@@ -51,14 +51,32 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
   private loadConfig(): CacheConfig {
     return {
-      host: this.configService.get('REDIS_HOST', DEFAULT_CACHE_CONFIG.host),
-      port: this.configService.get<number>('REDIS_PORT', DEFAULT_CACHE_CONFIG.port),
-      password: this.configService.get('REDIS_PASSWORD'),
-      db: this.configService.get<number>('REDIS_DB', DEFAULT_CACHE_CONFIG.db),
-      keyPrefix: this.configService.get('CACHE_PREFIX', DEFAULT_CACHE_CONFIG.keyPrefix),
-      defaultTtl: this.configService.get<number>('CACHE_TTL', DEFAULT_CACHE_CONFIG.defaultTtl),
-      maxConnections: this.configService.get<number>('REDIS_MAX_CONNECTIONS', DEFAULT_CACHE_CONFIG.maxConnections),
+      host: this.getStringConfig('REDIS_HOST', DEFAULT_CACHE_CONFIG.host),
+      port: this.getNumberConfig('REDIS_PORT', DEFAULT_CACHE_CONFIG.port),
+      password: this.getStringConfig('REDIS_PASSWORD'),
+      db: this.getNumberConfig('REDIS_DB', DEFAULT_CACHE_CONFIG.db ?? 0),
+      keyPrefix: this.getStringConfig('CACHE_PREFIX', DEFAULT_CACHE_CONFIG.keyPrefix),
+      defaultTtl: this.getNumberConfig('CACHE_TTL', DEFAULT_CACHE_CONFIG.defaultTtl ?? 3600),
+      maxConnections: this.getNumberConfig(
+        'REDIS_MAX_CONNECTIONS',
+        DEFAULT_CACHE_CONFIG.maxConnections ?? 50,
+      ),
     };
+  }
+
+  private getStringConfig(key: string, fallback?: string): string {
+    const value = this.configService.get<string>(key);
+    return value ?? fallback ?? '';
+  }
+
+  private getNumberConfig(key: string, fallback: number): number {
+    const value = this.configService.get<string | number>(key);
+    if (value === undefined || value === null || value === '') {
+      return fallback;
+    }
+
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
   }
 
   async onModuleInit(): Promise<void> {
@@ -142,12 +160,12 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     if (this.isRedisAvailable()) {
       try {
         await this.redis!.setex(fullKey, ttl, serialized);
-        
+
         // Handle tags for group invalidation
         if (options.tags?.length) {
           await this.addToTags(fullKey, options.tags);
         }
-        
+
         this.resetCircuitBreaker();
         return true;
       } catch (error) {
@@ -237,12 +255,12 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
         for (const tag of tags) {
           const tagKey = this.makeKey(`tag:${tag}`);
           const members = await this.redis!.smembers(tagKey);
-          
+
           if (members.length > 0) {
             await this.redis!.del(...members);
             await this.redis!.del(tagKey);
             deleted += members.length;
-            
+
             // Clear from local cache
             members.forEach((key) => this.localCache.delete(key));
           }

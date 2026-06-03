@@ -89,6 +89,38 @@ export class VisitController {
     private readonly taskTemplateService: TaskTemplateService,
   ) {}
 
+  @Get()
+  @ApiOperation({ summary: 'List visits (parity endpoint)' })
+  @ApiQuery({ name: 'caregiverId', required: false })
+  @ApiQuery({ name: 'patientId', required: false })
+  @ApiQuery({ name: 'agencyId', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'startDate', required: false })
+  @ApiQuery({ name: 'endDate', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async list(
+    @Query('caregiverId') caregiverId?: string,
+    @Query('patientId') patientId?: string,
+    @Query('agencyId') agencyId?: string,
+    @Query('status') status?: VisitStatus,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.visitService.list({
+      caregiverId,
+      patientId,
+      agencyId,
+      status,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new visit' })

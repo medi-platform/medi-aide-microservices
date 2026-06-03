@@ -147,7 +147,7 @@ export class BillingService {
         ...tenant.settings,
         billingCycle,
         billingPlanId: planId,
-      },
+      } as Tenant['settings'],
     });
 
     // Update features and quotas

@@ -16,7 +16,7 @@ export interface NetworkInfo {
 type NetworkListener = (info: NetworkInfo) => void;
 
 const listeners: Set<NetworkListener> = new Set();
-let currentStatus: NetworkInfo = {
+const currentStatus: NetworkInfo = {
   status: typeof navigator !== 'undefined' && navigator.onLine ? 'online' : 'offline',
 };
 
@@ -48,8 +48,8 @@ export function isOnline(): boolean {
  * Check if network is slow
  */
 export function isSlowNetwork(): boolean {
-  return currentStatus.status === 'slow' || 
-         currentStatus.effectiveType === '2g' || 
+  return currentStatus.status === 'slow' ||
+         currentStatus.effectiveType === '2g' ||
          currentStatus.effectiveType === 'slow-2g';
 }
 

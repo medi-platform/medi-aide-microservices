@@ -7,6 +7,12 @@ import { HealthController } from './controllers/health.controller';
 import { MetricsController } from './controllers/metrics.controller';
 import { PingController } from './controllers/ping.controller';
 import { NetworkController } from './controllers/network.controller';
+import {
+  LegacyCoffeeMeetsController,
+  LegacyCommunityController,
+  LegacyDelegationController,
+  LegacyGroupsController,
+} from './controllers/legacy-paths.controller';
 
 import { CommunityGroup } from './entities/community-group.entity';
 import { GroupMember } from './entities/group-member.entity';
@@ -25,9 +31,9 @@ const entities = [
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ 
-      isGlobal: true, 
-      cache: true, 
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
       expandVariables: true,
       load: [configuration],
     }),
@@ -60,7 +66,17 @@ const entities = [
     }),
     TypeOrmModule.forFeature(entities),
   ],
-  controllers: [HealthController, MetricsController, PingController, NetworkController],
+  controllers: [
+    HealthController,
+    MetricsController,
+    PingController,
+    NetworkController,
+    // Legacy/root path controllers for Kong route parity
+    LegacyGroupsController,
+    LegacyCoffeeMeetsController,
+    LegacyCommunityController,
+    LegacyDelegationController,
+  ],
   providers: [
     GroupService,
     CoffeeMeetService,

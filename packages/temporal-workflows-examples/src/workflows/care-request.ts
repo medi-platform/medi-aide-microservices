@@ -1,6 +1,6 @@
 /**
  * Care Request Workflow
- * 
+ *
  * Orchestrates the end-to-end care request fulfillment process:
  * 1. Validate request
  * 2. Find matching caregivers (AI)
@@ -58,9 +58,9 @@ export async function careRequestWorkflow(
   input: CareRequestWorkflowInput
 ): Promise<CareRequestWorkflowResult> {
   const { requestId, patientId, requirements, urgency } = input;
-  
+
   let acceptedBy: string | null = null;
-  let cancelled = false;
+  const cancelled = false;
 
   // Set up signal handlers
   setHandler(acceptRequestSignal, (reqId: string, caregiverId: string) => {

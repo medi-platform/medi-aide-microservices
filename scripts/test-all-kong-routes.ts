@@ -1,13 +1,13 @@
 #!/usr/bin/env ts-node
 /**
  * Comprehensive Kong Route Testing Script
- * 
+ *
  * This script tests all Kong routes by parsing kong.yaml and making
  * HTTP requests to verify each route is properly configured.
- * 
+ *
  * Usage:
  *   npx ts-node scripts/test-all-kong-routes.ts [kong_url]
- * 
+ *
  * Example:
  *   npx ts-node scripts/test-all-kong-routes.ts http://localhost:8000
  */
@@ -23,6 +23,7 @@ interface KongRoute {
   paths: string[];
   methods?: string[];
   strip_path?: boolean;
+  regex_priority?: number;
 }
 
 interface KongService {
@@ -46,8 +47,76 @@ interface TestResult {
   error?: string;
 }
 
-const KONG_URL = process.argv[2] || 'http://localhost:8000';
+const argv = process.argv.slice(2);
+const STATIC_ONLY = argv.includes('--static') || argv.includes('--config-only');
+const kongUrlArg = argv.find((a) => !a.startsWith('--'));
+const KONG_URL = kongUrlArg || 'http://localhost:8000';
 const results: TestResult[] = [];
+
+function assert(condition: any, message: string): asserts condition {
+  if (!condition) throw new Error(message);
+}
+
+function findService(config: KongConfig, name: string): KongService | undefined {
+  return (config.services || []).find((s) => s.name === name);
+}
+
+function findRouteByPath(service: KongService, pathPattern: string): KongRoute | undefined {
+  return (service.routes || []).find((r) => (r.paths || []).includes(pathPattern));
+}
+
+function validateCriticalRoutes(config: KongConfig) {
+  // These are high-severity enterprise routes that must never be accidentally routed to stage3 legacy aliases.
+  const monolithUrl = 'http://host.docker.internal:3000';
+
+  // Guardians enterprise routes
+  const guardiansSvc = findService(config, 'guardians-enterprise-service');
+  assert(guardiansSvc, 'Missing required service: guardians-enterprise-service');
+  assert(
+    guardiansSvc.url === monolithUrl,
+    `guardians-enterprise-service must route to monolith (${monolithUrl}), got: ${guardiansSvc.url}`,
+  );
+  const guardiansAccounts = findRouteByPath(guardiansSvc, '~^/api/v1/guardians/accounts(?=/|$)');
+  const guardiansRoot = findRouteByPath(guardiansSvc, '~^/api/v1/guardians(?=/|$)');
+  assert(guardiansAccounts, 'Missing required route path: ~^/api/v1/guardians/accounts(?=/|$)');
+  assert(guardiansRoot, 'Missing required route path: ~^/api/v1/guardians(?=/|$)');
+  assert(
+    (guardiansAccounts.regex_priority ?? 0) > (guardiansRoot.regex_priority ?? 0),
+    'guardians accounts route must have higher regex_priority than /guardians route',
+  );
+
+  // Guardian portal route (monolith)
+  const portalSvc = findService(config, 'guardian-portal-service');
+  assert(portalSvc, 'Missing required service: guardian-portal-service');
+  assert(
+    portalSvc.url === monolithUrl,
+    `guardian-portal-service must route to monolith (${monolithUrl}), got: ${portalSvc.url}`,
+  );
+  const portalRoute = findRouteByPath(portalSvc, '/api/v1/guardian/portal');
+  assert(portalRoute, 'Missing required route path: /api/v1/guardian/portal');
+
+  // Residential training hub must override legacy /api/v1/residential/** alias
+  const legacyResidentialSvc = findService(config, 'residential-service-legacy-alias');
+  assert(legacyResidentialSvc, 'Missing expected service: residential-service-legacy-alias');
+  const legacyResidentialRoute = findRouteByPath(legacyResidentialSvc, '~^/api/v1/residential(?=/|$)');
+  assert(legacyResidentialRoute, 'Missing expected route: ~^/api/v1/residential(?=/|$)');
+
+  const trainingHubSvc = findService(config, 'residential-training-hub-enterprise-service');
+  assert(trainingHubSvc, 'Missing required service: residential-training-hub-enterprise-service');
+  assert(
+    trainingHubSvc.url === monolithUrl,
+    `residential-training-hub-enterprise-service must route to monolith (${monolithUrl}), got: ${trainingHubSvc.url}`,
+  );
+  const trainingHubRoute = findRouteByPath(
+    trainingHubSvc,
+    '~^/api/v1/residential/training-hub(?=/|$)',
+  );
+  assert(trainingHubRoute, 'Missing required route path: ~^/api/v1/residential/training-hub(?=/|$)');
+  assert(
+    (trainingHubRoute.regex_priority ?? 0) > (legacyResidentialRoute.regex_priority ?? 0),
+    'residential training hub route must have higher regex_priority than legacy /api/v1/residential alias',
+  );
+}
 
 // Parse Kong YAML configuration
 function parseKongConfig(): KongConfig {
@@ -114,7 +183,7 @@ async function testRoute(service: KongService, route: KongRoute): Promise<void> 
     }
 
     const methods = route.methods || ['GET'];
-    
+
     for (const method of methods) {
       if (method === 'OPTIONS') continue; // Skip OPTIONS
 
@@ -138,7 +207,7 @@ async function testRoute(service: KongService, route: KongRoute): Promise<void> 
       const statusColor = success ? '\x1b[32m' : '\x1b[31m';
       const resetColor = '\x1b[0m';
       const statusIcon = success ? '✓' : '✗';
-      
+
       console.log(
         `${statusColor}${statusIcon}${resetColor} [${method}] ${testPath} → ${service.name} (${status}) ${responseTime}ms`
       );
@@ -194,14 +263,14 @@ function generateHtmlReport(): string {
   <h1>Kong Route Validation Report</h1>
   <p>Generated: ${new Date().toISOString()}</p>
   <p>Kong URL: ${KONG_URL}</p>
-  
+
   <div class="summary">
     <div class="stat"><div class="value">${total}</div>Total Routes</div>
     <div class="stat passed"><div class="value">${passed}</div>Passed</div>
     <div class="stat failed"><div class="value">${failed}</div>Failed</div>
     <div class="stat"><div class="value">${passRate}%</div>Pass Rate</div>
   </div>
-  
+
   <table>
     <thead>
       <tr>
@@ -251,6 +320,7 @@ async function main() {
   console.log('KONG ROUTE VALIDATION TEST');
   console.log('============================================================================');
   console.log(`Kong URL: ${KONG_URL}`);
+  console.log(`Mode: ${STATIC_ONLY ? 'static (config-only)' : 'live (HTTP through Kong)'}`);
   console.log(`Started: ${new Date().toISOString()}`);
   console.log('============================================================================\n');
 
@@ -264,6 +334,21 @@ async function main() {
   }
 
   console.log(`Found ${config.services.length} services in kong.yaml\n`);
+
+  // Contract checks (always run)
+  try {
+    validateCriticalRoutes(config);
+    console.log('\x1b[32m✓ Critical route contract checks passed\x1b[0m');
+  } catch (e: any) {
+    console.error('\x1b[31m✗ Critical route contract checks failed\x1b[0m');
+    console.error(String(e?.message || e));
+    process.exit(1);
+  }
+
+  if (STATIC_ONLY) {
+    console.log('\n\x1b[32m✅ CONFIG VALIDATED SUCCESSFULLY (static)\x1b[0m');
+    process.exit(0);
+  }
 
   // Test each route
   for (const service of config.services) {

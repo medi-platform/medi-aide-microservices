@@ -1,6 +1,6 @@
 /**
  * Standardized Error Handling for Medi-Aide Microservices
- * 
+ *
  * This module provides consistent error handling across all services,
  * including error types, exception filters, and error response formatting.
  */
@@ -17,7 +17,7 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -145,7 +145,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
       } else if (typeof exceptionResponse === 'object') {
@@ -153,7 +153,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = responseObj.message || exception.message;
         details = responseObj.errors;
       }
-      
+
       code = this.getErrorCode(status);
     } else if (exception instanceof AppError) {
       status = exception.statusCode;
@@ -256,7 +256,7 @@ export class LoggingInterceptor implements NestInterceptor {
           })
         );
       }),
-      catchError((error) => {
+      catchError((error: Error) => {
         const duration = Date.now() - startTime;
 
         this.logger.error(

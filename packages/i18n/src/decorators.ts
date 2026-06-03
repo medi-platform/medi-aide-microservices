@@ -46,7 +46,7 @@ export const CurrentLanguage = createParamDecorator(
  * Used with entity decorators
  */
 export const Translatable = (): PropertyDecorator => {
-  return (target: Object, propertyKey: string | symbol) => {
+  return (target: object, propertyKey: string | symbol) => {
     const translatableFields = Reflect.getMetadata('translatable', target.constructor) || [];
     translatableFields.push(propertyKey);
     Reflect.defineMetadata('translatable', translatableFields, target.constructor);

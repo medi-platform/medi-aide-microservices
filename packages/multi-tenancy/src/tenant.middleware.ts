@@ -4,7 +4,7 @@
  */
 
 import { Injectable, NestMiddleware, NotFoundException } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { TenantService } from './tenant.service';
 import { TenantContextService, runWithTenant, TenantContext } from './tenant.context';
 
@@ -117,7 +117,7 @@ export class CustomDomainMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
     const host = req.headers.host || '';
-    
+
     // Check if it's a custom domain (not *.medi-aide.com)
     if (!host.includes('medi-aide.com') && !host.includes('localhost')) {
       const tenant = await this.tenantService.getTenantByDomain(host);

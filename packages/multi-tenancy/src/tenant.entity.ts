@@ -21,40 +21,40 @@ import { getCurrentTenantId, hasTenantContext } from './tenant.context';
 @Entity('tenants')
 export class Tenant {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
   @Index()
-  code: string; // Short identifier (e.g., 'acme-care')
+  code!: string; // Short identifier (e.g., 'acme-care')
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({
     type: 'enum',
     enum: ['starter', 'professional', 'enterprise', 'custom'],
     default: 'starter',
   })
-  plan: 'starter' | 'professional' | 'enterprise' | 'custom';
+  plan!: 'starter' | 'professional' | 'enterprise' | 'custom';
 
   @Column({
     type: 'enum',
     enum: ['active', 'suspended', 'trial', 'cancelled'],
     default: 'trial',
   })
-  status: 'active' | 'suspended' | 'trial' | 'cancelled';
+  status!: 'active' | 'suspended' | 'trial' | 'cancelled';
 
   @Column({ type: 'jsonb', default: {} })
-  settings: Record<string, any>;
+  settings!: Record<string, any>;
 
   @Column({ type: 'jsonb', default: [] })
-  features: string[];
+  features!: string[];
 
   @Column({ type: 'jsonb', default: {} })
-  quotas: Record<string, any>;
+  quotas!: Record<string, any>;
 
   @Column({ type: 'jsonb', default: {} })
-  branding: {
+  branding!: {
     primaryColor?: string;
     secondaryColor?: string;
     logoUrl?: string;
@@ -78,10 +78,10 @@ export class Tenant {
   suspendedAt?: Date;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 /**
@@ -90,17 +90,17 @@ export class Tenant {
  */
 export abstract class TenantScopedEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
   @Index()
-  tenantId: string;
+  tenantId!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @BeforeInsert()
   setTenantId(): void {
@@ -137,7 +137,7 @@ export function TenantScoped(): ClassDecorator {
 export function createTenantSubscriber(connection: any): any {
   return {
     listenTo: () => TenantScopedEntity,
-    
+
     beforeInsert(event: any): void {
       if (hasTenantContext() && event.entity) {
         event.entity.tenantId = getCurrentTenantId();

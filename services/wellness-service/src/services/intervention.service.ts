@@ -184,11 +184,12 @@ export class InterventionService {
         return checkin ? checkin.sleepQuality <= rule.threshold : false;
       case 'burnout_risk':
         return burnout ? burnout.burnoutScore >= rule.threshold : false;
-      case 'missed_checkin':
+      case 'missed_checkin': {
         if (!checkin) return true;
         const oneDayAgo = new Date();
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
         return checkin.createdAt < oneDayAgo;
+      }
       default:
         return false;
     }

@@ -1,6 +1,6 @@
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import * as compression from 'compression';
+import type { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 
 /**
  * Compression Configuration
@@ -61,12 +61,12 @@ export class JsonCompressor {
    */
   compactJson<T extends object>(obj: T): Partial<T> {
     const result: any = {};
-    
+
     for (const [key, value] of Object.entries(obj)) {
       if (value === null || value === undefined) {
         continue;
       }
-      
+
       if (typeof value === 'object' && !Array.isArray(value)) {
         const nested = this.compactJson(value);
         if (Object.keys(nested).length > 0) {
@@ -83,7 +83,7 @@ export class JsonCompressor {
         result[key] = value;
       }
     }
-    
+
     return result;
   }
 

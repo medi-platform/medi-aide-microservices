@@ -19,12 +19,16 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { EmarService } from '../services/emar.service';
-import { MedicationStatus } from '../entities/medication.entity';
+import {
+  MedicationFrequency,
+  MedicationRoute,
+  MedicationStatus,
+} from '../entities/medication.entity';
 import { AdministrationStatus, NotGivenReason } from '../entities/medication-administration.entity';
 
 /**
  * e-MAR Controller (Electronic Medication Administration Record)
- * 
+ *
  * Phase 5D: Full e-MAR implementation with:
  * - Medication management
  * - Schedule generation
@@ -61,7 +65,11 @@ export class EmarEnhancedController {
     maxDailyDose?: string;
     requiresWitness?: boolean;
   }) {
-    return this.emarService.createMedication(dto);
+    return this.emarService.createMedication({
+      ...dto,
+      route: dto.route as MedicationRoute,
+      frequency: dto.frequency as MedicationFrequency,
+    });
   }
 
   @Get('medications/:id')
@@ -86,7 +94,11 @@ export class EmarEnhancedController {
       maxDailyDose: string;
     }>,
   ) {
-    return this.emarService.updateMedication(id, dto);
+    return this.emarService.updateMedication(id, {
+      ...dto,
+      route: dto.route as MedicationRoute | undefined,
+      frequency: dto.frequency as MedicationFrequency | undefined,
+    });
   }
 
   @Post('medications/:id/discontinue')

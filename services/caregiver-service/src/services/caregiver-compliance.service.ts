@@ -4,7 +4,7 @@ import { Repository, LessThan, MoreThan, Between } from 'typeorm';
 import { CaregiverCompliance, ComplianceStatus } from '../entities/caregiver-compliance.entity';
 import { CaregiverIncident, IncidentStatus, IncidentSeverity } from '../entities/caregiver-incident.entity';
 import { CaregiverNote, CaregiverNoteCategory } from '../entities/caregiver-note.entity';
-import { CaregiverConsent } from '../entities/caregiver-consent.entity';
+import { CaregiverConsent, ConsentType } from '../entities/caregiver-consent.entity';
 
 @Injectable()
 export class CaregiverComplianceService {
@@ -72,7 +72,7 @@ export class CaregiverComplianceService {
   ): Promise<CaregiverCompliance[]> {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + daysAhead);
-    
+
     return this.complianceRepository.find({
       where: {
         caregiverId,
@@ -94,7 +94,7 @@ export class CaregiverComplianceService {
     const all = await this.complianceRepository.find({
       where: { caregiverId },
     });
-    
+
     return {
       total: all.length,
       compliant: all.filter(c => c.status === ComplianceStatus.COMPLIANT).length,
@@ -132,8 +132,8 @@ export class CaregiverComplianceService {
     const incident = await this.getIncident(id);
     incident.status = status;
     if (notes) {
-      incident.investigationNotes = incident.investigationNotes 
-        ? `${incident.investigationNotes}\n\n${notes}` 
+      incident.investigationNotes = incident.investigationNotes
+        ? `${incident.investigationNotes}\n\n${notes}`
         : notes;
     }
     if (status === IncidentStatus.RESOLVED) {
@@ -230,7 +230,7 @@ export class CaregiverComplianceService {
   async recordConsent(data: Partial<CaregiverConsent>): Promise<CaregiverConsent> {
     const consent = this.consentRepository.create({
       ...data,
-      grantedAt: new Date(),
+      granted_at: new Date(),
     });
     return this.consentRepository.save(consent);
   }
@@ -245,29 +245,29 @@ export class CaregiverComplianceService {
 
   async revokeConsent(id: string): Promise<CaregiverConsent> {
     const consent = await this.getConsent(id);
-    consent.expiresAt = new Date();
+    consent.expires_at = new Date();
     consent.metadata = { ...consent.metadata, revokedAt: new Date().toISOString() };
     return this.consentRepository.save(consent);
   }
 
   async listCaregiverConsents(caregiverId: string): Promise<CaregiverConsent[]> {
     return this.consentRepository.find({
-      where: { caregiverId },
-      order: { grantedAt: 'DESC' },
+      where: { caregiver_id: caregiverId },
+      order: { granted_at: 'DESC' },
     });
   }
 
   async hasValidConsent(caregiverId: string, consentType: string): Promise<boolean> {
     const consent = await this.consentRepository.findOne({
       where: {
-        caregiverId,
-        consentType,
+        caregiver_id: caregiverId,
+        consent_type: consentType as ConsentType,
       },
-      order: { grantedAt: 'DESC' },
+      order: { granted_at: 'DESC' },
     });
-    
+
     if (!consent) return false;
-    if (consent.expiresAt && consent.expiresAt < new Date()) return false;
+    if (consent.expires_at && consent.expires_at < new Date()) return false;
     return true;
   }
 }

@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Rating } from '../entities/rating.entity';
 import { RatingBreakdown } from '../interfaces/feedback.interface';
 
+type RatingTargetType = Rating['targetType'];
+
 /**
  * Rating Service
  * Manages standalone ratings
@@ -60,7 +62,7 @@ export class RatingService {
   ): Promise<Rating[]> {
     const where: Record<string, unknown> = {
       targetId,
-      targetType,
+      targetType: targetType as RatingTargetType,
       isFlagged: false,
     };
     if (onlyPublic) where.isPublic = true;
@@ -77,7 +79,7 @@ export class RatingService {
    */
   async getRatingBreakdown(targetId: string, targetType: string): Promise<RatingBreakdown> {
     const ratings = await this.ratingRepo.find({
-      where: { targetId, targetType, isFlagged: false },
+      where: { targetId, targetType: targetType as RatingTargetType, isFlagged: false },
       select: ['rating'],
     });
 

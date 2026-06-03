@@ -19,13 +19,18 @@ import {
 } from '@nestjs/swagger';
 import { ClinicalService } from '../services/clinical.service';
 import { ClinicalNoteType } from '../entities/clinical-note.entity';
-import { CarePlanGoalStatus } from '../entities/care-plan-goal.entity';
+import {
+  CarePlanGoalCategory,
+  CarePlanGoalPriority,
+  CarePlanGoalStatus,
+} from '../entities/care-plan-goal.entity';
 import { ClinicalAssessmentType } from '../entities/clinical-assessment.entity';
-import { DiagnosisStatus } from '../entities/diagnosis.entity';
+import { DiagnosisStatus, DiagnosisType } from '../entities/diagnosis.entity';
+import { AllergySeverity, AllergyType } from '../entities/allergy.entity';
 
 /**
  * Clinical Documentation Controller
- * 
+ *
  * Phase 5D: Full clinical documentation with:
  * - Vital signs recording
  * - Allergy management
@@ -39,6 +44,13 @@ import { DiagnosisStatus } from '../entities/diagnosis.entity';
 @Controller('clinical')
 export class ClinicalController {
   constructor(private readonly clinicalService: ClinicalService) {}
+
+  private mapGoalPriority(priority?: number): CarePlanGoalPriority | undefined {
+    if (priority === undefined) return undefined;
+    if (priority <= 1) return CarePlanGoalPriority.HIGH;
+    if (priority === 2) return CarePlanGoalPriority.MEDIUM;
+    return CarePlanGoalPriority.LOW;
+  }
 
   // ===== VITAL SIGNS =====
 
@@ -117,7 +129,11 @@ export class ClinicalController {
     reportedByName: string;
     notes?: string;
   }) {
-    return this.clinicalService.addAllergy(dto);
+    return this.clinicalService.addAllergy({
+      ...dto,
+      allergyType: dto.allergyType as AllergyType,
+      severity: dto.severity as AllergySeverity,
+    });
   }
 
   @Get('allergies/:id')
@@ -138,7 +154,10 @@ export class ClinicalController {
       notes: string;
     }>,
   ) {
-    return this.clinicalService.updateAllergy(id, dto);
+    return this.clinicalService.updateAllergy(id, {
+      ...dto,
+      severity: dto.severity as AllergySeverity | undefined,
+    });
   }
 
   @Post('allergies/:id/resolve')
@@ -186,7 +205,10 @@ export class ClinicalController {
     ranking?: number;
     notes?: string;
   }) {
-    return this.clinicalService.addDiagnosis(dto);
+    return this.clinicalService.addDiagnosis({
+      ...dto,
+      diagnosisType: dto.diagnosisType as DiagnosisType,
+    });
   }
 
   @Get('diagnoses/:id')
@@ -250,7 +272,22 @@ export class ClinicalController {
     visitId?: string;
     shiftId?: string;
   }) {
-    return this.clinicalService.createClinicalNote(dto);
+    return this.clinicalService.createClinicalNote({
+      patientId: dto.patientId,
+      noteType: dto.noteType,
+      title: dto.subject,
+      noteDate: dto.noteDate,
+      authorId: dto.authorId,
+      authorName: dto.authorName,
+      authorCredentials: dto.authorTitle,
+      narrative: dto.content,
+      subjective: dto.soapSubjective,
+      objective: dto.soapObjective,
+      assessment: dto.soapAssessment,
+      plan: dto.soapPlan,
+      visitId: dto.visitId,
+      shiftId: dto.shiftId,
+    });
   }
 
   @Get('notes/:id')
@@ -273,7 +310,13 @@ export class ClinicalController {
       soapPlan: string;
     }>,
   ) {
-    return this.clinicalService.updateClinicalNote(id, dto);
+    return this.clinicalService.updateClinicalNote(id, {
+      narrative: dto.content,
+      subjective: dto.soapSubjective,
+      objective: dto.soapObjective,
+      assessment: dto.soapAssessment,
+      plan: dto.soapPlan,
+    });
   }
 
   @Post('notes/:id/sign')
@@ -309,8 +352,11 @@ export class ClinicalController {
     },
   ) {
     return this.clinicalService.addAddendum(id, {
-      ...dto,
-      noteType: ClinicalNoteType.ADDENDUM,
+      patientId: dto.patientId,
+      noteDate: dto.noteDate,
+      authorId: dto.authorId,
+      authorName: dto.authorName,
+      narrative: dto.content,
     });
   }
 
@@ -343,7 +389,25 @@ export class ClinicalController {
     interventions?: string[];
     measurementCriteria?: string;
   }) {
-    return this.clinicalService.createCarePlanGoal(dto);
+    return this.clinicalService.createCarePlanGoal({
+      patientId: dto.patientId,
+      carePlanId: dto.carePlanId,
+      category: dto.goalDomain as CarePlanGoalCategory,
+      goalStatement: dto.goalStatement,
+      description: dto.shortTermObjectives?.join('\n'),
+      targetDate: dto.targetDate,
+      startDate: new Date(),
+      priority: this.mapGoalPriority(dto.priority),
+      createdById: dto.createdById,
+      createdByName: dto.createdByName,
+      interventions: dto.interventions?.map((description) => ({
+        description,
+        frequency: 'as_needed',
+        responsible: 'care_team',
+      })),
+      measurableOutcome: dto.measurementCriteria,
+      metadata: { shortTermObjectives: dto.shortTermObjectives },
+    });
   }
 
   @Get('goals/:id')
@@ -367,7 +431,21 @@ export class ClinicalController {
       measurementCriteria: string;
     }>,
   ) {
-    return this.clinicalService.updateCarePlanGoal(id, dto);
+    return this.clinicalService.updateCarePlanGoal(id, {
+      goalStatement: dto.goalStatement,
+      description: dto.shortTermObjectives?.join('\n'),
+      targetDate: dto.targetDate,
+      priority: this.mapGoalPriority(dto.priority),
+      interventions: dto.interventions?.map((description) => ({
+        description,
+        frequency: 'as_needed',
+        responsible: 'care_team',
+      })),
+      measurableOutcome: dto.measurementCriteria,
+      metadata: dto.shortTermObjectives
+        ? { shortTermObjectives: dto.shortTermObjectives }
+        : undefined,
+    });
   }
 
   @Post('goals/:id/progress')
@@ -430,7 +508,24 @@ export class ClinicalController {
     referralType?: string;
     referralReason?: string;
   }) {
-    return this.clinicalService.createAssessment(dto);
+    return this.clinicalService.createAssessment({
+      ...dto,
+      assessorCredentials: dto.assessorTitle,
+      totalScore: dto.score,
+      scoreBreakdown: {
+        questionsAnswers: dto.questionsAnswers,
+        maxScore: dto.maxScore,
+      },
+      recommendations: dto.recommendations?.join('\n'),
+      metadata: {
+        observations: dto.observations,
+        followUpRequired: dto.followUpRequired,
+        followUpDate: dto.followUpDate,
+        referralRequired: dto.referralRequired,
+        referralType: dto.referralType,
+        referralReason: dto.referralReason,
+      },
+    });
   }
 
   @Get('assessments/:id')
@@ -453,7 +548,13 @@ export class ClinicalController {
       recommendations: string[];
     }>,
   ) {
-    return this.clinicalService.updateAssessment(id, dto);
+    return this.clinicalService.updateAssessment(id, {
+      findings: dto.findings,
+      totalScore: dto.score,
+      scoreBreakdown: dto.questionsAnswers ? { questionsAnswers: dto.questionsAnswers } : undefined,
+      recommendations: dto.recommendations?.join('\n'),
+      metadata: dto.observations ? { observations: dto.observations } : undefined,
+    });
   }
 
   @Post('assessments/:id/complete')

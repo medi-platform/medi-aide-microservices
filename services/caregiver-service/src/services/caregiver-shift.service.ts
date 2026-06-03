@@ -7,7 +7,7 @@ import {
   CaregiverShiftType,
 } from '../entities/caregiver-shift.entity';
 import { CaregiverShiftBid, ShiftBidStatus } from '../entities/caregiver-shift-bid.entity';
-import { CaregiverClockRecord } from '../entities/caregiver-clock-record.entity';
+import { CaregiverClockRecord, ClockRecordType } from '../entities/caregiver-clock-record.entity';
 
 @Injectable()
 export class CaregiverShiftService {
@@ -90,13 +90,13 @@ export class CaregiverShiftService {
     }
     shift.status = ShiftAssignmentStatus.COMPLETED;
     shift.actualEnd = new Date();
-    
+
     // Calculate total hours
     if (shift.actualStart && shift.actualEnd) {
       const diffMs = shift.actualEnd.getTime() - shift.actualStart.getTime();
       shift.totalHours = Number((diffMs / (1000 * 60 * 60)).toFixed(2));
     }
-    
+
     return this.shiftRepository.save(shift);
   }
 
@@ -114,7 +114,7 @@ export class CaregiverShiftService {
     if (existingBid) {
       throw new BadRequestException('Caregiver already has a pending bid for this shift');
     }
-    
+
     const bid = this.shiftBidRepository.create(data);
     return this.shiftBidRepository.save(bid);
   }
@@ -179,10 +179,10 @@ export class CaregiverShiftService {
 
   async clockIn(caregiverId: string, shiftId: string): Promise<CaregiverClockRecord> {
     const record = this.clockRecordRepository.create({
-      caregiverId,
-      shiftId,
-      clockInTime: new Date(),
-      status: 'clocked_in',
+      caregiver_id: caregiverId,
+      shift_id: shiftId,
+      record_type: ClockRecordType.CLOCK_IN,
+      record_time: new Date(),
     });
     return this.clockRecordRepository.save(record);
   }
@@ -192,15 +192,22 @@ export class CaregiverShiftService {
     if (!record) {
       throw new NotFoundException(`Clock record ${id} not found`);
     }
-    record.clockOutTime = new Date();
-    record.status = 'clocked_out';
-    return this.clockRecordRepository.save(record);
+    const clockOutRecord = this.clockRecordRepository.create({
+      caregiver_id: record.caregiver_id,
+      shift_id: record.shift_id,
+      visit_id: record.visit_id,
+      patient_id: record.patient_id,
+      record_type: ClockRecordType.CLOCK_OUT,
+      record_time: new Date(),
+      source: record.source,
+    });
+    return this.clockRecordRepository.save(clockOutRecord);
   }
 
   async getClockRecordsForShift(shiftId: string): Promise<CaregiverClockRecord[]> {
     return this.clockRecordRepository.find({
-      where: { shiftId },
-      order: { clockInTime: 'ASC' },
+      where: { shift_id: shiftId },
+      order: { record_time: 'ASC' },
     });
   }
 }

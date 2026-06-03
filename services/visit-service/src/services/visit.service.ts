@@ -65,6 +65,41 @@ export class VisitService {
   }
 
   /**
+   * List visits with optional filters (parity helper)
+   *
+   * This supports legacy endpoints that Kong routes to `/visits` (e.g. `/tasks`,
+   * `/shift-handoffs`) by ensuring `GET /visits` is available and returns a stable schema.
+   */
+  async list(params: {
+    caregiverId?: string;
+    patientId?: string;
+    agencyId?: string;
+    status?: VisitStatus;
+    startDate?: Date;
+    endDate?: Date;
+    page?: number;
+    limit?: number;
+  }): Promise<{ items: Visit[]; total: number; page: number; limit: number; pages: number }> {
+    const page = Math.max(1, params.page || 1);
+    const limit = Math.min(100, Math.max(1, params.limit || 20));
+
+    const qb = this.visitRepo.createQueryBuilder('v');
+
+    if (params.caregiverId) qb.andWhere('v.caregiverId = :caregiverId', { caregiverId: params.caregiverId });
+    if (params.patientId) qb.andWhere('v.patientId = :patientId', { patientId: params.patientId });
+    if (params.agencyId) qb.andWhere('v.agencyId = :agencyId', { agencyId: params.agencyId });
+    if (params.status) qb.andWhere('v.status = :status', { status: params.status });
+
+    if (params.startDate) qb.andWhere('v.scheduledStart >= :startDate', { startDate: params.startDate });
+    if (params.endDate) qb.andWhere('v.scheduledEnd <= :endDate', { endDate: params.endDate });
+
+    qb.orderBy('v.scheduledStart', 'DESC').skip((page - 1) * limit).take(limit);
+
+    const [items, total] = await qb.getManyAndCount();
+    return { items, total, page, limit, pages: Math.ceil(total / limit) };
+  }
+
+  /**
    * Update visit status
    */
   async updateStatus(

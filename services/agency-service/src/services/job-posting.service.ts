@@ -5,6 +5,7 @@ import {
   AgencyJobPosting,
   JobPostingStatus,
   JobType,
+  PayType,
 } from '../entities/agency-job-posting.entity';
 import {
   AgencyJobApplication,
@@ -21,7 +22,7 @@ export interface CreateJobPostingDto {
   job_type?: JobType;
   pay_rate_min?: number;
   pay_rate_max?: number;
-  pay_type?: string;
+  pay_type?: PayType;
   location_city?: string;
   location_province?: string;
   location_postal_code?: string;
@@ -75,7 +76,7 @@ export interface SubmitApplicationDto {
 
 /**
  * JobPostingService
- * 
+ *
  * Manages job postings and applications for agency caregiver recruitment.
  */
 @Injectable()

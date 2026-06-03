@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { CaregiverInvoice } from '../entities/caregiver-invoice.entity';
-import { CaregiverExpense } from '../entities/caregiver-expense.entity';
+import { CaregiverExpense, ExpenseStatus } from '../entities/caregiver-expense.entity';
 import { CaregiverPayPeriod } from '../entities/caregiver-pay-period.entity';
 import { CaregiverBonus, BonusStatus } from '../entities/caregiver-bonus.entity';
 import { CaregiverPenalty, PenaltyStatus } from '../entities/caregiver-penalty.entity';
@@ -45,8 +45,8 @@ export class CaregiverFinancialService {
 
   async listCaregiverInvoices(caregiverId: string): Promise<CaregiverInvoice[]> {
     return this.invoiceRepository.find({
-      where: { caregiverId },
-      order: { issueDate: 'DESC' },
+      where: { caregiver_id: caregiverId },
+      order: { invoice_date: 'DESC' },
     });
   }
 
@@ -55,7 +55,7 @@ export class CaregiverFinancialService {
   async submitExpense(data: Partial<CaregiverExpense>): Promise<CaregiverExpense> {
     const expense = this.expenseRepository.create({
       ...data,
-      status: 'pending',
+      status: ExpenseStatus.PENDING,
     });
     return this.expenseRepository.save(expense);
   }
@@ -70,15 +70,16 @@ export class CaregiverFinancialService {
 
   async approveExpense(id: string, approvedById: string): Promise<CaregiverExpense> {
     const expense = await this.getExpense(id);
-    expense.status = 'approved';
-    expense.approvedById = approvedById;
-    expense.approvedAt = new Date();
+    expense.status = ExpenseStatus.APPROVED;
+    expense.approved_by = approvedById;
+    expense.approved_at = new Date();
     return this.expenseRepository.save(expense);
   }
 
   async rejectExpense(id: string, reason: string): Promise<CaregiverExpense> {
     const expense = await this.getExpense(id);
-    expense.status = 'rejected';
+    expense.status = ExpenseStatus.REJECTED;
+    expense.rejection_reason = reason;
     expense.metadata = { ...expense.metadata, rejectionReason: reason };
     return this.expenseRepository.save(expense);
   }
@@ -88,13 +89,13 @@ export class CaregiverFinancialService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<CaregiverExpense[]> {
-    const where: any = { caregiverId };
+    const where: any = { caregiver_id: caregiverId };
     if (startDate && endDate) {
-      where.date = Between(startDate, endDate);
+      where.expense_date = Between(startDate, endDate);
     }
     return this.expenseRepository.find({
       where,
-      order: { date: 'DESC' },
+      order: { expense_date: 'DESC' },
     });
   }
 
@@ -115,8 +116,8 @@ export class CaregiverFinancialService {
 
   async listCaregiverPayPeriods(caregiverId: string): Promise<CaregiverPayPeriod[]> {
     return this.payPeriodRepository.find({
-      where: { caregiverId },
-      order: { startDate: 'DESC' },
+      where: { caregiver_id: caregiverId },
+      order: { period_start: 'DESC' },
     });
   }
 

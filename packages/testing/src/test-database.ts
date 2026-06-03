@@ -1,5 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { DataSource, EntityTarget, Repository } from 'typeorm';
+import { DataSource, DeepPartial, EntityTarget, ObjectLiteral, Repository } from 'typeorm';
 
 /**
  * Configuration for test database
@@ -35,7 +35,7 @@ export function createTestTypeOrmConfig(
   config: TestDatabaseConfig = {},
 ): TypeOrmModuleOptions {
   const finalConfig = { ...defaultTestDatabaseConfig, ...config };
-  
+
   return {
     type: 'postgres',
     host: finalConfig.host,
@@ -63,7 +63,7 @@ export class TestDatabase {
   /**
    * Get repository for an entity
    */
-  getRepository<T>(entity: EntityTarget<T>): Repository<T> {
+  getRepository<T extends ObjectLiteral>(entity: EntityTarget<T>): Repository<T> {
     return this.dataSource.getRepository(entity);
   }
 
@@ -72,7 +72,7 @@ export class TestDatabase {
    */
   async clear(): Promise<void> {
     const entities = this.dataSource.entityMetadatas;
-    
+
     for (const entity of entities) {
       const repository = this.dataSource.getRepository(entity.name);
       await repository.query(`TRUNCATE TABLE "${entity.tableName}" CASCADE`);
@@ -84,7 +84,7 @@ export class TestDatabase {
    */
   async resetSequences(): Promise<void> {
     const entities = this.dataSource.entityMetadatas;
-    
+
     for (const entity of entities) {
       const repository = this.dataSource.getRepository(entity.name);
       try {
@@ -100,9 +100,9 @@ export class TestDatabase {
   /**
    * Seed data from fixtures
    */
-  async seed<T>(entity: EntityTarget<T>, data: Partial<T>[]): Promise<T[]> {
+  async seed<T extends ObjectLiteral>(entity: EntityTarget<T>, data: DeepPartial<T>[]): Promise<T[]> {
     const repository = this.dataSource.getRepository(entity);
-    const entities = repository.create(data as any[]);
+    const entities = repository.create(data);
     return repository.save(entities);
   }
 

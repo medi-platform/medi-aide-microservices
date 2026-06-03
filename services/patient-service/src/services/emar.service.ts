@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { DeepPartial, Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Medication, MedicationStatus } from '../entities/medication.entity';
 import { MedicationSchedule, ScheduleStatus } from '../entities/medication-schedule.entity';
 import {
@@ -79,14 +79,14 @@ export class EmarService {
   ): Promise<MedicationSchedule[]> {
     const medication = await this.getMedication(medicationId);
     const schedules: MedicationSchedule[] = [];
-    
+
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
       for (const time of medication.scheduledTimes) {
         const [hours, minutes] = time.split(':').map(Number);
         const scheduledTime = new Date(currentDate);
         scheduledTime.setHours(hours, minutes, 0, 0);
-        
+
         const schedule = this.scheduleRepository.create({
           patientId: medication.patientId,
           medicationId: medication.id,
@@ -103,7 +103,7 @@ export class EmarService {
       }
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return this.scheduleRepository.save(schedules);
   }
 
@@ -123,7 +123,7 @@ export class EmarService {
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
-    
+
     return this.scheduleRepository.find({
       where: {
         patientId,
@@ -141,7 +141,7 @@ export class EmarService {
   ): Promise<MedicationSchedule[]> {
     const now = new Date();
     const futureTime = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
-    
+
     return this.scheduleRepository.find({
       where: {
         patientId,
@@ -156,7 +156,7 @@ export class EmarService {
 
   async getOverdueSchedules(patientId: string): Promise<MedicationSchedule[]> {
     const now = new Date();
-    
+
     return this.scheduleRepository.find({
       where: {
         patientId,
@@ -191,16 +191,16 @@ export class EmarService {
     },
   ): Promise<MedicationAdministration> {
     const schedule = await this.getSchedule(scheduleId);
-    
+
     const now = new Date();
     const scheduledTime = new Date(schedule.scheduledTime);
     const diffMinutes = Math.round((now.getTime() - scheduledTime.getTime()) / 60000);
-    
-    const administration = this.administrationRepository.create({
+
+    const administrationData: DeepPartial<MedicationAdministration> = {
       patientId: schedule.patientId,
       medicationId: schedule.medicationId,
       scheduledTime: schedule.scheduledTime,
-      administeredAt: data.status === AdministrationStatus.GIVEN ? now : null,
+      administeredAt: data.status === AdministrationStatus.GIVEN ? now : undefined,
       status: data.status,
       doseGiven: data.doseGiven || schedule.dose,
       routeUsed: data.routeUsed || schedule.route,
@@ -213,21 +213,22 @@ export class EmarService {
       notGivenDetails: data.notGivenDetails,
       notes: data.notes,
       isLate: diffMinutes > schedule.windowAfterMinutes,
-      minutesLate: diffMinutes > schedule.windowAfterMinutes ? diffMinutes - schedule.windowAfterMinutes : null,
+      minutesLate: diffMinutes > schedule.windowAfterMinutes ? diffMinutes - schedule.windowAfterMinutes : undefined,
       isEarly: diffMinutes < -schedule.windowBeforeMinutes,
-      minutesEarly: diffMinutes < -schedule.windowBeforeMinutes ? Math.abs(diffMinutes) - schedule.windowBeforeMinutes : null,
+      minutesEarly: diffMinutes < -schedule.windowBeforeMinutes ? Math.abs(diffMinutes) - schedule.windowBeforeMinutes : undefined,
       vitalsBefore: data.vitalsBefore,
       vitalsAfter: data.vitalsAfter,
       prnIndication: data.prnIndication,
-    });
-    
+    };
+    const administration = this.administrationRepository.create(administrationData);
+
     const savedAdmin = await this.administrationRepository.save(administration);
-    
+
     // Update schedule
     schedule.isAdministered = true;
     schedule.administrationId = savedAdmin.id;
     await this.scheduleRepository.save(schedule);
-    
+
     return savedAdmin;
   }
 
@@ -286,10 +287,10 @@ export class EmarService {
       this.getOverdueSchedules(patientId),
       this.getActiveMedications(patientId),
     ]);
-    
+
     const administered = schedule.filter(s => s.isAdministered);
     const pending = schedule.filter(s => !s.isAdministered);
-    
+
     return {
       date: date.toISOString().split('T')[0],
       patientId,

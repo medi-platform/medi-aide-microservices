@@ -236,7 +236,7 @@ export class MetricsService implements OnModuleInit {
   /**
    * Get metrics as JSON
    */
-  async getMetricsJson(): Promise<promClient.metric[]> {
+  getMetricsJson(): ReturnType<promClient.Registry['getMetricsAsJSON']> {
     return this.registry.getMetricsAsJSON();
   }
 

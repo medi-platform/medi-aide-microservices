@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { FeedbackAggregation, AggregationPeriod } from '../entities/feedback-aggregation.entity';
 import { Rating } from '../entities/rating.entity';
-import { SurveyResponse, ResponseStatus } from '../entities/survey-response.entity';
+import { SurveyResponse } from '../entities/survey-response.entity';
 import { NpsScore, NpsCategory } from '../entities/nps-score.entity';
 import { SentimentAnalysis, SentimentScore } from '../entities/sentiment-analysis.entity';
+import { ResponseStatus } from '../interfaces/feedback.interface';
 
 @Injectable()
 export class AggregationService {

@@ -5,7 +5,7 @@ import { FeatureFlagsModule } from './feature-flags.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(FeatureFlagsModule, { bufferLogs: true });
-  
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableCors();
 
@@ -16,18 +16,18 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('Feature Flags')
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
   const port = parseInt(process.env.SERVICE_PORT || '4042', 10);
   await app.listen(port, '0.0.0.0');
-  // eslint-disable-next-line no-console
+
   console.log(`Feature Flags service listening on ${port}`);
 }
 
 bootstrap().catch((err) => {
-  // eslint-disable-next-line no-console
+
   console.error('Fatal error starting Feature Flags Service', err);
   process.exit(1);
 });

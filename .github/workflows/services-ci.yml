@@ -14,14 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.0
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-      - name: Enable corepack
-        run: corepack enable && corepack prepare pnpm@8.15.0 --activate
       - name: Install deps
         run: pnpm install --frozen-lockfile
+      - name: Build shared packages
+        run: pnpm -r --filter "./packages/**" build
       - name: Build Training Service
         run: pnpm --filter @medi-aide/training-service build
       - name: Build Feedback Service
@@ -58,5 +61,3 @@ jobs:
         run: pnpm --filter @medi-aide/fraud-detection-service build
       - name: Build Security Monitoring Service
         run: pnpm --filter @medi-aide/security-monitoring-service build
-
-

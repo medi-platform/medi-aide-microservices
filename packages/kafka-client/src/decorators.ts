@@ -11,9 +11,9 @@ export interface EventHandlerMetadata {
 
 /**
  * Event Handler Decorator
- * 
+ *
  * Marks a method as a Kafka event handler.
- * 
+ *
  * @example
  * ```typescript
  * @KafkaEventHandler({
@@ -26,7 +26,7 @@ export interface EventHandlerMetadata {
  * ```
  */
 export function KafkaEventHandler(metadata: EventHandlerMetadata): MethodDecorator {
-  return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+  return (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const existingHandlers = Reflect.getMetadata(EVENT_HANDLER_METADATA_KEY, target.constructor) || [];
     existingHandlers.push({
       ...metadata,
@@ -45,7 +45,7 @@ export function getEventHandlers(target: Function): Array<EventHandlerMetadata &
 
 /**
  * Subscribe to Topics Decorator
- * 
+ *
  * Marks a class as a Kafka consumer that subscribes to specific topics.
  */
 export function KafkaSubscriber(topics: string[]): ClassDecorator {

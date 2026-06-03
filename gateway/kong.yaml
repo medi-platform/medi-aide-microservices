@@ -931,10 +931,70 @@ services:
           - DELETE
           - PATCH
           - OPTIONS
-      - name: guardians-route
+
+  # =============================================================================
+  # GUARDIANS (Enterprise) - route to monolith backend
+  # =============================================================================
+  #
+  # Why this exists:
+  # - Enterprise guardian account management lives in `medi-aide-backend` under:
+  #   - `/api/v1/guardians/accounts/*`
+  #   - `/api/v1/guardians/*` (multi-recipient notifications)
+  #   - `/api/v1/guardian/portal/*` (guardian portal)
+  #
+  # DO NOT route these paths to `stage3-residential-service` because that service has
+  # a different guardian controller surface (`/api/v1/guardians/*` without `/accounts`)
+  # and does not implement the guardian portal contract.
+  #
+  # These routes must win over the generic /api/v1 monolith fallback and any other
+  # /api/v1/guardians routes, so we set a high `regex_priority`.
+  - name: guardians-enterprise-service
+    url: http://host.docker.internal:3000
+    routes:
+      - name: guardians-accounts-enterprise-route
         paths:
-          - /api/v1/guardians
+          - "~^/api/v1/guardians/accounts(?=/|$)"
         strip_path: false
+        regex_priority: 250
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: guardians-notifications-enterprise-route
+        paths:
+          - "~^/api/v1/guardians(?=/|$)"
+        strip_path: false
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # =============================================================================
+  # RESIDENTIAL TRAINING HUB (Enterprise) - route to monolith backend
+  # =============================================================================
+  #
+  # Why this exists:
+  # - Caregiver Mobile calls `/api/v1/residential/training-hub/*` for residence-scoped
+  #   training requirements + policy acknowledgments (TRAIN-01).
+  # - The legacy alias `/api/v1/residential/**` currently routes to stage3-residential-service,
+  #   which does not implement the monolith Training Hub contract.
+  #
+  # This route must win over the generic `/api/v1/residential/**` legacy alias.
+  - name: residential-training-hub-enterprise-service
+    url: http://host.docker.internal:3000
+    routes:
+      - name: residential-training-hub-enterprise-route
+        paths:
+          - "~^/api/v1/residential/training-hub(?=/|$)"
+        strip_path: false
+        regex_priority: 260
         methods:
           - GET
           - POST
@@ -2094,13 +2154,15 @@ services:
 
   # --- GUARDIAN PORTAL ---
   - name: guardian-portal-service
-    url: http://stage3-residential-service:4060/api/v1/guardians
+    # Enterprise guardian portal is served by the monolith backend.
+    # Keep the path unchanged so the Nest controller at `/api/v1/guardian/portal/*` matches.
+    url: http://host.docker.internal:3000
     routes:
       - name: guardian-portal-route
         paths:
           - /api/v1/guardian/portal
-        strip_path: true
-        regex_priority: 100
+        strip_path: false
+        regex_priority: 250
         methods:
           - GET
           - POST

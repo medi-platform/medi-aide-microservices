@@ -120,7 +120,7 @@ export class VerificationService {
         verification.failureReason = `Location outside geofence (${locationResult.distanceMeters}m from expected location)`;
       }
     } else if (payload.method === VerificationMethod.TELEPHONY && payload.telephonyData) {
-      verification.telephonyData = payload.telephonyData as Record<string, unknown>;
+      verification.telephonyData = payload.telephonyData as unknown as Record<string, unknown>;
       verification.status = VerificationStatus.VERIFIED;
     } else if (payload.method === VerificationMethod.BIOMETRIC && payload.biometricData) {
       verification.biometricData = payload.biometricData as unknown as Record<string, unknown>;
@@ -140,7 +140,14 @@ export class VerificationService {
     const saved = await this.verificationRepo.save(verification);
 
     // Create audit log
-    await this.createAuditLog('VERIFICATION_CREATED', 'EvvVerification', saved.id, null, saved, payload.caregiverId);
+    await this.createAuditLog(
+      'VERIFICATION_CREATED',
+      'EvvVerification',
+      saved.id,
+      null,
+      saved,
+      payload.caregiverId,
+    );
 
     this.logger.log(`Verification ${saved.id} processed: ${saved.status}`);
     return saved;
@@ -220,18 +227,23 @@ export class VerificationService {
     action: string,
     entityType: string,
     entityId: string,
-    previousValue: Record<string, unknown> | null,
-    newValue: Record<string, unknown>,
+    previousValue: unknown | null,
+    newValue: unknown,
     userId?: string,
   ): Promise<void> {
+    const visitId =
+      newValue && typeof newValue === 'object' && 'visitId' in (newValue as Record<string, unknown>)
+        ? ((newValue as Record<string, unknown>).visitId as string | undefined)
+        : undefined;
+
     const auditLog = this.auditLogRepo.create({
       action,
       entityType,
       entityId,
-      previousValue: previousValue || undefined,
-      newValue,
+      previousValue: (previousValue as Record<string, unknown>) || undefined,
+      newValue: newValue as Record<string, unknown>,
       userId,
-      visitId: (newValue as { visitId?: string }).visitId,
+      visitId,
       verificationId: entityType === 'EvvVerification' ? entityId : undefined,
     });
     await this.auditLogRepo.save(auditLog);

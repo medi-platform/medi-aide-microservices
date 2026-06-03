@@ -104,7 +104,7 @@ export class TenantService {
       throw new ConflictException('Tenant code already in use');
     }
 
-    const plan = dto.plan || 'trial' as any;
+    const plan: Tenant['plan'] = dto.plan ?? 'starter';
     const tenant = this.tenantRepository.create({
       code: dto.code.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
       name: dto.name,

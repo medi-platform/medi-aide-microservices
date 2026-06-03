@@ -8,7 +8,7 @@ import { CaregiverEmergencyContact } from '../entities/caregiver-emergency-conta
 import { CaregiverNotificationPreference } from '../entities/caregiver-notification-preference.entity';
 import { CaregiverFeedback, FeedbackSentiment } from '../entities/caregiver-feedback.entity';
 import { CaregiverPatient } from '../entities/caregiver-patient.entity';
-import { CaregiverReference } from '../entities/caregiver-reference.entity';
+import { CaregiverReference, ReferenceStatus } from '../entities/caregiver-reference.entity';
 
 @Injectable()
 export class CaregiverProfileExtendedService {
@@ -221,7 +221,7 @@ export class CaregiverProfileExtendedService {
     return result?.avg ? parseFloat(result.avg) : 0;
   }
 
-  // ===== PATIENT RELATIONSHIPS =====
+  // ===== CARE RECIPIENT RELATIONSHIPS =====
 
   async assignPatient(data: Partial<CaregiverPatient>): Promise<CaregiverPatient> {
     const relationship = this.patientRepository.create(data);
@@ -231,25 +231,25 @@ export class CaregiverProfileExtendedService {
   async endPatientRelationship(id: string): Promise<CaregiverPatient> {
     const relationship = await this.patientRepository.findOne({ where: { id } });
     if (!relationship) {
-      throw new NotFoundException(`Patient relationship ${id} not found`);
+      throw new NotFoundException(`Care recipient relationship ${id} not found`);
     }
-    relationship.endDate = new Date();
+    relationship.end_date = new Date();
     return this.patientRepository.save(relationship);
   }
 
   async listCaregiverPatients(caregiverId: string): Promise<CaregiverPatient[]> {
     return this.patientRepository.find({
-      where: { caregiverId },
-      order: { startDate: 'DESC' },
+      where: { caregiver_id: caregiverId },
+      order: { start_date: 'DESC' },
     });
   }
 
   async listActivePatients(caregiverId: string): Promise<CaregiverPatient[]> {
     return this.patientRepository
       .createQueryBuilder('cp')
-      .where('cp.caregiverId = :caregiverId', { caregiverId })
-      .andWhere('cp.endDate IS NULL')
-      .orderBy('cp.startDate', 'DESC')
+      .where('cp.caregiver_id = :caregiverId', { caregiverId })
+      .andWhere('cp.end_date IS NULL')
+      .orderBy('cp.start_date', 'DESC')
       .getMany();
   }
 
@@ -265,17 +265,17 @@ export class CaregiverProfileExtendedService {
     if (!reference) {
       throw new NotFoundException(`Reference ${id} not found`);
     }
-    reference.status = status;
+    reference.status = status as ReferenceStatus;
     if (feedback) {
-      reference.feedback = feedback;
+      reference.reference_response = feedback;
     }
     return this.referenceRepository.save(reference);
   }
 
   async listCaregiverReferences(caregiverId: string): Promise<CaregiverReference[]> {
     return this.referenceRepository.find({
-      where: { caregiverId },
-      order: { submittedAt: 'DESC' },
+      where: { caregiver_id: caregiverId },
+      order: { created_at: 'DESC' },
     });
   }
 }

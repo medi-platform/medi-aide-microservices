@@ -15,6 +15,7 @@ import { HealthController } from './controllers/health.controller';
 import { VerificationController } from './controllers/verification.controller';
 import { GpsController } from './controllers/gps.controller';
 import { ComplianceController } from './controllers/compliance.controller';
+import { EvvController } from './controllers/evv.controller';
 
 import { ConsulModule } from './consul.module';
 
@@ -47,7 +48,7 @@ import { ConsulModule } from './consul.module';
     TypeOrmModule.forFeature([EvvVerification, EvvCompliance, Geofence, EvvAuditLog]),
     ConsulModule,
   ],
-  controllers: [HealthController, VerificationController, GpsController, ComplianceController],
+  controllers: [HealthController, EvvController, VerificationController, GpsController, ComplianceController],
   providers: [GpsVerificationService, VerificationService, ComplianceService],
   exports: [GpsVerificationService, VerificationService, ComplianceService],
 })

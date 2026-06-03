@@ -18,12 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.0
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-      - name: Enable corepack
-        run: corepack enable && corepack prepare pnpm@8.15.0 --activate
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Build migration-tools
@@ -32,6 +33,5 @@ jobs:
         run: pnpm --filter ./packages/domain-events build
       - name: Build reconciliation-worker
         run: pnpm --filter ./tools/reconciliation-worker build
-
 
 

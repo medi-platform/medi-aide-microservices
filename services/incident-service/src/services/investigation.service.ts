@@ -7,7 +7,7 @@ import {
   InvestigationPriority,
 } from '../entities/incident-investigation.entity';
 import { IncidentCategory, CategorySeverity } from '../entities/incident-category.entity';
-import { IncidentWitness, StatementStatus } from '../entities/incident-witness.entity';
+import { IncidentWitness, StatementStatus, WitnessType } from '../entities/incident-witness.entity';
 
 @Injectable()
 export class InvestigationService {
@@ -62,7 +62,10 @@ export class InvestigationService {
     witnessType: string;
     relationship?: string;
   }): Promise<IncidentWitness> {
-    const witness = this.witnessRepo.create(dto as any);
+    const witness = this.witnessRepo.create({
+      ...dto,
+      witnessType: dto.witnessType as WitnessType,
+    });
     return this.witnessRepo.save(witness);
   }
 

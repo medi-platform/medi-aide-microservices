@@ -16,12 +16,12 @@ async function bootstrap() {
 
   const port = parseInt(process.env.SERVICE_PORT || '4024', 10);
   await app.listen(port, '0.0.0.0');
-  // eslint-disable-next-line no-console
+
   console.log(`Training service listening on ${port}`);
 }
 
 bootstrap().catch((err) => {
-  // eslint-disable-next-line no-console
+
   console.error('Fatal error starting Training Service', err);
   process.exit(1);
 });

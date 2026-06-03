@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
 import {
@@ -234,11 +234,12 @@ export class ReportScheduleService {
           next.setDate(1);
         }
         break;
-      case ScheduleFrequency.QUARTERLY:
+      case ScheduleFrequency.QUARTERLY: {
         const currentQuarter = Math.floor(next.getMonth() / 3);
         next.setMonth((currentQuarter + 1) * 3);
         next.setDate(1);
         break;
+      }
       case ScheduleFrequency.YEARLY:
         next.setFullYear(next.getFullYear() + 1);
         next.setMonth(0);

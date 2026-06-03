@@ -39,9 +39,13 @@
     "@willsoto/nestjs-prometheus": "^6.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "@types/node": "^20.0.0",
     "@types/uuid": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0"
   }
 }

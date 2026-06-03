@@ -4,7 +4,7 @@
  */
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { LocaleService } from './locale.service';
 import { I18nService } from './i18n.service';
 import { SupportedLocale, DEFAULT_LOCALE } from './types';

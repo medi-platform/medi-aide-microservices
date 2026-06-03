@@ -1,26 +1,31 @@
 // Tracing exports
-export { WebTracerService, WebTracerConfig } from './tracing/web-tracer';
-export { 
-  TracingProvider, 
-  TracingProviderProps,
+export { WebTracerService } from './tracing/web-tracer';
+export type { WebTracerConfig } from './tracing/web-tracer';
+export {
+  TracingProvider,
   useTracing,
-  useTrace 
+  useTrace
 } from './tracing/react-hooks';
+export type { TracingProviderProps } from './tracing/react-hooks';
 
 // Metrics exports
-export { WebVitalsService, WebVitalsConfig } from './metrics/web-vitals';
+export { WebVitalsService } from './metrics/web-vitals';
+export type { WebVitalsConfig } from './metrics/web-vitals';
 
 // Utils exports
-export { createTracedAxios, TracedAxiosConfig } from './utils/traced-axios';
+export { createTracedAxios } from './utils/traced-axios';
+export type { TracedAxiosConfig } from './utils/traced-axios';
 
 // Re-export OpenTelemetry types
-export { 
-  trace, 
-  context, 
-  SpanKind, 
-  SpanStatusCode,
+export {
+  trace,
+  context,
+  SpanKind,
+  SpanStatusCode
+} from '@opentelemetry/api';
+export type {
   Span,
-  SpanContext 
+  SpanContext,
 } from '@opentelemetry/api';
 
 // Re-export web-vitals types

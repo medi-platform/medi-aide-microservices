@@ -1,7 +1,7 @@
 import { INestApplication, ModuleMetadata, Type, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as request from 'supertest';
+import request from 'supertest';
 import { createTestTypeOrmConfig, TestDatabaseConfig } from './test-database';
 
 /**

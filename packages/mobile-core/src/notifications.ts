@@ -8,7 +8,7 @@ export interface PushNotification {
   title: string;
   body: string;
   icon?: string;
-  badge?: number;
+  badge?: string;
   data?: Record<string, any>;
   tag?: string;
   requireInteraction?: boolean;
@@ -75,7 +75,7 @@ export async function registerPushNotifications(
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(config.vapidPublicKey),
+    applicationServerKey: urlBase64ToArrayBuffer(config.vapidPublicKey),
   });
 
   return subscription;
@@ -105,7 +105,7 @@ export async function showNotification(notification: PushNotification): Promise<
 
   const registration = await navigator.serviceWorker.ready;
 
-  await registration.showNotification(notification.title, {
+  const options: NotificationOptions & { actions?: NotificationAction[] } = {
     body: notification.body,
     icon: notification.icon || '/icons/notification-icon.png',
     badge: notification.badge,
@@ -113,7 +113,9 @@ export async function showNotification(notification: PushNotification): Promise<
     tag: notification.tag,
     requireInteraction: notification.requireInteraction,
     actions: notification.actions,
-  });
+  };
+
+  await registration.showNotification(notification.title, options);
 }
 
 /**
@@ -183,7 +185,7 @@ export const NotificationTemplates = {
 
   emergencyAlert: (patientName: string, alertType: string): PushNotification => ({
     id: `emergency-${Date.now()}`,
-    title: '🚨 URGENT: Patient Alert',
+    title: '🚨 URGENT: Care Recipient Alert',
     body: `${alertType} alert for ${patientName}`,
     tag: 'emergency',
     requireInteraction: true,
@@ -232,7 +234,7 @@ export function cancelScheduledNotification(tag: string): void {
 /**
  * Convert VAPID key
  */
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
@@ -242,5 +244,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
     outputArray[i] = rawData.charCodeAt(i);
   }
 
-  return outputArray;
+  return outputArray.buffer.slice(
+    outputArray.byteOffset,
+    outputArray.byteOffset + outputArray.byteLength,
+  );
 }

@@ -293,7 +293,7 @@ export class AuditInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: (data) => {
+        next: (data: any) => {
           const duration = Date.now() - startTime;
 
           this.auditService.log({
@@ -315,7 +315,7 @@ export class AuditInterceptor implements NestInterceptor {
             severity: 'info',
           });
         },
-        error: (error) => {
+        error: (error: Error) => {
           const duration = Date.now() - startTime;
 
           this.auditService.log({

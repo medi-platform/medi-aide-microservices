@@ -124,15 +124,20 @@ export class BrandingService {
       throw new BadRequestException('Invalid logo URL');
     }
 
+    const mergedBranding: BrandingConfig = {
+      ...(await this.getTenantBranding(tenantId)),
+      ...branding,
+    };
+
     await this.tenantService.updateTenant(tenantId, {
       branding: {
-        primaryColor: branding.primaryColor,
-        secondaryColor: branding.secondaryColor,
-        logoUrl: branding.logoUrl,
-        faviconUrl: branding.faviconUrl,
-        companyName: branding.companyName,
+        primaryColor: mergedBranding.primaryColor,
+        secondaryColor: mergedBranding.secondaryColor,
+        logoUrl: mergedBranding.logoUrl,
+        faviconUrl: mergedBranding.faviconUrl,
+        companyName: mergedBranding.companyName,
       },
-      settings: { branding },
+      settings: { branding: mergedBranding },
     });
 
     return this.getTenantBranding(tenantId);

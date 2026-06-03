@@ -3,8 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SentimentAnalysis, SentimentScore } from '../entities/sentiment-analysis.entity';
 
+type SentimentSourceType = SentimentAnalysis['sourceType'];
+
 interface AnalyzeTextDto {
-  sourceType: 'rating' | 'survey_response' | 'testimonial';
+  sourceType: SentimentSourceType;
   sourceId: string;
   text: string;
   language?: string;
@@ -58,7 +60,7 @@ export class SentimentService {
     sourceId: string,
   ): Promise<SentimentAnalysis | null> {
     return this.sentimentRepo.findOne({
-      where: { sourceType, sourceId },
+      where: { sourceType: sourceType as SentimentSourceType, sourceId },
     });
   }
 

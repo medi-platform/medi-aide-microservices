@@ -1,0 +1,41 @@
+# Scheduling Service Values
+nameOverride: "scheduling-service"
+fullnameOverride: "scheduling-service"
+
+image:
+  repository: ghcr.io/medi-aide/scheduling-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 3  # Higher due to traffic
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4004
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 384Mi
+  limits:
+    cpu: 750m
+    memory: 768Mi
+
+env:
+  - name: SERVICE_NAME
+    value: "scheduling-service"
+  - name: SERVICE_PORT
+    value: "4004"
+
+extraEnvFrom:
+  - secretRef:
+      name: scheduling-service-secrets
+  - configMapRef:
+      name: common-config
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 65

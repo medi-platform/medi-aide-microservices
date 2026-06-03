@@ -1,0 +1,39 @@
+apiVersion: v2
+name: medi-aide
+description: MediAide Healthcare Platform - Enterprise Microservices
+
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - healthcare
+  - microservices
+  - caregiving
+  - evv
+  - hipaa
+
+home: https://medi-aide.com
+sources:
+  - https://github.com/medi-platform/medi-aide-microservices
+
+maintainers:
+  - name: MediAide Platform Team
+    email: platform@medi-aide.com
+
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+
+  - name: kafka
+    version: "26.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: kafka.enabled
+

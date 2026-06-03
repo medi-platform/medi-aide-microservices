@@ -21,7 +21,6 @@ export class RedisGeoService implements OnModuleInit {
     
     try {
       this.redis = new Redis(redisUrl, {
-        retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
@@ -100,7 +99,7 @@ export class RedisGeoService implements OnModuleInit {
       const startTime = Date.now();
       
       // Use GEORADIUS for proximity search
-      const args: any[] = [
+      const args: [string, number, number, number, string, string, number, string, ...string[]] = [
         this.GEO_KEY,
         longitude,
         latitude,
@@ -115,7 +114,7 @@ export class RedisGeoService implements OnModuleInit {
         args.push('WITHDIST');
       }
       
-      const results = await this.redis.georadius(...args);
+      const results = await (this.redis as any).georadius(...args);
       
       let caregivers: Array<{ caregiverId: string; distanceKm?: number }>;
       
@@ -262,6 +261,62 @@ export class RedisGeoService implements OnModuleInit {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

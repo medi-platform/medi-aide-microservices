@@ -10,7 +10,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^3.2.0",
     "axios": "^1.7.7",
     "prom-client": "^15.1.3"

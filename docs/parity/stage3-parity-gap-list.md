@@ -1,0 +1,283 @@
+# Stage 3 Parity Gap List (Monolith Controller Bases NOT covered by Stage3 Kong routes)
+
+Total uncovered controller bases: **212**
+
+## Breakdown by top-level segment
+
+- **agency**: 63
+- **admin**: 36
+- **caregiver**: 19
+- **patient**: 8
+- **ai-matching**: 6
+- **residential**: 6
+- **internal**: 5
+- **public**: 5
+- **api**: 3
+- **networking**: 3
+- **monitoring**: 2
+- **privacy**: 2
+- **security**: 2
+- **bff**: 2
+- **health**: 2
+- **support**: 2
+- **agency-matching**: 1
+- **achievements**: 1
+- **advanced**: 1
+- **config**: 1
+- **ereferrals**: 1
+- **experimental**: 1
+- **feature-disclosure**: 1
+- **recognition**: 1
+- **smart-defaults**: 1
+- **spotlight**: 1
+- **auth**: 1
+- **cultural-preferences**: 1
+- **caregivers**: 1
+- **approval**: 1
+- **calendar-integration**: 1
+- **care-request-router**: 1
+- **care-transitions**: 1
+- **clock-in-out**: 1
+- **coffeemeets**: 1
+- **community**: 1
+- **coverage**: 1
+- **delegation**: 1
+- **evv-configurations**: 1
+- **fairness-dashboard**: 1
+- **fairness-metrics**: 1
+- **fraud**: 1
+- **guardian**: 1
+- **mentors**: 1
+- **metrics**: 1
+- **migrations**: 1
+- **operations-center**: 1
+- **password**: 1
+- **places**: 1
+- **protected**: 1
+- **registration**: 1
+- **reports**: 1
+- **routes**: 1
+- **schedule**: 1
+- **session**: 1
+- **shadow-analytics**: 1
+- **shift-handoffs**: 1
+- **system**: 1
+- **tasks**: 1
+- **timesheets**: 1
+- **ui**: 1
+- **uploads**: 1
+
+## Exact list (212)
+
+- /api/v1/admin/requests
+- /api/v1/admin/settings
+- /api/v1/admin/users
+- /api/v1/caregiver/tasks
+- /api/v1/internal/caregivers
+- /api/v1/patient/visits
+- /api/v1/admin
+- /api/v1/admin/activities
+- /api/v1/admin/activity-log
+- /api/v1/admin/agencies
+- /api/v1/admin/ai-matching/batch
+- /api/v1/admin/ai-matching/override
+- /api/v1/admin/ai-matching/quality
+- /api/v1/admin/approval
+- /api/v1/admin/audit
+- /api/v1/admin/auth
+- /api/v1/admin/care-plans
+- /api/v1/admin/caregivers/approval
+- /api/v1/admin/caregivers/monitoring
+- /api/v1/admin/caregivers/verification
+- /api/v1/admin/compliance
+- /api/v1/admin/dashboard
+- /api/v1/admin/documents
+- /api/v1/admin/documents/review
+- /api/v1/admin/email
+- /api/v1/admin/insights
+- /api/v1/admin/launch
+- /api/v1/admin/metrics
+- /api/v1/admin/outbox
+- /api/v1/admin/pam
+- /api/v1/admin/phase2-rollback
+- /api/v1/admin/phase2-rollout
+- /api/v1/admin/pilot-program
+- /api/v1/admin/providers/analytics
+- /api/v1/admin/roles
+- /api/v1/admin/settings
+- /api/v1/admin/users
+- /api/v1/admin/verification
+- /api/v1/admin/verification/enhanced
+- /api/v1/agency
+- /api/v1/agency-matching
+- /api/v1/agency/:agencyId/training/assignments
+- /api/v1/agency/admin
+- /api/v1/agency/adoption
+- /api/v1/agency/ai
+- /api/v1/agency/analytics
+- /api/v1/agency/analytics/reports
+- /api/v1/agency/announcements
+- /api/v1/agency/billing
+- /api/v1/agency/branding
+- /api/v1/agency/care-plans
+- /api/v1/agency/care-requests
+- /api/v1/agency/caregivers
+- /api/v1/agency/compliance
+- /api/v1/agency/compliance/automation
+- /api/v1/agency/compliance/reporting
+- /api/v1/agency/cost
+- /api/v1/agency/dashboard
+- /api/v1/agency/document-hub
+- /api/v1/agency/documents
+- /api/v1/agency/emergency
+- /api/v1/agency/fairness
+- /api/v1/agency/gamification
+- /api/v1/agency/incidents
+- /api/v1/agency/integrations
+- /api/v1/agency/iot
+- /api/v1/agency/job-board
+- /api/v1/agency/labor-compliance
+- /api/v1/agency/labor-rules
+- /api/v1/agency/launch
+- /api/v1/agency/matching
+- /api/v1/agency/matching/tuning
+- /api/v1/agency/messaging
+- /api/v1/agency/notifications
+- /api/v1/agency/onboarding
+- /api/v1/agency/overtime
+- /api/v1/agency/partners
+- /api/v1/agency/partners/webhooks
+- /api/v1/agency/patients
+- /api/v1/agency/payroll
+- /api/v1/agency/preferences
+- /api/v1/agency/qa
+- /api/v1/agency/recruitment/analytics
+- /api/v1/agency/recruitment/interviews
+- /api/v1/agency/recruitment/onboarding
+- /api/v1/agency/recruitment/referral-program
+- /api/v1/agency/residences
+- /api/v1/agency/residences/:residenceId
+- /api/v1/agency/residences/:residenceId/intake
+- /api/v1/agency/residences/:residenceId/residents
+- /api/v1/agency/roi
+- /api/v1/agency/rules
+- /api/v1/agency/scheduling
+- /api/v1/agency/scheduling/optimization
+- /api/v1/agency/scheduling/swaps
+- /api/v1/agency/settings
+- /api/v1/agency/sso
+- /api/v1/agency/support
+- /api/v1/agency/training
+- /api/v1/agency/uploads
+- /api/v1/agency/verification
+- /api/v1/agency/warehouse/exports
+- /api/v1/agency/wellness-insights
+- /api/v1/ai-matching/diagnostic
+- /api/v1/ai-matching/explanations
+- /api/v1/ai-matching/health
+- /api/v1/ai-matching/performance
+- /api/v1/ai-matching/profile-tiers
+- /api/v1/ai-matching/progressive
+- /api/mobile/v1/care-plans
+- /api/v1
+- /api/v1/achievements
+- /api/v1/advanced
+- /api/v1/config
+- /api/v1/ereferrals/ontario
+- /api/v1/experimental
+- /api/v1/feature-disclosure
+- /api/v1/monitoring
+- /api/v1/privacy
+- /api/v1/recognition
+- /api/v1/security
+- /api/v1/smart-defaults
+- /api/v1/spotlight
+- /api/v2
+- /api/v2/auth
+- /api/v2/cultural-preferences
+- /api/v3/caregivers/me/visits/personal
+- /api/v1/approval
+- /api/v1/bff
+- /api/v1/bff/care-requests
+- /api/v1/calendar-integration
+- /api/v1/care-request-router
+- /api/v1/care-transitions
+- /api/v1/caregiver/:id/feedback
+- /api/v1/caregiver/affiliated
+- /api/v1/caregiver/agency
+- /api/v1/caregiver/availability
+- /api/v1/caregiver/calendar
+- /api/v1/caregiver/certifications
+- /api/v1/caregiver/expenses
+- /api/v1/caregiver/feedback
+- /api/v1/caregiver/interviews
+- /api/v1/caregiver/invoices
+- /api/v1/caregiver/job-opportunities
+- /api/v1/caregiver/messages
+- /api/v1/caregiver/payments
+- /api/v1/caregiver/recipients
+- /api/v1/caregiver/referrals
+- /api/v1/caregiver/residential
+- /api/v1/caregiver/schedule
+- /api/v1/caregiver/settings
+- /api/v1/clock-in-out
+- /api/v1/coffeemeets
+- /api/v1/community/forums
+- /api/v1/coverage
+- /api/v1/delegation
+- /api/v1/evv-configurations
+- /api/v1/fairness-dashboard
+- /api/v1/fairness-metrics
+- /api/v1/fraud
+- /api/v1/guardian/portal
+- /api/v1/health
+- /api/v1/health/database
+- /api/v1/internal
+- /api/v1/internal/care-requests
+- /api/v1/internal/caregivers
+- /api/v1/internal/something
+- /api/v1/mentors
+- /api/v1/metrics
+- /api/v1/migrations
+- /api/v1/monitoring
+- /api/v1/networking
+- /api/v1/networking/groups
+- /api/v1/networking/messages
+- /api/v1/operations-center
+- /api/v1/password
+- /api/v1/patient
+- /api/v1/patient/care-requests
+- /api/v1/patient/feedback
+- /api/v1/patient/messages
+- /api/v1/patient/settings
+- /api/v1/patient/visits
+- /api/v1/patient/visits/:visitId/feedback
+- /api/v1/places
+- /api/v1/privacy
+- /api/v1/protected
+- /api/v1/public
+- /api/v1/public/contracts
+- /api/v1/public/launch
+- /api/v1/public/referrals
+- /api/v1/public/ws
+- /api/v1/registration/patient/sessions
+- /api/v1/reports
+- /api/v1/residential/intake
+- /api/v1/residential/money-counts
+- /api/v1/residential/orientation
+- /api/v1/residential/serious-occurrences
+- /api/v1/residential/training-hub
+- /api/v1/residential/ws-health
+- /api/v1/routes
+- /api/v1/schedule
+- /api/v1/security
+- /api/v1/session
+- /api/v1/shadow-analytics
+- /api/v1/shift-handoffs
+- /api/v1/support
+- /api/v1/support/help-center
+- /api/v1/system
+- /api/v1/tasks
+- /api/v1/timesheets
+- /api/v1/ui
+- /api/v1/uploads

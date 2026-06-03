@@ -1,11 +1,11 @@
-import { ConsulModule } from './consul.module';
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { Prediction } from './entities/prediction.entity';
 import { AIController } from './controllers/ai.controller';
+import { HealthController } from './controllers/health.controller';
 import { AIService } from './services/ai.service';
+import { ConsulModule } from './consul.module';
 
 @Module({
   imports: [
@@ -17,14 +17,13 @@ import { AIService } from './services/ai.service';
       username: process.env.DB_USER || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'ai_db',
-      entities: [Prediction,
-    ConsulModule
-  ],
+      entities: [Prediction],
       synchronize: process.env.NODE_ENV === 'development',
     }),
     TypeOrmModule.forFeature([Prediction]),
+    ConsulModule,
   ],
-  controllers: [AIController],
+  controllers: [AIController, HealthController],
   providers: [AIService],
 })
 export class AIModule {}

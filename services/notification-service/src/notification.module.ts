@@ -14,11 +14,15 @@ import { SmsService } from './services/sms.service';
 import { PushService } from './services/push.service';
 import { NotificationQueueProcessor } from './processors/notification-queue.processor';
 import { NotificationGrpcController } from './controllers/notification.grpc.controller';
-       import { PingController } from './controllers/ping.controller';
+import { PingController } from './controllers/ping.controller';
 import configuration from './config/configuration';
 import { SchemaInitService } from './services/schema-init.service';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
 import { MigrationModule } from '@medi-aide/migration-tools';
+// Phase 2: New packages
+import { MigrationModule as DbMigrationModule } from '@medi-aide/database-migrations';
+import { KafkaModule } from '@medi-aide/kafka-client';
+import { ServiceAuthModule } from '@medi-aide/service-auth';
 
 // Create health controller with custom configuration
 const HealthController = createHealthController({
@@ -83,6 +87,33 @@ const consulImports = consulEnabled ? [
     inject: [ConfigService],
   })
 ] : [];
+// Phase 2: Kafka module (conditional)
+const kafkaEnabled = process.env.DISABLE_KAFKA !== 'true';
+const kafkaImports = kafkaEnabled ? [
+  KafkaModule.forRootAsync({
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => ({
+      clientId: 'notification-service',
+      brokers: (config.get('KAFKA_BROKERS', 'stage3-kafka:9092')).split(','),
+      groupId: 'notification-service-group',
+      retry: { maxRetries: 5, initialDelayMs: 100 },
+    }),
+  }),
+] : [];
+
+// Phase 2: Service Auth module
+const serviceAuthImports = [
+  ServiceAuthModule.forRootAsync({
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => ({
+      serviceName: 'notification-service',
+      jwtSecret: config.get('SERVICE_JWT_SECRET', 'service-secret'),
+      tokenExpirationSeconds: 300,
+      allowedServices: ['auth-service', 'user-service', 'care-request-service', 'scheduling-service'],
+    }),
+  }),
+];
+
 @Module({
   imports: [
     // Configuration
@@ -99,6 +130,12 @@ const consulImports = consulEnabled ? [
 
     // Phase 4: Migration & Dual-Write framework (conditional)
     ...(migrationEnabled ? [MigrationModule.forRoot({ serviceName: 'notification_service' })] : []),
+
+    // Phase 2: Kafka Event Publishing
+    ...kafkaImports,
+
+    // Phase 2: Service-to-Service Auth
+    ...serviceAuthImports,
   ],
         controllers: dbEnabled ? [
           NotificationController,

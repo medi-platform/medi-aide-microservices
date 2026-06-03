@@ -1,0 +1,345 @@
+# ============================================================================
+# MONOLITH ↔ MICROSERVICES PARITY CHECK WORKFLOW
+# ============================================================================
+# This workflow runs automatically when changes are made to the monolith
+# and identifies which Stage 3 microservices need to be updated.
+#
+# Triggers:
+#   - Push to monolith directories
+#   - Pull requests affecting monolith
+#   - Manual dispatch
+#   - Scheduled weekly check
+# ============================================================================
+
+name: Parity Check
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/medi-aide-backend/**'
+      
+  pull_request:
+    paths:
+      - 'apps/medi-aide-backend/**'
+      
+  schedule:
+    # Run weekly on Monday at 9am UTC
+    - cron: '0 9 * * 1'
+    
+  workflow_dispatch:
+    inputs:
+      since_commit:
+        description: 'Compare since commit (default: last 10 commits)'
+        required: false
+        default: 'HEAD~10'
+
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+jobs:
+  # ============================================================================
+  # Detect Monolith Changes
+  # ============================================================================
+  detect-changes:
+    name: Detect Monolith Changes
+    runs-on: ubuntu-latest
+    outputs:
+      affected_services: ${{ steps.detect.outputs.affected_services }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+      change_types: ${{ steps.detect.outputs.change_types }}
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50  # Fetch enough history for comparison
+          
+      - name: Determine Comparison Point
+        id: compare
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "since=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "since=${{ github.event.inputs.since_commit || 'HEAD~10' }}" >> $GITHUB_OUTPUT
+          else
+            echo "since=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Detect Changes
+        id: detect
+        run: |
+          chmod +x scripts/detect-monolith-changes.sh
+          
+          # Run detection script
+          set +e
+          ./scripts/detect-monolith-changes.sh "${{ steps.compare.outputs.since }}" 2>&1 | tee detection-output.txt
+          EXIT_CODE=$?
+          set -e
+          
+          # Parse affected services from output
+          SERVICES=$(grep "^  →" detection-output.txt | sed 's/.*→ //' | tr '\n' ',' | sed 's/,$//')
+          
+          if [ -n "$SERVICES" ]; then
+            echo "affected_services=$SERVICES" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "affected_services=" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Extract change types
+          TYPES=$(grep "Change Types:" -A 10 detection-output.txt | grep "→" | sed 's/.*→ //' | tr '\n' ',' | sed 's/,$//')
+          echo "change_types=$TYPES" >> $GITHUB_OUTPUT
+          
+      - name: Upload Detection Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: change-detection-report
+          path: reports/monolith-changes-*.md
+          retention-days: 30
+
+  # ============================================================================
+  # Parity Analysis
+  # ============================================================================
+  parity-check:
+    name: Check Parity
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Run Parity Check
+        id: parity
+        run: |
+          chmod +x scripts/check-parity.sh
+          
+          set +e
+          ./scripts/check-parity.sh 2>&1 | tee parity-output.txt
+          PARITY_GAP=$?
+          set -e
+          
+          echo "parity_percentage=$((100 - PARITY_GAP))" >> $GITHUB_OUTPUT
+          
+          # Extract key metrics
+          ENTITY_PARITY=$(grep "Entities:" parity-output.txt | tail -1 | grep -oP '\d+(?=%)')
+          CONTROLLER_PARITY=$(grep "Controllers:" parity-output.txt | tail -1 | grep -oP '\d+(?=%)')
+          
+          echo "entity_parity=$ENTITY_PARITY" >> $GITHUB_OUTPUT
+          echo "controller_parity=$CONTROLLER_PARITY" >> $GITHUB_OUTPUT
+          
+      - name: Upload Parity Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-report
+          path: reports/parity-check-*.md
+          retention-days: 30
+          
+      - name: Check Parity Threshold
+        run: |
+          PARITY=${{ steps.parity.outputs.parity_percentage }}
+          
+          if [ "$PARITY" -lt 80 ]; then
+            echo "::error::Parity below 80% threshold ($PARITY%)"
+            exit 1
+          elif [ "$PARITY" -lt 90 ]; then
+            echo "::warning::Parity below 90% ($PARITY%)"
+          else
+            echo "::notice::Parity at $PARITY%"
+          fi
+
+  # ============================================================================
+  # Create Issues for Affected Services
+  # ============================================================================
+  create-issues:
+    name: Create Sync Issues
+    runs-on: ubuntu-latest
+    needs: [detect-changes, parity-check]
+    if: needs.detect-changes.outputs.has_changes == 'true' && github.event_name != 'pull_request'
+    
+    steps:
+      - name: Create GitHub Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const services = '${{ needs.detect-changes.outputs.affected_services }}'.split(',').filter(s => s);
+            const changeTypes = '${{ needs.detect-changes.outputs.change_types }}'.split(',').filter(t => t);
+            
+            for (const service of services) {
+              const title = `🔄 Sync Required: ${service} (Monolith Updated)`;
+              
+              // Check if issue already exists
+              const existingIssues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: 'parity-sync,microservice-update',
+                per_page: 100
+              });
+              
+              const exists = existingIssues.data.some(issue => 
+                issue.title.includes(service) && issue.title.includes('Sync Required')
+              );
+              
+              if (!exists) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: title,
+                  body: `## Monolith Changes Detected
+                  
+            The monolith has been updated with changes that affect the **${service}** microservice.
+
+            ### Change Types
+            ${changeTypes.map(t => `- ${t}`).join('\n')}
+
+            ### Required Actions
+            1. Review monolith changes in \`apps/medi-aide-backend/\`
+            2. Update \`services/${service}/\` to match
+            3. Run tests: \`npm test --filter=${service}\`
+            4. Run parity check: \`./scripts/check-parity.sh\`
+
+            ### Triggered By
+            - Commit: ${{ github.sha }}
+            - Workflow: ${{ github.run_id }}
+
+            ---
+            _This issue was automatically created by the Parity Check workflow._
+            `,
+                  labels: ['parity-sync', 'microservice-update', 'automated']
+                });
+                
+                console.log(`Created issue for ${service}`);
+              } else {
+                console.log(`Issue already exists for ${service}, skipping`);
+              }
+            }
+
+  # ============================================================================
+  # Notify Team
+  # ============================================================================
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [detect-changes, parity-check]
+    if: always() && needs.detect-changes.outputs.has_changes == 'true'
+    
+    steps:
+      - name: Send Slack Notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        run: |
+          SERVICES="${{ needs.detect-changes.outputs.affected_services }}"
+          CHANGE_TYPES="${{ needs.detect-changes.outputs.change_types }}"
+          
+          # Determine status
+          if [ "${{ needs.parity-check.result }}" == "success" ]; then
+            STATUS="✅ Passed"
+            COLOR="#36a64f"
+          else
+            STATUS="⚠️ Attention Required"
+            COLOR="#ff9900"
+          fi
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"attachments\": [{
+                \"color\": \"$COLOR\",
+                \"title\": \"Monolith → Microservices Parity Check\",
+                \"text\": \"$STATUS\",
+                \"fields\": [
+                  {
+                    \"title\": \"Affected Services\",
+                    \"value\": \"$SERVICES\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Change Types\",
+                    \"value\": \"$CHANGE_TYPES\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Commit\",
+                    \"value\": \"<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\",
+                    \"short\": true
+                  }
+                ],
+                \"footer\": \"Parity Check Workflow\",
+                \"ts\": $(date +%s)
+              }]
+            }" \
+            $SLACK_WEBHOOK_URL
+            
+      - name: Post PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const services = '${{ needs.detect-changes.outputs.affected_services }}';
+            const hasChanges = '${{ needs.detect-changes.outputs.has_changes }}' === 'true';
+            
+            if (hasChanges) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## 🔄 Microservices Parity Check
+                
+            This PR modifies the monolith and affects the following Stage 3 microservices:
+
+            **Affected Services:** ${services}
+
+            ### Required Actions
+            Before merging, ensure the corresponding microservices are also updated:
+            
+            ${services.split(',').map(s => `- [ ] Update \`services/${s.trim()}/\``).join('\n')}
+            
+            ### Validation Commands
+            \`\`\`bash
+            # Check parity
+            ./scripts/check-parity.sh
+            
+            # Validate routes
+            ./scripts/validate-all-routes.sh
+            \`\`\`
+            
+            ---
+            _Automated parity check by GitHub Actions_
+            `
+              });
+            }
+
+  # ============================================================================
+  # Summary
+  # ============================================================================
+  summary:
+    name: Generate Summary
+    runs-on: ubuntu-latest
+    needs: [detect-changes, parity-check]
+    if: always()
+    
+    steps:
+      - name: Generate Job Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          # Monolith ↔ Microservices Parity Report
+          
+          ## Changes Detected
+          **Has Changes:** ${{ needs.detect-changes.outputs.has_changes }}
+          
+          **Affected Services:** ${{ needs.detect-changes.outputs.affected_services }}
+          
+          **Change Types:** ${{ needs.detect-changes.outputs.change_types }}
+          
+          ## Next Steps
+          1. Review affected microservices
+          2. Sync code changes
+          3. Run tests
+          4. Validate routes
+          
+          ---
+          *Generated by Parity Check Workflow*
+          EOF

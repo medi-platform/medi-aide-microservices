@@ -1,76 +1,134 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
-import { IsInt, IsOptional, IsString, IsUUID, IsMimeType, Min } from 'class-validator';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { FileService } from '../services/file.service';
+import { FileCategory, AccessLevel } from '../interfaces/file.interface';
 
-class InitUploadDto {
-  @IsUUID()
-  userId!: string;
-
-  @IsString()
+class InitiateUploadDto {
   fileName!: string;
-
-  @IsString()
-  @IsMimeType()
   mimeType!: string;
-
-  @IsInt()
-  @Min(1)
-  fileSize!: number;
-
-  @IsOptional()
-  @IsString()
-  documentType?: string;
-
-  @IsOptional()
-  metadata?: Record<string, any>;
+  size!: number;
+  category!: FileCategory;
+  ownerId!: string;
+  ownerType!: 'user' | 'caregiver' | 'patient' | 'agency' | 'visit';
+  metadata?: Record<string, unknown>;
+  accessLevel?: AccessLevel;
 }
 
-class FinalizeUploadDto {
-  @IsUUID()
-  userId!: string;
-
-  @IsString()
-  uploadId!: string;
-
-  @IsOptional()
-  uploadMetadata?: Record<string, any>;
+class ConfirmUploadDto {
+  checksum?: string;
 }
 
-@Controller('uploads')
+class UpdateMetadataDto {
+  metadata?: Record<string, unknown>;
+  tags?: string[];
+}
+
+class ShareFileDto {
+  accessLevel!: AccessLevel;
+}
+
+@Controller('files')
+@ApiTags('files')
 export class UploadsController {
-  @Post('init')
+  constructor(private readonly fileService: FileService) {}
+
+  @Post('upload')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Initiate file upload and get presigned URL' })
+  @ApiResponse({ status: 201, description: 'Upload initiated' })
+  @ApiResponse({ status: 400, description: 'Invalid file type or size' })
+  async initiateUpload(@Body() dto: InitiateUploadDto) {
+    return this.fileService.initiateUpload(dto);
+  }
+
+  @Post(':id/confirm')
   @HttpCode(HttpStatus.OK)
-  init(@Body() dto: InitUploadDto) {
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-    const uploadId = cryptoRandomId();
-    return {
-      uploadId,
-      uploadUrl: `/internal/upload/${uploadId}`,
-      uploadFields: {},
-      expiresAt,
-      maxSize: Math.min(50 * 1024 * 1024, dto.fileSize * 2),
-      allowedTypes: [dto.mimeType],
-    };
+  @ApiOperation({ summary: 'Confirm upload completed' })
+  @ApiResponse({ status: 200, description: 'Upload confirmed' })
+  async confirmUpload(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConfirmUploadDto,
+  ) {
+    return this.fileService.confirmUpload(id, dto.checksum);
   }
 
-  @Post('finalize')
-  finalize(@Body() dto: FinalizeUploadDto) {
-    return { status: 'completed' };
+  @Get(':id')
+  @ApiOperation({ summary: 'Get file metadata' })
+  @ApiResponse({ status: 200, description: 'File details' })
+  @ApiResponse({ status: 404, description: 'File not found' })
+  async getById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.fileService.getById(id);
+  }
+
+  @Get(':id/download')
+  @ApiOperation({ summary: 'Get presigned download URL' })
+  @ApiResponse({ status: 200, description: 'Download URL' })
+  @ApiResponse({ status: 403, description: 'File not available' })
+  async getDownloadUrl(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('userId') userId?: string,
+  ) {
+    return this.fileService.getDownloadUrl(id, userId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a file' })
+  @ApiResponse({ status: 204, description: 'File deleted' })
+  async delete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('userId') userId?: string,
+  ) {
+    await this.fileService.delete(id, userId);
+  }
+
+  @Get('owner/:ownerId')
+  @ApiOperation({ summary: 'Get files by owner' })
+  @ApiQuery({ name: 'ownerType', required: true })
+  @ApiQuery({ name: 'category', required: false })
+  async getByOwner(
+    @Param('ownerId', ParseUUIDPipe) ownerId: string,
+    @Query('ownerType') ownerType: string,
+    @Query('category') category?: FileCategory,
+  ) {
+    return this.fileService.getByOwner(ownerId, ownerType, category);
+  }
+
+  @Get(':id/logs')
+  @ApiOperation({ summary: 'Get file access logs' })
+  async getAccessLogs(@Param('id', ParseUUIDPipe) id: string) {
+    return this.fileService.getAccessLogs(id);
+  }
+
+  @Post(':id/metadata')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update file metadata' })
+  async updateMetadata(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateMetadataDto,
+  ) {
+    return this.fileService.updateMetadata(id, dto.metadata || {}, dto.tags);
+  }
+
+  @Post(':id/share')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Share file / update access level' })
+  async shareFile(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ShareFileDto,
+    @Query('userId') userId?: string,
+  ) {
+    return this.fileService.shareFile(id, dto.accessLevel, userId);
   }
 }
-
-@Controller('downloads')
-export class DownloadsController {
-  @Get('url')
-  url(@Query('key') key: string) {
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-    const url = `/internal/download/${encodeURIComponent(key)}`;
-    return { url, expiresAt };
-  }
-}
-
-function cryptoRandomId(): string {
-  // Avoid importing crypto to keep image slimmer; pseudo-random is fine for placeholder
-  return 'upl_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
-
-

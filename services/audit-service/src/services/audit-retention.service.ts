@@ -158,15 +158,26 @@ export class AuditRetentionService {
       return 0;
     }
 
-    // Delete oldest non-critical logs first
+    // Delete oldest non-critical logs first using subquery
+    const logsToDelete = await this.auditLogRepo
+      .createQueryBuilder('log')
+      .select('log.id')
+      .where('log.severity IN (:...severities)', { severities: ['debug', 'info'] })
+      .andWhere('log.phi_accessed = false')
+      .andWhere('log.flagged_for_review = false')
+      .orderBy('log.created_at', 'ASC')
+      .limit(10000)
+      .getMany();
+
+    if (logsToDelete.length === 0) {
+      return 0;
+    }
+
+    const ids = logsToDelete.map(log => log.id);
     const deleted = await this.auditLogRepo
       .createQueryBuilder()
       .delete()
-      .where('severity IN (:...severities)', { severities: ['debug', 'info'] })
-      .andWhere('phi_accessed = false')
-      .andWhere('flagged_for_review = false')
-      .orderBy('created_at', 'ASC')
-      .limit(10000)
+      .whereInIds(ids)
       .execute();
 
     return deleted.affected || 0;

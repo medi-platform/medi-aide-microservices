@@ -7,19 +7,33 @@
     "dev": "pnpm run --parallel dev",
     "build": "pnpm run -r build",
     "test": "pnpm run -r test",
+    "test:e2e": "pnpm run -r test:e2e",
+    "test:integration": "jest --config tests/jest.integration.config.js",
+    "test:coverage": "pnpm run -r test -- --coverage",
+    "test:watch": "pnpm run -r test -- --watch",
+    "test:ci": "pnpm run test:coverage && pnpm run test:e2e",
+    "test:docker": "docker-compose -f docker-compose.test.yml up -d && pnpm run test:e2e && docker-compose -f docker-compose.test.yml down -v",
     "lint": "pnpm run -r lint",
+    "typecheck": "pnpm run -r typecheck",
     "clean": "pnpm run -r clean && rm -rf node_modules",
     "start:monolith": "concurrently \"pnpm --filter medi-aide-backend dev\" \"pnpm --filter medi-aide-frontend dev\"",
     "start:stage3": "./scripts/dev-parallel.sh",
     "build:packages": "pnpm --filter './packages/**' build",
-    "build:services": "pnpm --filter './services/**' build"
+    "build:services": "pnpm --filter './services/**' build",
+    "db:migrate": "./scripts/run-migrations.sh all run",
+    "db:migrate:revert": "./scripts/run-migrations.sh all revert",
+    "db:create": "./scripts/create-databases.sh"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "@types/node": "^20.10.0",
     "concurrently": "^8.2.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
     "tsup": "^8.0.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -28,5 +42,26 @@
   "packageManager": "pnpm@8.15.0",
   "dependencies": {
     "@nestjs/terminus": "^10.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "glob": ">=10.5.0",
+      "qs": ">=6.14.1",
+      "esbuild": ">=0.25.0",
+      "js-yaml": ">=4.1.1",
+      "tmp": ">=0.2.4",
+      "tsup": ">=8.5.0",
+      "html-encoding-sniffer": "4.0.0",
+      "jsdom": "24.1.3",
+      "cookie": ">=0.7.0",
+      "nodemailer": ">=7.0.7"
+    },
+    "onlyBuiltDependencies": [
+      "@temporalio/core-bridge",
+      "bcrypt",
+      "msgpackr-extract",
+      "sharp",
+      "tesseract.js"
+    ]
   }
 }

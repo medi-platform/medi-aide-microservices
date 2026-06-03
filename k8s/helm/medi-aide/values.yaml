@@ -1,0 +1,272 @@
+# Global configuration
+global:
+  imageRegistry: ghcr.io
+  imagePullSecrets:
+    - name: ghcr-secret
+  environment: production
+
+# Service defaults
+serviceDefaults:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Database configuration
+database:
+  host: postgresql
+  port: 5432
+  username: service_user
+  passwordSecret: postgres-credentials
+  ssl: true
+
+# Redis configuration
+redis:
+  host: redis-master
+  port: 6379
+  passwordSecret: redis-credentials
+
+# Kafka configuration
+kafka:
+  brokers: kafka-0.kafka-headless:9092,kafka-1.kafka-headless:9092
+  ssl: false
+
+# Temporal configuration
+temporal:
+  host: temporal-frontend
+  port: 7233
+  namespace: medi-aide
+
+# Kong API Gateway
+kong:
+  enabled: true
+  ingress:
+    enabled: true
+    hostname: api.medi-aide.com
+    tls: true
+    certManager: true
+
+# Service configurations
+services:
+  notification:
+    enabled: true
+    port: 4010
+    database: notification_db
+    replicas: 2
+
+  auth:
+    enabled: true
+    port: 4011
+    database: auth_db
+    replicas: 3
+    jwtSecret:
+      secretName: auth-secrets
+      key: jwt-secret
+
+  user:
+    enabled: true
+    port: 4012
+    database: user_db
+    replicas: 2
+
+  visit:
+    enabled: true
+    port: 4013
+    database: visit_db
+    replicas: 2
+
+  wellness:
+    enabled: true
+    port: 4014
+    database: wellness_db
+    replicas: 2
+
+  payment:
+    enabled: true
+    port: 4015
+    database: payment_db
+    replicas: 2
+    stripeSecret:
+      secretName: payment-secrets
+      key: stripe-secret
+
+  search:
+    enabled: true
+    port: 4016
+    database: search_db
+    replicas: 2
+
+  audit:
+    enabled: true
+    port: 4017
+    database: audit_db
+    replicas: 3
+    # Audit service requires higher availability
+
+  matching:
+    enabled: true
+    port: 4023
+    database: matching_db
+    replicas: 3
+    # Matching is critical for care requests
+
+  evv:
+    enabled: true
+    port: 4020
+    database: evv_db
+    replicas: 3
+    # EVV is critical for compliance
+
+  carePlan:
+    enabled: true
+    port: 4019
+    database: care_plan_db
+    replicas: 2
+
+  agency:
+    enabled: true
+    port: 4050
+    database: agency_db
+    replicas: 2
+
+  caregiver:
+    enabled: true
+    port: 4051
+    database: caregiver_db
+    replicas: 2
+
+  patient:
+    enabled: true
+    port: 4052
+    database: patient_db
+    replicas: 2
+
+  careRequest:
+    enabled: true
+    port: 4053
+    database: care_request_db
+    replicas: 3
+
+  scheduling:
+    enabled: true
+    port: 4054
+    database: scheduling_db
+    replicas: 2
+
+  aiMl:
+    enabled: true
+    port: 8005
+    database: ai_db
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+# Observability
+observability:
+  prometheus:
+    enabled: true
+    serviceMonitor: true
+  
+  grafana:
+    enabled: true
+    ingress:
+      enabled: true
+      hostname: grafana.medi-aide.com
+  
+  jaeger:
+    enabled: true
+    collector:
+      replicas: 2
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  hosts:
+    - host: api.medi-aide.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: medi-aide-tls
+      hosts:
+        - api.medi-aide.com
+
+# Pod disruption budgets
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: medi-aide
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: medi-aide
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+# Service accounts
+serviceAccount:
+  create: true
+  annotations: {}
+
+# External dependencies (Bitnami)
+postgresql:
+  enabled: true
+  auth:
+    username: service_user
+    database: medi_aide
+    existingSecret: postgres-credentials
+  primary:
+    persistence:
+      size: 100Gi
+  readReplicas:
+    replicaCount: 2
+
+redis:
+  enabled: true
+  auth:
+    existingSecret: redis-credentials
+  master:
+    persistence:
+      size: 10Gi
+
+kafka:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    size: 50Gi
+

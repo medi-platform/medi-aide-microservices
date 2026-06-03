@@ -23,3 +23,24 @@ export {
 export { BaseService } from './patterns/base.service';
 export { HealthController } from './patterns/health.controller';
 export { MetricsController } from './patterns/metrics.controller';
+
+// Error handling
+export {
+  GlobalExceptionFilter,
+  LoggingInterceptor,
+  AppError,
+  ValidationError,
+  NotFoundError,
+  UnauthorizedError,
+  ForbiddenError,
+  ConflictError,
+  RateLimitError,
+  ServiceUnavailableError,
+  ExternalServiceError,
+  StandardErrorResponse,
+  SuccessResponse,
+  success,
+  paginated,
+  ErrorCodes,
+  ErrorCode,
+} from './error-handling';

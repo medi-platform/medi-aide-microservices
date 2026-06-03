@@ -1,9 +1,9 @@
 # Terraform Variables for Medi-Aide AWS Infrastructure
 
 variable "aws_region" {
-  description = "AWS region for resources"
+  description = "AWS region for resources - using Canada for data residency compliance"
   type        = string
-  default     = "us-east-1"
+  default     = "ca-central-1"  # Montreal, Canada
 }
 
 variable "environment" {
@@ -50,40 +50,35 @@ variable "cluster_name" {
   default     = "medi-aide-prod"
 }
 
-variable "kubernetes_version" {
+variable "cluster_version" {
   description = "Kubernetes version for EKS"
   type        = string
-  default     = "1.28"
+  default     = "1.29"
 }
 
-variable "node_group_desired_size" {
-  description = "Desired number of worker nodes"
-  type        = number
-  default     = 3
+variable "node_groups" {
+  description = "EKS managed node groups configuration"
+  type        = any
+  default = {
+    general = {
+      name           = "general"
+      instance_types = ["t3.xlarge"]
+      min_size       = 3
+      max_size       = 10
+      desired_size   = 3
+    }
+  }
 }
 
-variable "node_group_min_size" {
-  description = "Minimum number of worker nodes"
-  type        = number
-  default     = 3
+variable "kafka_instance_type" {
+  description = "Instance type for Kafka brokers"
+  type        = string
+  default     = "kafka.t3.small"
 }
 
-variable "node_group_max_size" {
-  description = "Maximum number of worker nodes"
-  type        = number
-  default     = 10
-}
-
-variable "node_instance_types" {
-  description = "EC2 instance types for EKS nodes"
-  type        = list(string)
-  default     = ["t3.xlarge"]
-}
-
-variable "spot_instance_types" {
-  description = "EC2 instance types for spot nodes"
-  type        = list(string)
-  default     = ["t3.xlarge", "t3a.xlarge", "t2.xlarge"]
+variable "domain_name" {
+  description = "Domain name for the application (must be in Route53)"
+  type        = string
 }
 
 # RDS Configuration

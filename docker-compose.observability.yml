@@ -1,53 +1,218 @@
-networks:
-  stage3-network:
-    external: true
-    name: stage3-network
+# Docker Compose for Observability Stack
+# Prometheus + Grafana + Jaeger + Loki
 
-volumes:
-  stage3-prometheus-data:
-  stage3-grafana-data:
+version: '3.8'
 
 services:
-  stage3-jaeger:
-    image: jaegertracing/all-in-one:1.47
-    container_name: stage3-jaeger
-    environment:
-      COLLECTOR_OTLP_ENABLED: true
-    ports:
-      - "16686:16686"
-      - "14268:14268"
-      - "4317:4317"
-      - "4318:4318"
-    networks:
-      - stage3-network
-
-  stage3-prometheus:
-    image: prom/prometheus:v2.45.0
+  # =============================================================================
+  # PROMETHEUS
+  # =============================================================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
     container_name: stage3-prometheus
     volumes:
-      - ./infrastructure/docker/prometheus:/etc/prometheus
-      - stage3-prometheus-data:/prometheus
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
     ports:
       - "9090:9090"
     networks:
       - stage3-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  stage3-grafana:
-    image: grafana/grafana:10.0.0
-    container_name: stage3-grafana
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_USERS_ALLOW_SIGN_UP: false
+  # =============================================================================
+  # ALERTMANAGER
+  # =============================================================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: stage3-alertmanager
     volumes:
-      - ./infrastructure/docker/grafana/provisioning:/etc/grafana/provisioning
-      - stage3-grafana-data:/var/lib/grafana
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
     ports:
-      - "3006:3000"
+      - "9093:9093"
     networks:
       - stage3-network
+    restart: unless-stopped
 
+  # =============================================================================
+  # GRAFANA
+  # =============================================================================
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: stage3-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/etc/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel,grafana-worldmap-panel
+    ports:
+      - "3001:3000"
+    networks:
+      - stage3-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # =============================================================================
+  # JAEGER
+  # =============================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: stage3-jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_TAGS_AS_FIELDS_ALL=true
+    volumes:
+      - ./observability/jaeger/sampling-strategies.json:/etc/jaeger/sampling-strategies.json:ro
+    ports:
+      - "16686:16686"  # UI
+      - "14268:14268"  # HTTP collector
+      - "14250:14250"  # gRPC collector
+      - "6831:6831/udp"  # Agent compact thrift
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    networks:
+      - stage3-network
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+
+  # =============================================================================
+  # ELASTICSEARCH (for Jaeger storage)
+  # =============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: stage3-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - stage3-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # =============================================================================
+  # LOKI (Log Aggregation)
+  # =============================================================================
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: stage3-loki
+    volumes:
+      - ./observability/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - stage3-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # PROMTAIL (Log Shipper)
+  # =============================================================================
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: stage3-promtail
+    volumes:
+      - ./observability/promtail/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - stage3-network
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  # =============================================================================
+  # POSTGRES EXPORTER
+  # =============================================================================
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: stage3-postgres-exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://mediadmin:medi_password@medi-aide-oss-postgres-1:5432/medi_aide?sslmode=disable
+    ports:
+      - "9187:9187"
+    networks:
+      - stage3-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # REDIS EXPORTER
+  # =============================================================================
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: stage3-redis-exporter
+    environment:
+      - REDIS_ADDR=redis://stage3-redis:6379
+    ports:
+      - "9121:9121"
+    networks:
+      - stage3-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # KAFKA EXPORTER
+  # =============================================================================
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    container_name: stage3-kafka-exporter
+    command:
+      - '--kafka.server=stage3-kafka:9092'
+      - '--log.level=info'
+    ports:
+      - "9308:9308"
+    networks:
+      - stage3-network
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
+  elasticsearch_data:
+  loki_data:
+
+networks:
+  stage3-network:
+    external: true

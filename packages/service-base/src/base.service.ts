@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger, INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { 
-  Transport, 
+import {
+  Transport,
   MicroserviceOptions,
   RmqOptions,
   GrpcOptions,
@@ -12,6 +12,8 @@ import helmet from 'helmet';
 import { ConsulModule, ConsulService } from '@medi-aide/consul-integration';
 import { TracerService } from '@medi-aide/service-framework';
 import { join } from 'path';
+import { applyRequestContext } from './request-context';
+import { applyTimezoneContext } from './timezone';
 
 export interface ServiceOptions {
   serviceName: string;
@@ -48,7 +50,7 @@ export abstract class BaseService {
     try {
       // Check if running in health-only mode
       const healthOnly = process.env.HEALTH_ONLY === 'true';
-      
+
       if (healthOnly) {
         // Run a simple health server without full NestJS bootstrap
         this.runHealthOnlyServer();
@@ -75,9 +77,12 @@ export abstract class BaseService {
       this.config = this.app.get(ConfigService);
 
       // Set global prefix (allow empty string to mean no prefix)
+      // Exclude health check routes from the prefix so Docker healthchecks work
       const globalPrefix = this.options.globalPrefix ?? this.options.serviceName.replace('-service', '');
       if (globalPrefix !== '') {
-        this.app.setGlobalPrefix(globalPrefix);
+        this.app.setGlobalPrefix(globalPrefix, {
+          exclude: ['health', 'ping', '/'],
+        });
       }
 
       // Enable security headers
@@ -100,8 +105,15 @@ export abstract class BaseService {
           'X-Request-ID',
           'X-Trace-ID',
           'X-Canary-Version',
+          'X-Timezone',
         ],
       });
+
+      // Attach request context (request id, etc.) to every request
+      this.app.use((req: any, res: any, next: any) => applyRequestContext(req, res, next));
+
+      // Attach validated timezone context to every request
+      this.app.use((req: any, res: any, next: any) => applyTimezoneContext(req, res, next));
 
       // Global validation pipe
       this.app.useGlobalPipes(

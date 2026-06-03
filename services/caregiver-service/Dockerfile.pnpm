@@ -1,0 +1,70 @@
+# syntax=docker/dockerfile:1.6
+# Enterprise-grade Dockerfile for Caregiver Service
+FROM node:20-alpine AS builder
+
+ARG NPM_REGISTRY_URL=https://registry.npmjs.org/
+ARG SERVICE_NAME=caregiver-service
+
+RUN apk add --no-cache tini curl bash
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+WORKDIR /app
+
+# Copy workspace files
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+COPY packages ./packages
+
+# Copy service-specific files
+COPY services/${SERVICE_NAME}/package.json ./services/${SERVICE_NAME}/
+COPY services/${SERVICE_NAME}/tsconfig.json ./services/${SERVICE_NAME}/
+COPY services/${SERVICE_NAME}/src ./services/${SERVICE_NAME}/src
+
+# Optional: Copy nest-cli.json if exists
+COPY services/${SERVICE_NAME}/nest-cli.json* ./services/${SERVICE_NAME}/
+
+ENV PNPM_HOME=/root/.local/share/pnpm \
+    PNPM_FETCH_RETRIES=6 \
+    PNPM_FETCH_TIMEOUT=120000 \
+    PNPM_NETWORK_CONCURRENCY=1
+
+RUN pnpm config set registry ${NPM_REGISTRY_URL}
+
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm fetch --prefer-offline
+
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --prefer-offline --no-frozen-lockfile
+
+# Build shared packages first
+RUN pnpm -r --filter "./packages/**" build
+
+# Build the service
+RUN pnpm --filter @medi-aide/${SERVICE_NAME} build
+
+# Create production deployment
+RUN pnpm --filter @medi-aide/${SERVICE_NAME} deploy --prod ./deploy/${SERVICE_NAME}
+
+# Production stage
+FROM node:20-alpine
+
+RUN apk add --no-cache tini
+
+WORKDIR /app
+
+ARG SERVICE_NAME=caregiver-service
+
+COPY --from=builder /app/deploy/${SERVICE_NAME} ./
+COPY --from=builder /app/services/${SERVICE_NAME}/dist ./dist
+
+RUN addgroup -g 10001 appgroup && \
+    adduser -u 10001 -G appgroup -s /bin/sh -D appuser && \
+    chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 4051
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "dist/main.js"]

@@ -18,52 +18,107 @@ import {
 @Index(['city', 'province'])
 export class CaregiverLocation {
   @PrimaryColumn('uuid', { name: 'caregiver_id' })
-  caregiverId: string;
+  caregiverId!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 7 })
-  latitude: number;
+  latitude!: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 7 })
-  longitude: number;
+  longitude!: number;
 
   @Column({ name: 'h3_index', type: 'varchar', length: 20, nullable: true })
-  @Index()
-  h3Index: string;
+  h3Index!: string;
 
   @Column({ name: 'h3_resolution', type: 'int', default: 9 })
-  h3Resolution: number;
+  h3Resolution!: number;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  city: string;
+  city!: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
-  province: string;
+  province!: string;
 
   @Column({ name: 'postal_code', type: 'varchar', length: 10, nullable: true })
-  postalCode: string;
+  postalCode!: string;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   @Index()
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ name: 'is_available', type: 'boolean', default: false })
-  isAvailable: boolean;
+  isAvailable!: boolean;
 
   @Column({ name: 'service_radius_km', type: 'int', default: 30 })
-  serviceRadiusKm: number;
+  serviceRadiusKm!: number;
 
   @Column({ name: 'last_seen_at', type: 'timestamptz', nullable: true })
-  lastSeenAt: Date;
+  lastSeenAt!: Date;
 
   @Column({ name: 'location_accuracy', type: 'decimal', precision: 5, scale: 2, nullable: true })
-  locationAccuracy: number; // meters
+  locationAccuracy!: number; // meters
 
   @Column({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
+  metadata!: Record<string, any>;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

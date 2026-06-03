@@ -1,0 +1,20 @@
+{
+  "name": "@medi-aide/load-testing",
+  "version": "1.0.0",
+  "description": "Load testing suite for Medi-Aide platform",
+  "private": true,
+  "scripts": {
+    "test:smoke": "k6 run --config config/smoke.json scenarios/smoke-test.js",
+    "test:load": "k6 run --config config/load.json scenarios/load-test.js",
+    "test:stress": "k6 run --config config/stress.json scenarios/stress-test.js",
+    "test:spike": "k6 run --config config/spike.json scenarios/spike-test.js",
+    "test:soak": "k6 run --config config/soak.json scenarios/soak-test.js",
+    "test:api": "k6 run scenarios/api-endpoints.js",
+    "test:auth": "k6 run scenarios/auth-flow.js",
+    "test:scheduling": "k6 run scenarios/scheduling-flow.js",
+    "report": "node scripts/generate-report.js"
+  },
+  "devDependencies": {
+    "@types/k6": "^0.48.0"
+  }
+}

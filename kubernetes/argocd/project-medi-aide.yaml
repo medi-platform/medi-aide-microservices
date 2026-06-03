@@ -1,18 +1,104 @@
+##############################################################################
+# ArgoCD Project for Medi-Aide
+# Phase 8: CI/CD Pipeline Enhancements
+##############################################################################
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: medi-aide
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
-  description: Medi-Aide applications
+  description: Medi-Aide Healthcare Platform
+
+  # Allow manifests from these repositories
   sourceRepos:
-    - '*'
+    - https://github.com/medi-platform/medi-aide-microservices.git
+    - https://github.com/medi-platform/medi-aide-infrastructure.git
+
+  # Destinations this project can deploy to
   destinations:
-    - namespace: '*'
+    - namespace: medi-aide-dev
       server: https://kubernetes.default.svc
+    - namespace: medi-aide-staging
+      server: https://kubernetes.default.svc
+    - namespace: medi-aide-prod
+      server: https://kubernetes.default.svc
+    - namespace: medi-aide-infra
+      server: https://kubernetes.default.svc
+
+  # Cluster resources allowed
   clusterResourceWhitelist:
-    - group: '*'
+    - group: ''
+      kind: Namespace
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
+    - group: 'networking.k8s.io'
+      kind: IngressClass
+
+  # Namespace resources allowed
+  namespaceResourceWhitelist:
+    - group: ''
       kind: '*'
+    - group: 'apps'
+      kind: '*'
+    - group: 'networking.k8s.io'
+      kind: '*'
+    - group: 'autoscaling'
+      kind: '*'
+    - group: 'batch'
+      kind: '*'
+    - group: 'policy'
+      kind: '*'
+    - group: 'monitoring.coreos.com'
+      kind: '*'
+    - group: 'external-secrets.io'
+      kind: '*'
+
+  # Roles for project access
+  roles:
+    - name: admin
+      description: Full access to medi-aide project
+      policies:
+        - p, proj:medi-aide:admin, applications, *, medi-aide/*, allow
+        - p, proj:medi-aide:admin, repositories, *, medi-aide/*, allow
+        - p, proj:medi-aide:admin, clusters, *, medi-aide/*, allow
+      groups:
+        - medi-aide-admins
+
+    - name: developer
+      description: Developer access (read-only, can sync)
+      policies:
+        - p, proj:medi-aide:developer, applications, get, medi-aide/*, allow
+        - p, proj:medi-aide:developer, applications, sync, medi-aide/*, allow
+        - p, proj:medi-aide:developer, logs, get, medi-aide/*, allow
+      groups:
+        - medi-aide-developers
+
+    - name: viewer
+      description: Read-only access
+      policies:
+        - p, proj:medi-aide:viewer, applications, get, medi-aide/*, allow
+        - p, proj:medi-aide:viewer, logs, get, medi-aide/*, allow
+      groups:
+        - medi-aide-viewers
+
+  # Sync windows (optional - restrict syncs during maintenance)
+  syncWindows:
+    - kind: deny
+      schedule: '0 22 * * FRI'
+      duration: 36h
+      namespaces:
+        - medi-aide-prod
+      manualSync: true
+
+  # Orphaned resources monitoring
   orphanedResources:
     warn: true
-
+    ignore:
+      - group: ''
+        kind: ConfigMap
+        name: kube-root-ca.crt

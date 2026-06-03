@@ -1,0 +1,30 @@
+{
+  "name": "@medi-aide/database-migrations",
+  "version": "1.0.0",
+  "description": "Enterprise-grade database migration utilities for microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "migration:create": "ts-node src/cli/create-migration.ts",
+    "migration:run": "ts-node src/cli/run-migrations.ts",
+    "migration:revert": "ts-node src/cli/revert-migration.ts",
+    "migration:status": "ts-node src/cli/migration-status.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^3.2.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "commander": "^11.1.0",
+    "typeorm": "^0.3.20",
+    "pg": "^8.12.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.2"
+  }
+}
+

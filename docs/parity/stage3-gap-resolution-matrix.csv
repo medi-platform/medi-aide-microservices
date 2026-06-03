@@ -1,0 +1,213 @@
+monolith_path,resolution_type,target_service,kong_route_name,kong_match_path,upstream_path,effort,notes
+/api/v1/admin/requests,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/settings,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/users,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/caregiver/tasks,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/internal/caregivers,KONG_ROUTE,various,internal-*,/api/v1/internal,/api/v1/internal,MEDIUM,Internal service-to-service APIs
+/api/v1/patient/visits,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/admin,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/activities,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/activity-log,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/agencies,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/ai-matching/batch,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/ai-matching/override,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/ai-matching/quality,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/approval,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/audit,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/auth,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/care-plans,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/caregivers/approval,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/caregivers/monitoring,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/caregivers/verification,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/compliance,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/dashboard,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/documents,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/documents/review,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/email,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/insights,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/launch,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/metrics,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/outbox,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/pam,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/phase2-rollback,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/phase2-rollout,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/pilot-program,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/providers/analytics,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/roles,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/settings,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/users,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/verification,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/admin/verification/enhanced,KONG_ALIAS + CONTROLLER_EXPANSION,admin-service,admin-api-v1,/api/v1/admin,/admin,MEDIUM,Requires admin-service controller expansion
+/api/v1/agency,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency-matching,KONG_ALIAS,matching-service,agency-matching-legacy-alias,/api/v1/agency-matching,/api/v1/matching,LOW,Path rename
+/api/v1/agency/:agencyId/training/assignments,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/admin,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/adoption,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/ai,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/analytics,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/analytics/reports,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/announcements,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/billing,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/branding,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/care-plans,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/care-requests,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/caregivers,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/compliance,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/compliance/automation,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/compliance/reporting,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/cost,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/dashboard,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/document-hub,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/documents,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/emergency,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/fairness,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/gamification,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/incidents,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/integrations,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/iot,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/job-board,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/labor-compliance,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/labor-rules,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/launch,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/matching,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/matching/tuning,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/messaging,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/notifications,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/onboarding,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/overtime,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/partners,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/partners/webhooks,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/patients,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/payroll,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/preferences,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/qa,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/recruitment/analytics,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/recruitment/interviews,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/recruitment/onboarding,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/recruitment/referral-program,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/residences,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/residences/:residenceId,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/residences/:residenceId/intake,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/residences/:residenceId/residents,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/roi,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/rules,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/scheduling,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/scheduling/optimization,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/scheduling/swaps,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/settings,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/sso,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/support,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/training,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/uploads,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/verification,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/warehouse/exports,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/agency/wellness-insights,KONG_ALIAS,agency-service,agency-legacy-alias,/api/v1/agency,/api/v1/agencies,LOW,Singular to plural path mapping
+/api/v1/ai-matching/diagnostic,KONG_ALIAS,matching-service,ai-matching-legacy-alias,/api/v1/ai-matching,/api/v1/matching,LOW,Path rename
+/api/v1/ai-matching/explanations,KONG_ALIAS,matching-service,ai-matching-legacy-alias,/api/v1/ai-matching,/api/v1/matching,LOW,Path rename
+/api/v1/ai-matching/health,KONG_ALIAS,matching-service,ai-matching-legacy-alias,/api/v1/ai-matching,/api/v1/matching,LOW,Path rename
+/api/v1/ai-matching/performance,KONG_ALIAS,matching-service,ai-matching-legacy-alias,/api/v1/ai-matching,/api/v1/matching,LOW,Path rename
+/api/v1/ai-matching/profile-tiers,KONG_ALIAS,matching-service,ai-matching-legacy-alias,/api/v1/ai-matching,/api/v1/matching,LOW,Path rename
+/api/v1/ai-matching/progressive,KONG_ALIAS,matching-service,ai-matching-legacy-alias,/api/v1/ai-matching,/api/v1/matching,LOW,Path rename
+/api/mobile/v1/care-plans,MOBILE_API_ROUTE,mobile-bff-service,mobile-api,/api/mobile,/api/mobile,MEDIUM,Mobile-specific API
+/api/v1,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: api - requires manual analysis
+/api/v1/achievements,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: achievements - requires manual analysis
+/api/v1/advanced,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: advanced - requires manual analysis
+/api/v1/config,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: config - requires manual analysis
+/api/v1/ereferrals/ontario,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: ereferrals - requires manual analysis
+/api/v1/experimental,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: experimental - requires manual analysis
+/api/v1/feature-disclosure,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: feature-disclosure - requires manual analysis
+/api/v1/monitoring,KONG_ROUTE,observability-service,monitoring-api,/api/v1/monitoring,/api/v1/monitoring,MEDIUM,Monitoring and observability
+/api/v1/privacy,KONG_ROUTE,audit-service,privacy-api,/api/v1/privacy,/api/v1/privacy,MEDIUM,Privacy and data protection
+/api/v1/recognition,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: recognition - requires manual analysis
+/api/v1/security,KONG_ROUTE,security-monitoring-service,security-api,/api/v1/security,/api/v1/security,MEDIUM,Security monitoring
+/api/v1/smart-defaults,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: smart-defaults - requires manual analysis
+/api/v1/spotlight,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: spotlight - requires manual analysis
+/api/v2,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: api - requires manual analysis
+/api/v2/auth,KONG_ROUTE,auth-service,auth-api,/api/v2/auth,/api/v1/auth,LOW,Authentication endpoints
+/api/v2/cultural-preferences,V2_API_ROUTE,TBD,v2-cultural-preferences,/api/v2/cultural-preferences,/api/v2/cultural-preferences,HIGH,V2 API - needs explicit handling
+/api/v3/caregivers/me/visits/personal,V3_API_ROUTE,TBD,v3-caregivers,/api/v3/caregivers,/api/v3/caregivers,HIGH,V3 API - consider deprecation
+/api/v1/approval,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: approval - requires manual analysis
+/api/v1/bff,KONG_ROUTE,bff-service,bff-api,/api/v1/bff,/api/v1/bff,LOW,Backend-for-frontend endpoints
+/api/v1/bff/care-requests,KONG_ROUTE,bff-service,bff-api,/api/v1/bff,/api/v1/bff,LOW,Backend-for-frontend endpoints
+/api/v1/calendar-integration,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: calendar-integration - requires manual analysis
+/api/v1/care-request-router,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: care-request-router - requires manual analysis
+/api/v1/care-transitions,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: care-transitions - requires manual analysis
+/api/v1/caregiver/:id/feedback,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/affiliated,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/agency,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/availability,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/calendar,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/certifications,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/expenses,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/feedback,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/interviews,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/invoices,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/job-opportunities,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/messages,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/payments,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/recipients,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/referrals,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/residential,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/schedule,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/caregiver/settings,KONG_ALIAS,caregiver-service,caregiver-legacy-alias,/api/v1/caregiver,/api/v1/caregivers,LOW,Singular to plural path mapping
+/api/v1/clock-in-out,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: clock-in-out - requires manual analysis
+/api/v1/coffeemeets,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: coffeemeets - requires manual analysis
+/api/v1/community/forums,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: community - requires manual analysis
+/api/v1/coverage,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: coverage - requires manual analysis
+/api/v1/delegation,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: delegation - requires manual analysis
+/api/v1/evv-configurations,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: evv-configurations - requires manual analysis
+/api/v1/fairness-dashboard,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: fairness-dashboard - requires manual analysis
+/api/v1/fairness-metrics,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: fairness-metrics - requires manual analysis
+/api/v1/fraud,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: fraud - requires manual analysis
+/api/v1/guardian/portal,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: guardian - requires manual analysis
+/api/v1/health,KONG_ROUTE,health-aggregator,health-api,/api/v1/health,/health,LOW,Health check endpoints
+/api/v1/health/database,KONG_ROUTE,health-aggregator,health-api,/api/v1/health,/health,LOW,Health check endpoints
+/api/v1/internal,KONG_ROUTE,various,internal-*,/api/v1/internal,/api/v1/internal,MEDIUM,Internal service-to-service APIs
+/api/v1/internal/care-requests,KONG_ROUTE,various,internal-*,/api/v1/internal,/api/v1/internal,MEDIUM,Internal service-to-service APIs
+/api/v1/internal/caregivers,KONG_ROUTE,various,internal-*,/api/v1/internal,/api/v1/internal,MEDIUM,Internal service-to-service APIs
+/api/v1/internal/something,KONG_ROUTE,various,internal-*,/api/v1/internal,/api/v1/internal,MEDIUM,Internal service-to-service APIs
+/api/v1/mentors,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: mentors - requires manual analysis
+/api/v1/metrics,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: metrics - requires manual analysis
+/api/v1/migrations,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: migrations - requires manual analysis
+/api/v1/monitoring,KONG_ROUTE,observability-service,monitoring-api,/api/v1/monitoring,/api/v1/monitoring,MEDIUM,Monitoring and observability
+/api/v1/networking,KONG_ALIAS,communication-service,networking-legacy-alias,/api/v1/networking,/api/v1/communication,LOW,Path rename
+/api/v1/networking/groups,KONG_ALIAS,communication-service,networking-legacy-alias,/api/v1/networking,/api/v1/communication,LOW,Path rename
+/api/v1/networking/messages,KONG_ALIAS,communication-service,networking-legacy-alias,/api/v1/networking,/api/v1/communication,LOW,Path rename
+/api/v1/operations-center,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: operations-center - requires manual analysis
+/api/v1/password,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: password - requires manual analysis
+/api/v1/patient,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/patient/care-requests,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/patient/feedback,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/patient/messages,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/patient/settings,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/patient/visits,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/patient/visits/:visitId/feedback,KONG_ALIAS,patient-service,patient-legacy-alias,/api/v1/patient,/api/v1/patients,LOW,Singular to plural path mapping
+/api/v1/places,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: places - requires manual analysis
+/api/v1/privacy,KONG_ROUTE,audit-service,privacy-api,/api/v1/privacy,/api/v1/privacy,MEDIUM,Privacy and data protection
+/api/v1/protected,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: protected - requires manual analysis
+/api/v1/public,KONG_ROUTE,public-api-service,public-api,/api/v1/public,/api/v1/public,MEDIUM,Public API endpoints
+/api/v1/public/contracts,KONG_ROUTE,public-api-service,public-api,/api/v1/public,/api/v1/public,MEDIUM,Public API endpoints
+/api/v1/public/launch,KONG_ROUTE,public-api-service,public-api,/api/v1/public,/api/v1/public,MEDIUM,Public API endpoints
+/api/v1/public/referrals,KONG_ROUTE,public-api-service,public-api,/api/v1/public,/api/v1/public,MEDIUM,Public API endpoints
+/api/v1/public/ws,KONG_ROUTE,public-api-service,public-api,/api/v1/public,/api/v1/public,MEDIUM,Public API endpoints
+/api/v1/registration/patient/sessions,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: registration - requires manual analysis
+/api/v1/reports,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: reports - requires manual analysis
+/api/v1/residential/intake,KONG_ALIAS,residential-service,residential-legacy-alias,/api/v1/residential,/api/v1/residences,LOW,Path rename
+/api/v1/residential/money-counts,KONG_ALIAS,residential-service,residential-legacy-alias,/api/v1/residential,/api/v1/residences,LOW,Path rename
+/api/v1/residential/orientation,KONG_ALIAS,residential-service,residential-legacy-alias,/api/v1/residential,/api/v1/residences,LOW,Path rename
+/api/v1/residential/serious-occurrences,KONG_ALIAS,residential-service,residential-legacy-alias,/api/v1/residential,/api/v1/residences,LOW,Path rename
+/api/v1/residential/training-hub,KONG_ALIAS,residential-service,residential-legacy-alias,/api/v1/residential,/api/v1/residences,LOW,Path rename
+/api/v1/residential/ws-health,KONG_ALIAS,residential-service,residential-legacy-alias,/api/v1/residential,/api/v1/residences,LOW,Path rename
+/api/v1/routes,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: routes - requires manual analysis
+/api/v1/schedule,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: schedule - requires manual analysis
+/api/v1/security,KONG_ROUTE,security-monitoring-service,security-api,/api/v1/security,/api/v1/security,MEDIUM,Security monitoring
+/api/v1/session,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: session - requires manual analysis
+/api/v1/shadow-analytics,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: shadow-analytics - requires manual analysis
+/api/v1/shift-handoffs,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: shift-handoffs - requires manual analysis
+/api/v1/support,KONG_ROUTE,agency-service,support-api,/api/v1/support,/api/v1/support-tickets,LOW,Support ticket endpoints
+/api/v1/support/help-center,KONG_ROUTE,agency-service,support-api,/api/v1/support,/api/v1/support-tickets,LOW,Support ticket endpoints
+/api/v1/system,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: system - requires manual analysis
+/api/v1/tasks,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: tasks - requires manual analysis
+/api/v1/timesheets,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: timesheets - requires manual analysis
+/api/v1/ui,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: ui - requires manual analysis
+/api/v1/uploads,NEEDS_ANALYSIS,TBD,,,,HIGH,Segment: uploads - requires manual analysis

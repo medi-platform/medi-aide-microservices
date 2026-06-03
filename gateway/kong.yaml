@@ -242,7 +242,7 @@ services:
           - PATCH
           - OPTIONS
 
-  # Feedback Service
+  # Feedback Service (Phase 5G Enhanced)
   - name: feedback-service
     url: http://stage3-feedback-service:4025
     routes:
@@ -257,14 +257,168 @@ services:
           - DELETE
           - PATCH
           - OPTIONS
+      - name: surveys-route
+        paths:
+          - /api/v1/surveys
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: ratings-route
+        paths:
+          - /api/v1/ratings
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: feedback-requests-route
+        paths:
+          - /api/v1/feedback-requests
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: nps-route
+        paths:
+          - /api/v1/nps
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: testimonials-route
+        paths:
+          - /api/v1/testimonials
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: sentiment-route
+        paths:
+          - /api/v1/sentiment
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: aggregations-route
+        paths:
+          - /api/v1/aggregations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
 
-  # Communication Service
+  # Communication Service (Phase 5F Enhanced)
   - name: communication-service
     url: http://stage3-communication-service:4026
     routes:
       - name: communication-route
         paths:
           - /api/v1/communication
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: conversations-route
+        paths:
+          - /api/v1/conversations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: messages-route
+        paths:
+          - /api/v1/messages
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: reactions-route
+        paths:
+          - /api/v1/reactions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: notifications-route
+        paths:
+          - /api/v1/notifications
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: threads-route
+        paths:
+          - /api/v1/threads
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: scheduled-messages-route
+        paths:
+          - /api/v1/scheduled-messages
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: templates-route
+        paths:
+          - /api/v1/templates
         strip_path: false
         methods:
           - GET
@@ -288,6 +442,2241 @@ services:
           - PUT
           - DELETE
           - PATCH
+          - OPTIONS
+
+  # AI/ML Service - Matching
+  - name: ai-ml-matching
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-matching-route
+        paths:
+          - /api/v1/ai/matching
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Recommendations
+  - name: ai-ml-recommendations
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-recommendations-route
+        paths:
+          - /api/v1/ai/recommendations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Text Analysis
+  - name: ai-ml-text-analysis
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-text-analysis-route
+        paths:
+          - /api/v1/ai/text-analysis
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Chat
+  - name: ai-ml-chat
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-chat-route
+        paths:
+          - /api/v1/ai/chat
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - DELETE
+          - OPTIONS
+
+  # AI/ML Service - Schedule Optimization
+  - name: ai-ml-schedule
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-schedule-route
+        paths:
+          - /api/v1/ai/schedule
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Wellness AI
+  - name: ai-ml-wellness
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-wellness-route
+        paths:
+          - /api/v1/ai/wellness
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Care Plans AI
+  - name: ai-ml-care-plans
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-care-plans-route
+        paths:
+          - /api/v1/ai/care-plans
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Compliance Prediction
+  - name: ai-ml-compliance
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-compliance-route
+        paths:
+          - /api/v1/ai/compliance
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Explainability
+  - name: ai-ml-explainability
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-explainability-route
+        paths:
+          - /api/v1/ai/explainability
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # AI/ML Service - Predictive Analytics
+  - name: ai-ml-predictive
+    url: http://stage3-ai-ml-service:8005
+    routes:
+      - name: ai-predictive-route
+        paths:
+          - /api/v1/ai/predictive
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # Agency Service - B2B Critical (Phase 5A Enhanced)
+  - name: agency-service
+    url: http://stage3-agency-service:4050
+    routes:
+      - name: agency-route
+        paths:
+          - /api/v1/agencies
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-job-postings-route
+        paths:
+          - /api/v1/job-postings
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-applications-route
+        paths:
+          - /api/v1/applications
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-interviews-route
+        paths:
+          - /api/v1/interviews
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-integrations-route
+        paths:
+          - /api/v1/integrations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-labor-rules-route
+        paths:
+          - /api/v1/labor-rules
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-support-tickets-route
+        paths:
+          - /api/v1/support-tickets
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Caregiver Service (Phase 5C Enhanced)
+  - name: caregiver-service
+    url: http://stage3-caregiver-service:4051
+    routes:
+      - name: caregiver-route
+        paths:
+          - /api/v1/caregivers
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-shifts-route
+        paths:
+          - /api/v1/caregiver-shifts
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-schedules-route
+        paths:
+          - /api/v1/caregiver-schedules
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-vacations-route
+        paths:
+          - /api/v1/caregiver-vacations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-trainings-route
+        paths:
+          - /api/v1/caregiver-trainings
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-compliance-route
+        paths:
+          - /api/v1/caregiver-compliance
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-incidents-route
+        paths:
+          - /api/v1/caregiver-incidents
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: caregiver-registration-route
+        paths:
+          - /api/v1/caregiver-registration
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Patient Service
+  - name: patient-service
+    url: http://stage3-patient-service:4052
+    routes:
+      - name: patient-route
+        paths:
+          - /api/v1/patients
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Care Request Service
+  - name: care-request-service
+    url: http://stage3-care-request-service:4053
+    routes:
+      - name: care-request-route
+        paths:
+          - /api/v1/care-requests
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Scheduling Service
+  - name: scheduling-service
+    url: http://stage3-scheduling-service:4054
+    routes:
+      - name: scheduling-route
+        paths:
+          - /api/v1/schedules
+          - /api/v1/appointments
+          - /api/v1/calendar
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Integration Service
+  - name: integration-service
+    url: http://stage3-integration-service:4055
+    routes:
+      - name: integration-route
+        paths:
+          - /api/v1/integrations
+          - /api/v1/webhooks
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Incident Service
+  - name: incident-service
+    url: http://stage3-incident-service:4056
+    routes:
+      - name: incident-route
+        paths:
+          - /api/v1/incidents
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Insurance Service
+  - name: insurance-service
+    url: http://stage3-insurance-service:4057
+    routes:
+      - name: insurance-route
+        paths:
+          - /api/v1/insurance
+          - /api/v1/claims
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Residential Service - Phase 5B (Group Homes, LTC, Assisted Living)
+  - name: residential-service
+    url: http://stage3-residential-service:4060
+    routes:
+      - name: residences-route
+        paths:
+          - /api/v1/residences
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: resident-assignments-route
+        paths:
+          - /api/v1/assignments
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: residential-shifts-route
+        paths:
+          - /api/v1/residential-shifts
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: residential-tasks-route
+        paths:
+          - /api/v1/residential-tasks
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: daily-notes-route
+        paths:
+          - /api/v1/daily-notes
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: observations-route
+        paths:
+          - /api/v1/observations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: serious-occurrences-route
+        paths:
+          - /api/v1/serious-occurrences
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # =============================================================================
+  # GUARDIANS (Enterprise) - route to monolith backend
+  # =============================================================================
+  #
+  # Why this exists:
+  # - Enterprise guardian account management lives in `medi-aide-backend` under:
+  #   - `/api/v1/guardians/accounts/*`
+  #   - `/api/v1/guardians/*` (multi-recipient notifications)
+  #   - `/api/v1/guardian/portal/*` (guardian portal)
+  #
+  # DO NOT route these paths to `stage3-residential-service` because that service has
+  # a different guardian controller surface (`/api/v1/guardians/*` without `/accounts`)
+  # and does not implement the guardian portal contract.
+  #
+  # These routes must win over the generic /api/v1 monolith fallback and any other
+  # /api/v1/guardians routes, so we set a high `regex_priority`.
+  - name: guardians-enterprise-service
+    url: http://host.docker.internal:3000
+    routes:
+      - name: guardians-accounts-enterprise-route
+        paths:
+          - "~^/api/v1/guardians/accounts(?=/|$)"
+        strip_path: false
+        regex_priority: 250
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: guardians-notifications-enterprise-route
+        paths:
+          - "~^/api/v1/guardians(?=/|$)"
+        strip_path: false
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # =============================================================================
+  # RESIDENTIAL TRAINING HUB (Enterprise) - route to monolith backend
+  # =============================================================================
+  #
+  # Why this exists:
+  # - Caregiver Mobile calls `/api/v1/residential/training-hub/*` for residence-scoped
+  #   training requirements + policy acknowledgments (TRAIN-01).
+  # - The legacy alias `/api/v1/residential/**` currently routes to stage3-residential-service,
+  #   which does not implement the monolith Training Hub contract.
+  #
+  # This route must win over the generic `/api/v1/residential/**` legacy alias.
+  - name: residential-training-hub-enterprise-service
+    url: http://host.docker.internal:3000
+    routes:
+      - name: residential-training-hub-enterprise-route
+        paths:
+          - "~^/api/v1/residential/training-hub(?=/|$)"
+        strip_path: false
+        regex_priority: 260
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Profile Service (user-service)
+  - name: profile-service
+    url: http://stage3-user-service:4012
+    routes:
+      - name: profile-route
+        paths:
+          - /api/v1/profiles
+          - /api/v1/settings
+          - /api/v1/identity
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # eMAR and Clinical Services (patient-service) - Phase 5D Enhanced
+  - name: patient-extended-service
+    url: http://stage3-patient-service:4052
+    routes:
+      - name: emar-route
+        paths:
+          - /api/v1/emar
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: clinical-route
+        paths:
+          - /api/v1/clinical
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: consent-route
+        paths:
+          - /api/v1/consent
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: vitals-route
+        paths:
+          - /api/v1/vitals
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: allergies-route
+        paths:
+          - /api/v1/allergies
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: diagnoses-route
+        paths:
+          - /api/v1/diagnoses
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: clinical-notes-route
+        paths:
+          - /api/v1/clinical-notes
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: care-plan-goals-route
+        paths:
+          - /api/v1/care-plan-goals
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: assessments-route
+        paths:
+          - /api/v1/assessments
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Chat and Messaging (communication-service)
+  - name: chat-messaging-service
+    url: http://stage3-communication-service:4027
+    routes:
+      - name: chat-messaging-route
+        paths:
+          - /api/v1/chat
+          - /api/v1/messaging
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Appointments and Waitlist (scheduling-service)
+  - name: scheduling-extended-service
+    url: http://stage3-scheduling-service:4053
+    routes:
+      - name: scheduling-extended-route
+        paths:
+          - /api/v1/appointments
+          - /api/v1/waitlist
+          - /api/v1/calendar
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Virtual Visits and Meetings (wellness-service)
+  - name: wellness-extended-service
+    url: http://stage3-wellness-service:4014
+    routes:
+      - name: wellness-extended-route
+        paths:
+          - /api/v1/virtual-visits
+          - /api/v1/meetings
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # FHIR and Providers (integration-service)
+  - name: integration-extended-service
+    url: http://stage3-integration-service:4055
+    routes:
+      - name: integration-extended-route
+        paths:
+          - /api/v1/fhir
+          - /api/v1/providers
+          - /api/v1/outbox
+          - /api/v1/sync
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Gamification (training-service)
+  - name: gamification-service
+    url: http://stage3-training-service:4024
+    routes:
+      - name: gamification-route
+        paths:
+          - /api/v1/gamification
+          - /api/v1/leaderboard
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Comments and Reactions (moderation-service)
+  - name: comments-service
+    url: http://stage3-moderation-service:4025
+    routes:
+      - name: comments-route
+        paths:
+          - /api/v1/comments
+          - /api/v1/reactions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Canadian Features (provincial-service)
+  - name: canadian-features-service
+    url: http://stage3-provincial-service:4031
+    routes:
+      - name: canadian-features-route
+        paths:
+          - /api/v1/canadian
+          - /api/v1/attestation
+          - /api/v1/data-residency
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Location Services (search-service)
+  - name: location-service
+    url: http://stage3-search-service:4016
+    routes:
+      - name: location-route
+        paths:
+          - /api/v1/locations
+          - /api/v1/geocode
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Reports Service (Phase 5H - NEW)
+  - name: reports-service
+    url: http://stage3-reports-service:4070
+    routes:
+      - name: reports-definitions-route
+        paths:
+          - /api/v1/reports/definitions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: reports-executions-route
+        paths:
+          - /api/v1/reports/executions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: reports-schedules-route
+        paths:
+          - /api/v1/reports/schedules
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: reports-subscriptions-route
+        paths:
+          - /api/v1/reports/subscriptions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Insights (analytics-service)
+  - name: insights-service
+    url: http://stage3-analytics-service:4038
+    routes:
+      - name: insights-route
+        paths:
+          - /api/v1/insights
+          - /api/v1/dashboards
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Compliance (audit-service)
+  - name: compliance-service
+    url: http://stage3-audit-service:4017
+    routes:
+      - name: compliance-route
+        paths:
+          - /api/v1/compliance
+          - /api/v1/hipaa
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Contract Service (Phase 5E Enhanced)
+  - name: contract-service
+    url: http://stage3-contract-service:4058
+    routes:
+      - name: contracts-route
+        paths:
+          - /api/v1/contracts
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: amendments-route
+        paths:
+          - /api/v1/amendments
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: renewals-route
+        paths:
+          - /api/v1/renewals
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: disputes-route
+        paths:
+          - /api/v1/disputes
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: clauses-route
+        paths:
+          - /api/v1/clauses
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: versions-route
+        paths:
+          - /api/v1/versions
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-contracts-route
+        paths:
+          - /api/v1/agency-contracts
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Mentorship Service (Phase 3)
+  - name: mentorship-service
+    url: http://stage3-mentorship-service:4035
+    routes:
+      - name: mentorship-route
+        paths:
+          - /api/v1/mentorship
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Care Network Service (Groups, CoffeeMeets) (Phase 3)
+  - name: care-network-service
+    url: http://stage3-care-network-service:4033
+    routes:
+      - name: care-network-route
+        paths:
+          - /api/v1/care-network
+          - /api/v1/groups
+          - /api/v1/coffee-meets
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # =============================================================================
+  # PHASE 4 SERVICES
+  # =============================================================================
+
+  # Fraud Detection Service (Phase 4)
+  - name: fraud-detection-service
+    url: http://stage3-fraud-detection-service:4040
+    routes:
+      - name: fraud-detection-route
+        paths:
+          - /api/v1/fraud-detection
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Security Monitoring Service (Phase 4)
+  - name: security-monitoring-service
+    url: http://stage3-security-monitoring-service:4041
+    routes:
+      - name: security-monitoring-route
+        paths:
+          - /api/v1/security-monitoring
+          - /api/v1/audit
+          - /api/v1/alerts
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Provincial Service (Phase 4)
+  - name: provincial-service
+    url: http://stage3-provincial-service:4034
+    routes:
+      - name: provincial-route
+        paths:
+          - /api/v1/provincial
+          - /api/v1/canadian
+          - /api/v1/labor-rules
+          - /api/v1/attestations
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Feature Flags Service (Phase 4)
+  - name: feature-flags-service
+    url: http://stage3-feature-flags-service:4042
+    routes:
+      - name: feature-flags-route
+        paths:
+          - /api/v1/feature-flags
+          - /api/v1/flags
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # =============================================================================
+  # PHASE 1: LEGACY PATH ALIASES (Parity-safe, Strangler Fig friendly)
+  # These routes reduce reliance on monolith-fallback by rewriting ONLY well-defined
+  # legacy path patterns to their Stage 3 equivalents.
+  #
+  # Enterprise-grade principles:
+  # - Collision-safe regex (never matches the newer plural routes like /agencies)
+  # - High regex_priority so aliases win over monolith-fallback
+  # - Boundary-aware matching so we don't accidentally catch similarly-named routes
+  #   (e.g., /api/v1/caregiver-registration should NOT match the /api/v1/caregiver alias)
+  # =============================================================================
+
+  # Legacy: /api/v1/agency/*  -> Stage3: /api/v1/agencies/*
+  - name: agency-service-legacy-alias
+    url: http://stage3-agency-service:4050/api/v1/agencies
+    routes:
+      - name: agency-legacy-alias
+        # Legacy singular prefix alias:
+        # - /api/v1/agency/**  -> /api/v1/agencies/**
+        # Collision-safe: will NOT match /api/v1/agencies/**.
+        paths:
+          - "~^/api/v1/agency(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Legacy: /api/v1/admin/** -> Stage3 admin-service: /admin/**
+  - name: admin-service-legacy-alias
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: admin-legacy-alias
+        # Collision-safe: will NOT match routes like /api/v1/admin-analytics/**.
+        paths:
+          - "~^/api/v1/admin(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Legacy: /api/v1/caregiver/** -> Stage3: /api/v1/caregivers/**
+  - name: caregiver-service-legacy-alias
+    url: http://stage3-caregiver-service:4051/api/v1/caregivers
+    routes:
+      - name: caregiver-legacy-alias
+        paths:
+          - "~^/api/v1/caregiver(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Legacy: /api/v1/patient/** -> Stage3: /api/v1/patients/**
+  - name: patient-service-legacy-alias
+    url: http://stage3-patient-service:4052/api/v1/patients
+    routes:
+      - name: patient-legacy-alias
+        paths:
+          - "~^/api/v1/patient(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Legacy: /api/v1/ai-matching/** and /api/v1/agency-matching/** -> Stage3: /api/v1/matching/**
+  - name: matching-service-legacy-alias
+    url: http://stage3-matching-service:4023/api/v1/matching
+    routes:
+      - name: ai-matching-legacy-alias
+        paths:
+          - "~^/api/v1/ai-matching(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: agency-matching-legacy-alias
+        paths:
+          - "~^/api/v1/agency-matching(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Legacy: /api/v1/residential/** -> Stage3 residential-service routes (drops /residential prefix)
+  # Example: /api/v1/residential/serious-occurrences -> /api/v1/serious-occurrences
+  - name: residential-service-legacy-alias
+    url: http://stage3-residential-service:4060/api/v1
+    routes:
+      - name: residential-legacy-alias
+        paths:
+          - "~^/api/v1/residential(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # Legacy: /api/v1/networking/** -> split routing:
+  # - /api/v1/networking/messages/** -> /api/v1/messages/** (communication-service)
+  # - everything else under /api/v1/networking/** -> /api/v1/** (care-network-service)
+  - name: communication-service-networking-legacy-alias
+    url: http://stage3-communication-service:4026/api/v1/messages
+    routes:
+      - name: networking-messages-legacy-alias
+        paths:
+          - "~^/api/v1/networking/messages(?=/|$)"
+        strip_path: true
+        regex_priority: 250
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  - name: care-network-service-networking-legacy-alias
+    url: http://stage3-care-network-service:4033/api/v1
+    routes:
+      - name: networking-legacy-alias
+        paths:
+          - "~^/api/v1/networking(?=/|$)"
+        strip_path: true
+        regex_priority: 200
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # =============================================================================
+  # PHASE 2: ADDITIONAL ROUTE COVERAGE
+  # These routes cover the remaining uncovered paths from the gap analysis.
+  # Each route maps legacy monolith endpoints to Stage 3 microservices.
+  # =============================================================================
+
+  # --- INTERNAL SERVICE-TO-SERVICE APIS ---
+  # /api/v1/internal/* - Internal APIs for service-to-service communication
+  - name: internal-caregivers-service
+    url: http://stage3-caregiver-service:4051/api/v1/internal
+    routes:
+      - name: internal-caregivers-route
+        paths:
+          - /api/v1/internal/caregivers
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  - name: internal-care-requests-service
+    url: http://stage3-care-request-service:4053/api/v1/internal
+    routes:
+      - name: internal-care-requests-route
+        paths:
+          - /api/v1/internal/care-requests
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  - name: internal-generic-service
+    url: http://stage3-admin-service:4036/internal
+    routes:
+      - name: internal-generic-route
+        paths:
+          - "~^/api/v1/internal(?=/|$)"
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- PUBLIC API ENDPOINTS ---
+  # /api/v1/public/* - Public-facing endpoints (no auth required)
+  - name: public-api-service
+    url: http://stage3-agency-service:4050/api/v1/public
+    routes:
+      - name: public-contracts-route
+        paths:
+          - /api/v1/public/contracts
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - OPTIONS
+      - name: public-referrals-route
+        paths:
+          - /api/v1/public/referrals
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+      - name: public-launch-route
+        paths:
+          - /api/v1/public/launch
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - OPTIONS
+      - name: public-ws-route
+        paths:
+          - /api/v1/public/ws
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - OPTIONS
+      - name: public-generic-route
+        paths:
+          - "~^/api/v1/public(?=/|$)"
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # --- BFF (Backend-for-Frontend) ---
+  - name: bff-service
+    url: http://stage3-care-request-service:4053/api/v1/bff
+    routes:
+      - name: bff-care-requests-route
+        paths:
+          - /api/v1/bff/care-requests
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: bff-generic-route
+        paths:
+          - "~^/api/v1/bff(?=/|$)"
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- SUPPORT/HELP CENTER ---
+  - name: support-service
+    url: http://stage3-agency-service:4050/api/v1/support-tickets
+    routes:
+      - name: support-help-center-route
+        paths:
+          - /api/v1/support/help-center
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+      - name: support-generic-route
+        paths:
+          - "~^/api/v1/support(?=/|$)"
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- HEALTH ENDPOINTS ---
+  - name: health-service
+    url: http://stage3-admin-service:4036/health
+    routes:
+      - name: health-database-route
+        paths:
+          - /api/v1/health/database
+        strip_path: true
+        regex_priority: 150
+        methods:
+          - GET
+          - OPTIONS
+      - name: health-api-route
+        paths:
+          - /api/v1/health
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- MONITORING/OBSERVABILITY ---
+  - name: monitoring-service
+    url: http://stage3-admin-service:4036/metrics
+    routes:
+      - name: monitoring-route
+        paths:
+          - /api/v1/monitoring
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- PRIVACY/COMPLIANCE ---
+  - name: privacy-service
+    url: http://stage3-audit-service:4017/api/v1/privacy
+    routes:
+      - name: privacy-route
+        paths:
+          - /api/v1/privacy
+        strip_path: false
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- SECURITY ---
+  - name: security-service
+    url: http://stage3-security-monitoring-service:4041/api/v1/security
+    routes:
+      - name: security-route
+        paths:
+          - /api/v1/security
+        strip_path: false
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- COFFEEMEETS (alias for coffee-meets) ---
+  - name: coffeemeets-alias-service
+    url: http://stage3-care-network-service:4033/api/v1/coffee-meets
+    routes:
+      - name: coffeemeets-route
+        paths:
+          - /api/v1/coffeemeets
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- MENTORS (alias for mentorship) ---
+  - name: mentors-alias-service
+    url: http://stage3-mentorship-service:4035/api/v1/mentorship
+    routes:
+      - name: mentors-route
+        paths:
+          - /api/v1/mentors
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- FRAUD (alias for fraud-detection) ---
+  - name: fraud-alias-service
+    url: http://stage3-fraud-detection-service:4040/api/v1/fraud-detection
+    routes:
+      - name: fraud-route
+        paths:
+          - /api/v1/fraud
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- REPORTS (root path) ---
+  - name: reports-root-service
+    url: http://stage3-reports-service:4070/api/v1/reports
+    routes:
+      - name: reports-root-route
+        paths:
+          - /api/v1/reports
+        strip_path: false
+        regex_priority: 50
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- UPLOADS ---
+  - name: uploads-service
+    url: http://stage3-file-service:4021/api/v1/files
+    routes:
+      - name: uploads-route
+        paths:
+          - /api/v1/uploads
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- SCHEDULE (alias for schedules) ---
+  - name: schedule-alias-service
+    url: http://stage3-scheduling-service:4054/api/v1/schedules
+    routes:
+      - name: schedule-route
+        paths:
+          - /api/v1/schedule
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- TASKS ---
+  - name: tasks-service
+    url: http://stage3-visit-service:4013/api/v1/visits
+    routes:
+      - name: tasks-route
+        paths:
+          - /api/v1/tasks
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- TIMESHEETS ---
+  - name: timesheets-service
+    url: http://stage3-agency-service:4050/api/v1/agencies
+    routes:
+      - name: timesheets-route
+        paths:
+          - /api/v1/timesheets
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- CLOCK-IN-OUT ---
+  - name: clock-in-out-service
+    url: http://stage3-evv-service:4020/api/v1/evv
+    routes:
+      - name: clock-in-out-route
+        paths:
+          - /api/v1/clock-in-out
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- EVV CONFIGURATIONS ---
+  - name: evv-configurations-service
+    url: http://stage3-evv-service:4020/api/v1/evv
+    routes:
+      - name: evv-configurations-route
+        paths:
+          - /api/v1/evv-configurations
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- CARE TRANSITIONS ---
+  - name: care-transitions-service
+    url: http://stage3-patient-service:4052/api/v1/patients
+    routes:
+      - name: care-transitions-route
+        paths:
+          - /api/v1/care-transitions
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- DELEGATION ---
+  - name: delegation-service
+    url: http://stage3-care-network-service:4033/api/v1/delegation
+    routes:
+      - name: delegation-route
+        paths:
+          - /api/v1/delegation
+        strip_path: false
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- COMMUNITY/FORUMS ---
+  - name: community-service
+    url: http://stage3-care-network-service:4033/api/v1/community
+    routes:
+      - name: community-forums-route
+        paths:
+          - /api/v1/community/forums
+        strip_path: false
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- GUARDIAN PORTAL ---
+  - name: guardian-portal-service
+    # Enterprise guardian portal is served by the monolith backend.
+    # Keep the path unchanged so the Nest controller at `/api/v1/guardian/portal/*` matches.
+    url: http://host.docker.internal:3000
+    routes:
+      - name: guardian-portal-route
+        paths:
+          - /api/v1/guardian/portal
+        strip_path: false
+        regex_priority: 250
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- FAIRNESS METRICS/DASHBOARD ---
+  - name: fairness-service
+    url: http://stage3-matching-service:4023/api/v1/matching
+    routes:
+      - name: fairness-metrics-route
+        paths:
+          - /api/v1/fairness-metrics
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+      - name: fairness-dashboard-route
+        paths:
+          - /api/v1/fairness-dashboard
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- PASSWORD/SESSION/AUTH ---
+  - name: password-service
+    url: http://stage3-auth-service:4011/auth
+    routes:
+      - name: password-route
+        paths:
+          - /api/v1/password
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: session-route
+        paths:
+          - /api/v1/session
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - DELETE
+          - OPTIONS
+
+  # --- APPROVAL ---
+  - name: approval-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: approval-route
+        paths:
+          - /api/v1/approval
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- REGISTRATION ---
+  - name: registration-service
+    url: http://stage3-patient-service:4052/api/v1/patients
+    routes:
+      - name: registration-patient-sessions-route
+        paths:
+          - /api/v1/registration/patient/sessions
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- CALENDAR INTEGRATION ---
+  - name: calendar-integration-service
+    url: http://stage3-scheduling-service:4054/api/v1/calendar
+    routes:
+      - name: calendar-integration-route
+        paths:
+          - /api/v1/calendar-integration
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- CARE REQUEST ROUTER ---
+  - name: care-request-router-service
+    url: http://stage3-care-request-service:4053/api/v1/care-requests
+    routes:
+      - name: care-request-router-route
+        paths:
+          - /api/v1/care-request-router
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- SHIFT HANDOFFS ---
+  - name: shift-handoffs-service
+    url: http://stage3-visit-service:4013/api/v1/visits
+    routes:
+      - name: shift-handoffs-route
+        paths:
+          - /api/v1/shift-handoffs
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- PLACES/LOCATIONS ---
+  - name: places-service
+    url: http://stage3-search-service:4022/api/v1/locations
+    routes:
+      - name: places-route
+        paths:
+          - /api/v1/places
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # --- COVERAGE ---
+  - name: coverage-service
+    url: http://stage3-scheduling-service:4054/api/v1/schedules
+    routes:
+      - name: coverage-route
+        paths:
+          - /api/v1/coverage
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - OPTIONS
+
+  # --- METRICS ---
+  - name: metrics-api-service
+    url: http://stage3-admin-service:4036/metrics
+    routes:
+      - name: metrics-api-route
+        paths:
+          - /api/v1/metrics
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- PROTECTED ENDPOINTS ---
+  - name: protected-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: protected-route
+        paths:
+          - /api/v1/protected
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- EXPERIMENTAL/FEATURE FLAGS ---
+  - name: experimental-service
+    url: http://stage3-feature-flags-service:4042/api/v1/feature-flags
+    routes:
+      - name: experimental-route
+        paths:
+          - /api/v1/experimental
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+      - name: feature-disclosure-route
+        paths:
+          - /api/v1/feature-disclosure
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+      - name: smart-defaults-route
+        paths:
+          - /api/v1/smart-defaults
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # --- ACHIEVEMENTS/RECOGNITION/SPOTLIGHT ---
+  - name: gamification-extended-service
+    url: http://stage3-training-service:4024/api/v1/gamification
+    routes:
+      - name: achievements-route
+        paths:
+          - /api/v1/achievements
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+      - name: recognition-route
+        paths:
+          - /api/v1/recognition
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+      - name: spotlight-route
+        paths:
+          - /api/v1/spotlight
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- SHADOW ANALYTICS ---
+  - name: shadow-analytics-service
+    url: http://stage3-analytics-service:4016/api/v1/analytics
+    routes:
+      - name: shadow-analytics-route
+        paths:
+          - /api/v1/shadow-analytics
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # --- OPERATIONS CENTER ---
+  - name: operations-center-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: operations-center-route
+        paths:
+          - /api/v1/operations-center
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+  # --- E-REFERRALS (Ontario) ---
+  - name: ereferrals-service
+    url: http://stage3-provincial-service:4034/api/v1/provincial
+    routes:
+      - name: ereferrals-ontario-route
+        paths:
+          - /api/v1/ereferrals/ontario
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - OPTIONS
+
+  # --- CULTURAL PREFERENCES ---
+  - name: cultural-preferences-service
+    url: http://stage3-patient-service:4052/api/v1/patients
+    routes:
+      - name: cultural-preferences-route
+        paths:
+          - /api/v2/cultural-preferences
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- V2 AUTH ---
+  - name: v2-auth-service
+    url: http://stage3-auth-service:4011/auth
+    routes:
+      - name: v2-auth-route
+        paths:
+          - /api/v2/auth
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- MOBILE API ---
+  - name: mobile-care-plans-service
+    url: http://stage3-care-plan-service:4019/api/v1/care-plans
+    routes:
+      - name: mobile-care-plans-route
+        paths:
+          - /api/mobile/v1/care-plans
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- V3 CAREGIVER VISITS ---
+  - name: v3-caregiver-visits-service
+    url: http://stage3-visit-service:4013/api/v1/visits
+    routes:
+      - name: v3-caregiver-visits-route
+        paths:
+          - /api/v3/caregivers/me/visits/personal
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- UI ENDPOINTS ---
+  - name: ui-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: ui-route
+        paths:
+          - /api/v1/ui
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- CONFIG ENDPOINTS ---
+  - name: config-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: config-route
+        paths:
+          - /api/v1/config
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- SYSTEM ENDPOINTS ---
+  - name: system-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: system-route
+        paths:
+          - /api/v1/system
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # --- ADVANCED ENDPOINTS ---
+  - name: advanced-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: advanced-route
+        paths:
+          - /api/v1/advanced
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # --- ROUTES ENDPOINT ---
+  - name: routes-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: routes-route
+        paths:
+          - /api/v1/routes
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - OPTIONS
+
+  # --- MIGRATIONS ENDPOINT ---
+  - name: migrations-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: migrations-route
+        paths:
+          - /api/v1/migrations
+        strip_path: true
+        regex_priority: 100
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+  # --- API ROOT ENDPOINTS ---
+  # /api/v1 and /api/v2 root paths - provide API info/documentation links
+  - name: api-root-service
+    url: http://stage3-admin-service:4036/admin
+    routes:
+      - name: api-v1-root-route
+        paths:
+          - /api/v1
+        strip_path: true
+        regex_priority: 1
+        methods:
+          - GET
+          - OPTIONS
+      - name: api-v2-root-route
+        paths:
+          - /api/v2
+        strip_path: true
+        regex_priority: 1
+        methods:
+          - GET
+          - OPTIONS
+
+  # =============================================================================
+  # MONOLITH FALLBACK (Strangler Fig Pattern)
+  # Routes any unmatched /api/* requests to the existing monolith
+  # This ensures seamless operation during microservices migration
+  # Priority is lowest (regex_priority: 0) so specific routes match first
+  # =============================================================================
+  - name: monolith-fallback
+    url: http://host.docker.internal:3000
+    routes:
+      - name: monolith-api-v1-fallback
+        paths:
+          - /api/v1
+        strip_path: false
+        regex_priority: 0
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: monolith-api-v2-fallback
+        paths:
+          - /api/v2
+        strip_path: false
+        regex_priority: 0
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+      - name: monolith-health-check
+        paths:
+          - /health
+          - /api/health
+        strip_path: false
+        methods:
+          - GET
           - OPTIONS
 
 # Global plugins

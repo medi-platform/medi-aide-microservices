@@ -1,0 +1,41 @@
+# Residential Service Values
+nameOverride: "residential-service"
+fullnameOverride: "residential-service"
+
+image:
+  repository: ghcr.io/medi-aide/residential-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4020
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  - name: SERVICE_NAME
+    value: "residential-service"
+  - name: SERVICE_PORT
+    value: "4020"
+
+extraEnvFrom:
+  - secretRef:
+      name: residential-service-secrets
+  - configMapRef:
+      name: common-config
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 70

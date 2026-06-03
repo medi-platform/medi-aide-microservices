@@ -1,0 +1,503 @@
+# ============================================================================
+# DOCKER COMPOSE - VALIDATION ENVIRONMENT
+# ============================================================================
+# This configuration runs all Stage 3 microservices in health-only mode
+# for route validation testing. Services return health responses without
+# requiring database connections.
+#
+# Usage:
+#   docker-compose -f docker-compose.validation.yml up -d
+#   ./scripts/validate-all-routes.sh http://localhost:8000
+#   docker-compose -f docker-compose.validation.yml down
+# ============================================================================
+
+version: '3.8'
+
+x-common-env: &common-env
+  NODE_ENV: production
+  HEALTH_ONLY: "true"
+  DISABLE_DB: "true"
+  DISABLE_KAFKA: "true"
+  DISABLE_MQ: "true"
+  DISABLE_GRPC: "true"
+  DISABLE_CONSUL: "true"
+
+x-healthcheck: &healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+
+networks:
+  validation-network:
+    driver: bridge
+    name: stage3-network
+
+services:
+  # ============================================================================
+  # KONG API GATEWAY
+  # ============================================================================
+  kong:
+    image: kong:3.4
+    container_name: validation-kong
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yaml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+    volumes:
+      - ./gateway:/kong/declarative:ro
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    networks:
+      - validation-network
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      <<: *healthcheck
+
+  # ============================================================================
+  # CORE SERVICES
+  # ============================================================================
+  auth-service:
+    image: node:20-alpine
+    container_name: stage3-auth-service
+    working_dir: /app
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'auth-service'}))}).listen(4011)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4011
+    networks:
+      validation-network:
+        aliases:
+          - stage3-auth-service
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:4011"]
+      <<: *healthcheck
+
+  user-service:
+    image: node:20-alpine
+    container_name: stage3-user-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'user-service'}))}).listen(4012)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4012
+    networks:
+      validation-network:
+        aliases:
+          - stage3-user-service
+
+  visit-service:
+    image: node:20-alpine
+    container_name: stage3-visit-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'visit-service'}))}).listen(4013)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4013
+    networks:
+      validation-network:
+        aliases:
+          - stage3-visit-service
+
+  wellness-service:
+    image: node:20-alpine
+    container_name: stage3-wellness-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'wellness-service'}))}).listen(4014)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4014
+    networks:
+      validation-network:
+        aliases:
+          - stage3-wellness-service
+
+  payment-service:
+    image: node:20-alpine
+    container_name: stage3-payment-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'payment-service'}))}).listen(4015)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4015
+    networks:
+      validation-network:
+        aliases:
+          - stage3-payment-service
+
+  analytics-service:
+    image: node:20-alpine
+    container_name: stage3-analytics-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'analytics-service'}))}).listen(4016)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4016
+    networks:
+      validation-network:
+        aliases:
+          - stage3-analytics-service
+
+  audit-service:
+    image: node:20-alpine
+    container_name: stage3-audit-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'audit-service'}))}).listen(4017)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4017
+    networks:
+      validation-network:
+        aliases:
+          - stage3-audit-service
+
+  ai-service:
+    image: node:20-alpine
+    container_name: stage3-ai-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'ai-service'}))}).listen(4018)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4018
+    networks:
+      validation-network:
+        aliases:
+          - stage3-ai-service
+
+  care-plan-service:
+    image: node:20-alpine
+    container_name: stage3-care-plan-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'care-plan-service'}))}).listen(4019)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4019
+    networks:
+      validation-network:
+        aliases:
+          - stage3-care-plan-service
+
+  evv-service:
+    image: node:20-alpine
+    container_name: stage3-evv-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'evv-service'}))}).listen(4020)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4020
+    networks:
+      validation-network:
+        aliases:
+          - stage3-evv-service
+
+  file-service:
+    image: node:20-alpine
+    container_name: stage3-file-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'file-service'}))}).listen(4021)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4021
+    networks:
+      validation-network:
+        aliases:
+          - stage3-file-service
+
+  search-service:
+    image: node:20-alpine
+    container_name: stage3-search-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'search-service'}))}).listen(4022)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4022
+    networks:
+      validation-network:
+        aliases:
+          - stage3-search-service
+
+  matching-service:
+    image: node:20-alpine
+    container_name: stage3-matching-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'matching-service'}))}).listen(4023)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4023
+    networks:
+      validation-network:
+        aliases:
+          - stage3-matching-service
+
+  training-service:
+    image: node:20-alpine
+    container_name: stage3-training-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'training-service'}))}).listen(4024)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4024
+    networks:
+      validation-network:
+        aliases:
+          - stage3-training-service
+
+  feedback-service:
+    image: node:20-alpine
+    container_name: stage3-feedback-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'feedback-service'}))}).listen(4025)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4025
+    networks:
+      validation-network:
+        aliases:
+          - stage3-feedback-service
+
+  communication-service:
+    image: node:20-alpine
+    container_name: stage3-communication-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'communication-service'}))}).listen(4026)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4026
+    networks:
+      validation-network:
+        aliases:
+          - stage3-communication-service
+
+  notification-service:
+    image: node:20-alpine
+    container_name: stage3-notification-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'notification-service'}))}).listen(4010)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4010
+    networks:
+      validation-network:
+        aliases:
+          - host.docker.internal
+
+  care-network-service:
+    image: node:20-alpine
+    container_name: stage3-care-network-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'care-network-service'}))}).listen(4033)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4033
+    networks:
+      validation-network:
+        aliases:
+          - stage3-care-network-service
+
+  provincial-service:
+    image: node:20-alpine
+    container_name: stage3-provincial-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'provincial-service'}))}).listen(4034)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4034
+    networks:
+      validation-network:
+        aliases:
+          - stage3-provincial-service
+
+  mentorship-service:
+    image: node:20-alpine
+    container_name: stage3-mentorship-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'mentorship-service'}))}).listen(4035)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4035
+    networks:
+      validation-network:
+        aliases:
+          - stage3-mentorship-service
+
+  admin-service:
+    image: node:20-alpine
+    container_name: stage3-admin-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'admin-service'}))}).listen(4036)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4036
+    networks:
+      validation-network:
+        aliases:
+          - stage3-admin-service
+
+  moderation-service:
+    image: node:20-alpine
+    container_name: stage3-moderation-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'moderation-service'}))}).listen(4037)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4037
+    networks:
+      validation-network:
+        aliases:
+          - stage3-moderation-service
+
+  fraud-detection-service:
+    image: node:20-alpine
+    container_name: stage3-fraud-detection-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'fraud-detection-service'}))}).listen(4040)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4040
+    networks:
+      validation-network:
+        aliases:
+          - stage3-fraud-detection-service
+
+  security-monitoring-service:
+    image: node:20-alpine
+    container_name: stage3-security-monitoring-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'security-monitoring-service'}))}).listen(4041)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4041
+    networks:
+      validation-network:
+        aliases:
+          - stage3-security-monitoring-service
+
+  feature-flags-service:
+    image: node:20-alpine
+    container_name: stage3-feature-flags-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'feature-flags-service'}))}).listen(4042)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4042
+    networks:
+      validation-network:
+        aliases:
+          - stage3-feature-flags-service
+
+  # ============================================================================
+  # PHASE 2 SERVICES
+  # ============================================================================
+  agency-service:
+    image: node:20-alpine
+    container_name: stage3-agency-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'agency-service'}))}).listen(4050)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4050
+    networks:
+      validation-network:
+        aliases:
+          - stage3-agency-service
+
+  caregiver-service:
+    image: node:20-alpine
+    container_name: stage3-caregiver-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'caregiver-service'}))}).listen(4051)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4051
+    networks:
+      validation-network:
+        aliases:
+          - stage3-caregiver-service
+
+  patient-service:
+    image: node:20-alpine
+    container_name: stage3-patient-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'patient-service'}))}).listen(4052)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4052
+    networks:
+      validation-network:
+        aliases:
+          - stage3-patient-service
+
+  care-request-service:
+    image: node:20-alpine
+    container_name: stage3-care-request-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'care-request-service'}))}).listen(4053)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4053
+    networks:
+      validation-network:
+        aliases:
+          - stage3-care-request-service
+
+  scheduling-service:
+    image: node:20-alpine
+    container_name: stage3-scheduling-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'scheduling-service'}))}).listen(4054)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4054
+    networks:
+      validation-network:
+        aliases:
+          - stage3-scheduling-service
+
+  insurance-service:
+    image: node:20-alpine
+    container_name: stage3-insurance-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'insurance-service'}))}).listen(4057)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4057
+    networks:
+      validation-network:
+        aliases:
+          - stage3-insurance-service
+
+  residential-service:
+    image: node:20-alpine
+    container_name: stage3-residential-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'residential-service'}))}).listen(4060)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4060
+    networks:
+      validation-network:
+        aliases:
+          - stage3-residential-service
+
+  reports-service:
+    image: node:20-alpine
+    container_name: stage3-reports-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'reports-service'}))}).listen(4070)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4070
+    networks:
+      validation-network:
+        aliases:
+          - stage3-reports-service
+
+  integration-service:
+    image: node:20-alpine
+    container_name: stage3-integration-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'integration-service'}))}).listen(4056)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4056
+    networks:
+      validation-network:
+        aliases:
+          - stage3-integration-service
+
+  contract-service:
+    image: node:20-alpine
+    container_name: stage3-contract-service
+    command: node -e "require('http').createServer((req,res)=>{res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'ok',service:'contract-service'}))}).listen(4055)"
+    environment:
+      <<: *common-env
+      SERVICE_PORT: 4055
+    networks:
+      validation-network:
+        aliases:
+          - stage3-contract-service
+
+  # AI/ML Service (Python)
+  ai-ml-service:
+    image: python:3.11-alpine
+    container_name: stage3-ai-ml-service
+    command: python -c "from http.server import HTTPServer, BaseHTTPRequestHandler; import json; handler = type('H', (BaseHTTPRequestHandler,), {'do_GET': lambda s: (s.send_response(200), s.send_header('Content-Type','application/json'), s.end_headers(), s.wfile.write(json.dumps({'status':'ok','service':'ai-ml-service'}).encode()))}); HTTPServer(('0.0.0.0', 8005), handler).serve_forever()"
+    environment:
+      SERVICE_PORT: 8005
+    networks:
+      validation-network:
+        aliases:
+          - stage3-ai-ml-service

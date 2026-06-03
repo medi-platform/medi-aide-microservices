@@ -155,13 +155,13 @@ export class CandidateFetcherService implements ICandidateFetcher {
       }
       
       const caregiversData = await response.json();
-      const caregiverMap = new Map(caregiversData.map((c: any) => [c.id, c]));
-      const locationMap = new Map(locations.map((l: any) => [l.caregiverId, l]));
+      const caregiverMap = new Map<string, any>(caregiversData.map((c: any) => [c.id, c]));
+      const locationMap = new Map<string, any>(locations.map((l: any) => [l.caregiverId, l]));
       
       const candidates: CaregiverCandidate[] = [];
       
       for (const id of caregiverIds) {
-        const caregiver = caregiverMap.get(id);
+        const caregiver: any = caregiverMap.get(id);
         const location = locationMap.get(id);
         
         if (!caregiver) continue;
@@ -314,6 +314,62 @@ export class CandidateFetcherService implements ICandidateFetcher {
     return deg * (Math.PI / 180);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

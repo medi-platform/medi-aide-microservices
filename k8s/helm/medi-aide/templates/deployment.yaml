@@ -1,0 +1,83 @@
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if $serviceConfig.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}-service
+  labels:
+    {{- include "medi-aide.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+spec:
+  replicas: {{ $serviceConfig.replicas | default $.Values.serviceDefaults.replicas }}
+  selector:
+    matchLabels:
+      {{- include "medi-aide.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        {{- include "medi-aide.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $serviceName }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ $serviceConfig.port }}"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: {{ include "medi-aide.serviceAccountName" $ }}
+      securityContext:
+        {{- toYaml $.Values.securityContext | nindent 8 }}
+      containers:
+        - name: {{ $serviceName }}
+          image: "{{ $.Values.global.imageRegistry }}/medi-platform/medi-aide-microservices/{{ $serviceName }}-service:{{ $.Chart.AppVersion }}"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: {{ $serviceConfig.port }}
+              protocol: TCP
+          env:
+            - name: SERVICE_NAME
+              value: {{ $serviceName }}-service
+            - name: SERVICE_PORT
+              value: "{{ $serviceConfig.port }}"
+            - name: DB_DATABASE
+              value: {{ $serviceConfig.database | quote }}
+            {{- include "medi-aide.commonEnv" $ | nindent 12 }}
+            {{- if $serviceConfig.jwtSecret }}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $serviceConfig.jwtSecret.secretName }}
+                  key: {{ $serviceConfig.jwtSecret.key }}
+            {{- end }}
+            {{- if $serviceConfig.stripeSecret }}
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $serviceConfig.stripeSecret.secretName }}
+                  key: {{ $serviceConfig.stripeSecret.key }}
+            {{- end }}
+          {{- include "medi-aide.livenessProbe" $ | nindent 10 }}
+          {{- include "medi-aide.readinessProbe" $ | nindent 10 }}
+          resources:
+            {{- if $serviceConfig.resources }}
+            {{- toYaml $serviceConfig.resources | nindent 12 }}
+            {{- else }}
+            {{- toYaml $.Values.serviceDefaults.resources | nindent 12 }}
+            {{- end }}
+      {{- with $.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: {{ $serviceName }}
+                topologyKey: kubernetes.io/hostname
+{{- end }}
+{{- end }}
+

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { BaseService } from '@medi-aide/service-base';
-import { evvModule } from './evv.module';
+import { EvvModule } from './evv.module';
 
 class UevvUservice extends BaseService {
   constructor() {
@@ -8,8 +8,8 @@ class UevvUservice extends BaseService {
     const disableMq = process.env.DISABLE_MQ === 'true';
     const disableGrpc = process.env.DISABLE_GRPC === 'true';
     const disableDb = process.env.DISABLE_DB === 'true';
-    
-    super(evvModule, {
+
+    super(EvvModule, {
       serviceName: 'evv-service',
       serviceVersion: process.env.SERVICE_VERSION || '1.0.0',
       defaultPort: 4020,
@@ -20,7 +20,9 @@ class UevvUservice extends BaseService {
       enableGrpc: !disableGrpc,
       grpcPackage: 'evv'.replace('-', '_'),
       grpcProtoPath: './proto/evv.proto',
-      globalPrefix: 'evv',
+      // Kong routes are mounted under /api/v1/*.
+      // We keep EVV endpoints under /api/v1/evv/* for parity (see gateway/kong.yaml).
+      globalPrefix: 'api/v1',
     });
   }
 }

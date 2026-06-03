@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-
-@Controller('health')
+import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus';
+@Controller()
 export class HealthController {
-  @Get()
-  check() {
-    return { status: 'ok', service: 'evv' };
-  }
+  constructor(private health: HealthCheckService, private db: TypeOrmHealthIndicator) {}
+  @Get('health') @HealthCheck() check() { return this.health.check([() => this.db.pingCheck('database')]); }
+  @Get('ping') ping() { return { status: 'ok', service: 'evv-service', timestamp: new Date().toISOString() }; }
+  @Get('/') info() { return { service: 'EVV Service', version: '1.0.0', status: 'operational' }; }
 }

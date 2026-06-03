@@ -1,0 +1,108 @@
+##############################################################################
+# Pod Security Standards
+# Phase 9: Security Hardening
+##############################################################################
+
+# Pod Security Standards (PSS) - Restricted Profile
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: medi-aide-prod
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: medi-aide-staging
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# Service Account with minimal permissions
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: medi-aide-service
+  namespace: medi-aide-prod
+automountServiceAccountToken: false
+
+---
+# Role for service accounts
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: medi-aide-role
+  namespace: medi-aide-prod
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+
+---
+# Role binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: medi-aide-rolebinding
+  namespace: medi-aide-prod
+subjects:
+  - kind: ServiceAccount
+    name: medi-aide-service
+    namespace: medi-aide-prod
+roleRef:
+  kind: Role
+  name: medi-aide-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Resource Quotas
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: medi-aide-quota
+  namespace: medi-aide-prod
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: 100Gi
+    limits.cpu: "100"
+    limits.memory: 200Gi
+    pods: "100"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+
+---
+# Limit Ranges
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: medi-aide-limits
+  namespace: medi-aide-prod
+spec:
+  limits:
+    - default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      type: Container

@@ -12,14 +12,21 @@ x-common-env: &common-env
   REDIS_PORT: 6379
   KAFKA_BROKERS: medi-aide-oss-kafka-1:9092
   TEMPORAL_ADDRESS: medi-aide-oss-temporal-1:7233
+  TEMPORAL_NAMESPACE: default
   CONSUL_HOST: stage3-consul
   CONSUL_PORT: 8500
   JAEGER_ENDPOINT: http://stage3-jaeger:14268/api/traces
   DISABLE_CONSUL: "true"
+  DISABLE_GRPC: "true"
   DISABLE_MQ: "true"
+  # Phase 2: Service-to-Service JWT Auth
+  SERVICE_JWT_SECRET: ${SERVICE_JWT_SECRET:-medi-aide-service-jwt-secret-change-in-production}
+  # Phase 2: Kafka configuration
+  KAFKA_GROUP_ID_SUFFIX: -group
+  KAFKA_DLQ_ENABLED: "true"
 
 x-healthcheck: &default-healthcheck
-  test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:${SERVICE_PORT:-4010}/ping',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))\""]
+  test: ["CMD-SHELL", "node -e \"const port=process.env.SERVICE_PORT||process.env.PORT||4010;require('http').get('http://localhost:'+port+'/ping',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))\""]
   interval: 15s
   timeout: 5s
   retries: 3
@@ -646,4 +653,383 @@ services:
       - stage3-network
       - medi-aide-oss-network
     restart: unless-stopped
+
+  # ============================================
+  # AI/ML SERVICE (Python/FastAPI)
+  # ============================================
+  
+  ai-ml-service:
+    build:
+      context: ./services/ai-ml-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: stage3-ai-ml-service
+    environment:
+      # Application
+      APP_NAME: Medi-Aide AI/ML Service
+      APP_VERSION: 1.0.0
+      ENVIRONMENT: development
+      DEBUG: "false"
+      HOST: 0.0.0.0
+      PORT: 8005
+      WORKERS: 2
+      
+      # Database
+      DB_HOST: medi-aide-oss-postgres-1
+      DB_PORT: 5432
+      DB_USER: service_user
+      DB_PASSWORD: service123
+      DB_NAME: ai_db
+      
+      # Redis
+      REDIS_HOST: medi-aide-oss-redis-1
+      REDIS_PORT: 6379
+      
+      # Kafka
+      KAFKA_BROKERS: medi-aide-oss-kafka-1:9092
+      
+      # Consul
+      CONSUL_HOST: stage3-consul
+      CONSUL_PORT: 8500
+      CONSUL_ENABLED: "true"
+      
+      # Observability
+      JAEGER_AGENT_HOST: stage3-jaeger
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_ENDPOINT: http://stage3-jaeger:14268/api/traces
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+      METRICS_ENABLED: "true"
+      
+      # AI Settings
+      AI_MATCHING_MIN_SCORE: 0.3
+      AI_MATCHING_MAX_RESULTS: 20
+      AI_ENABLE_CULTURAL_MATCHING: "true"
+      AI_ENABLE_EXPLAINABILITY: "true"
+      AI_BURNOUT_HIGH_RISK_THRESHOLD: 0.7
+      AI_SCHEDULE_MAX_TRAVEL_MINUTES: 45
+    ports:
+      # NOTE: When running the legacy monolith (which also uses host :8005),
+      # set AI_ML_SERVICE_HOST_PORT=18005 (or any free port) to avoid conflicts.
+      - "${AI_ML_SERVICE_HOST_PORT:-8005}:8005"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    volumes:
+      - ai-ml-models:/app/models
+      - ai-ml-logs:/app/logs
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # ============================================
+  # PHASE 2 - NEW CRITICAL SERVICES
+  # ============================================
+  
+  agency-service:
+    build:
+      context: .
+      dockerfile: services/agency-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: agency-service
+    container_name: stage3-agency-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: agency-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4050
+      DB_DATABASE: agency_db
+      DATABASE_NAME: agency_db
+    ports:
+      - "4050:4050"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  caregiver-service:
+    build:
+      context: .
+      dockerfile: services/caregiver-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: caregiver-service
+    container_name: stage3-caregiver-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: caregiver-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4051
+      DB_DATABASE: caregiver_db
+      DATABASE_NAME: caregiver_db
+    ports:
+      - "4051:4051"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  patient-service:
+    build:
+      context: .
+      dockerfile: services/patient-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: patient-service
+    container_name: stage3-patient-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: patient-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4052
+      DB_DATABASE: patient_db
+      DATABASE_NAME: patient_db
+    ports:
+      - "4052:4052"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  care-request-service:
+    build:
+      context: .
+      dockerfile: services/care-request-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: care-request-service
+    container_name: stage3-care-request-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: care-request-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4053
+      DB_DATABASE: care_request_db
+      DATABASE_NAME: care_request_db
+    ports:
+      - "4053:4053"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  scheduling-service:
+    build:
+      context: .
+      dockerfile: services/scheduling-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: scheduling-service
+    container_name: stage3-scheduling-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: scheduling-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4054
+      DB_DATABASE: scheduling_db
+      DATABASE_NAME: scheduling_db
+    ports:
+      - "4054:4054"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  integration-service:
+    build:
+      context: .
+      dockerfile: services/integration-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: integration-service
+    container_name: stage3-integration-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: integration-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4055
+      DB_DATABASE: integration_db
+      DATABASE_NAME: integration_db
+    ports:
+      - "4055:4055"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  incident-service:
+    build:
+      context: .
+      dockerfile: services/incident-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: incident-service
+    container_name: stage3-incident-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: incident-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4056
+      DB_DATABASE: incident_db
+      DATABASE_NAME: incident_db
+    ports:
+      - "4056:4056"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  insurance-service:
+    build:
+      context: .
+      dockerfile: services/insurance-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: insurance-service
+    container_name: stage3-insurance-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: insurance-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4057
+      DB_DATABASE: insurance_db
+      DATABASE_NAME: insurance_db
+    ports:
+      - "4057:4057"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
+  # PHASE 5B - RESIDENTIAL SERVICE (NEW)
+  # ============================================
+
+  residential-service:
+    build:
+      context: .
+      dockerfile: services/residential-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: residential-service
+    container_name: stage3-residential-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: residential-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4060
+      DB_DATABASE: residential_db
+      DATABASE_NAME: residential_db
+      # Guardian notification settings
+      GUARDIAN_NOTIFICATIONS_ENABLED: "true"
+      ESCALATION_TIMEOUT_MINUTES: "30"
+      SERIOUS_OCCURRENCE_AUTO_REPORT: "true"
+      # Staffing settings
+      MIN_COVERAGE_RATIO: "1.0"
+      ALERT_THRESHOLD_HOURS: "24"
+      OVERTIME_ALERT_ENABLED: "true"
+    ports:
+      - "4060:4060"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
+  # PHASE 5H - REPORTS SERVICE (NEW)
+  # ============================================
+
+  reports-service:
+    build:
+      context: .
+      dockerfile: services/reports-service/Dockerfile.pnpm
+      args:
+        SERVICE_NAME: reports-service
+    container_name: stage3-reports-service
+    environment:
+      <<: *common-env
+      SERVICE_NAME: reports-service
+      SERVICE_VERSION: 1.0.0
+      SERVICE_PORT: 4070
+      DB_DATABASE: reports_db
+      DATABASE_NAME: reports_db
+      # Storage settings
+      REPORTS_BUCKET: medi-aide-reports
+      REPORTS_RETENTION_DAYS: "90"
+    ports:
+      - "4070:4070"
+    healthcheck:
+      <<: *default-healthcheck
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+
+  # ============================================
+  # TEMPORAL WORKER (Phase 2)
+  # ============================================
+  
+  temporal-worker:
+    build:
+      context: .
+      dockerfile: services/temporal-worker/Dockerfile
+    container_name: stage3-temporal-worker
+    environment:
+      <<: *common-env
+      TEMPORAL_TASK_QUEUE: medi-aide-care-workflows
+      TEMPORAL_NAMESPACE: default
+      METRICS_PORT: 9000
+      HEALTH_PORT: 8080
+      # Service JWT for inter-service communication
+      SERVICE_JWT_SECRET: ${SERVICE_JWT_SECRET:-medi-aide-service-jwt-secret}
+    ports:
+      - "9200:9000"  # Metrics
+      - "8280:8080"  # Health
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - stage3-network
+      - medi-aide-oss-network
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+volumes:
+  ai-ml-models:
+    driver: local
+  ai-ml-logs:
+    driver: local
 

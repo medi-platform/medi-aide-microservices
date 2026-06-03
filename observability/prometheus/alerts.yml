@@ -1,0 +1,337 @@
+groups:
+  # ============================================================================
+  # SERVICE HEALTH ALERTS
+  # ============================================================================
+  - name: service-health
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~".*-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute."
+          runbook_url: "https://wiki.medi-aide.com/runbooks/service-down"
+
+      - alert: ServiceHighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "{{ $labels.service }} has error rate of {{ $value | humanizePercentage }}"
+
+      - alert: ServiceHighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High latency on {{ $labels.service }}"
+          description: "95th percentile latency is {{ $value | humanizeDuration }}"
+
+      - alert: ServiceHighMemoryUsage
+        expr: |
+          (
+            container_memory_usage_bytes{container=~".*-service"}
+            /
+            container_spec_memory_limit_bytes{container=~".*-service"}
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High memory usage on {{ $labels.container }}"
+          description: "Memory usage is at {{ $value | humanizePercentage }}"
+
+      - alert: ServiceHighCPUUsage
+        expr: |
+          rate(container_cpu_usage_seconds_total{container=~".*-service"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High CPU usage on {{ $labels.container }}"
+          description: "CPU usage is at {{ $value | humanizePercentage }}"
+
+  # ============================================================================
+  # DATABASE ALERTS
+  # ============================================================================
+  - name: database
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is down"
+
+      - alert: PostgreSQLHighConnections
+        expr: |
+          (
+            pg_stat_activity_count
+            /
+            pg_settings_max_connections
+          ) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL high connections"
+          description: "PostgreSQL is using {{ $value | humanizePercentage }} of connections"
+
+      - alert: PostgreSQLSlowQueries
+        expr: |
+          pg_stat_activity_max_tx_duration{datname!~"template.*"} > 300
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL slow queries"
+          description: "Queries running longer than 5 minutes detected"
+
+      - alert: PostgreSQLDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL deadlocks detected"
+          description: "Deadlocks occurring on database {{ $labels.datname }}"
+
+  # ============================================================================
+  # KAFKA ALERTS
+  # ============================================================================
+  - name: kafka
+    rules:
+      - alert: KafkaBrokerDown
+        expr: kafka_server_replicamanager_leadercount == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Kafka broker is down"
+          description: "Kafka broker {{ $labels.instance }} has no leader partitions"
+
+      - alert: KafkaConsumerLag
+        expr: kafka_consumer_group_lag > 10000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Kafka consumer lag is high"
+          description: "Consumer group {{ $labels.consumergroup }} lag is {{ $value }}"
+
+      - alert: KafkaUnderReplicatedPartitions
+        expr: kafka_server_replicamanager_underreplicatedpartitions > 0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Kafka under-replicated partitions"
+          description: "{{ $value }} partitions are under-replicated"
+
+      - alert: KafkaMessagePublishFailures
+        expr: rate(kafka_publish_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Kafka publish failures"
+          description: "Messages failing to publish on topic {{ $labels.topic }}"
+
+  # ============================================================================
+  # REDIS ALERTS
+  # ============================================================================
+  - name: redis
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} is down"
+
+      - alert: RedisHighMemoryUsage
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is at {{ $value | humanizePercentage }}"
+
+      - alert: RedisHighConnectionCount
+        expr: redis_connected_clients > 500
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Redis high connection count"
+          description: "Redis has {{ $value }} connected clients"
+
+  # ============================================================================
+  # TEMPORAL ALERTS
+  # ============================================================================
+  - name: temporal
+    rules:
+      - alert: TemporalWorkerDown
+        expr: temporal_worker_starts_total == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Temporal worker is down"
+          description: "No Temporal workers are running"
+
+      - alert: TemporalWorkflowFailures
+        expr: rate(temporal_workflows_processed_total{status="failed"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Temporal workflow failures"
+          description: "Workflows failing at rate of {{ $value }}/s"
+
+      - alert: TemporalActivityHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(temporal_activity_duration_seconds_bucket[5m])) by (le, activity)
+          ) > 30
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Temporal activity high latency"
+          description: "Activity {{ $labels.activity }} p95 latency is {{ $value }}s"
+
+  # ============================================================================
+  # MATCHING SERVICE ALERTS
+  # ============================================================================
+  - name: matching-service
+    rules:
+      - alert: MatchingSLAMissed
+        expr: |
+          (
+            sum(rate(matching_requests_total{sla_met="false"}[5m]))
+            /
+            sum(rate(matching_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: care
+        annotations:
+          summary: "Matching SLA being missed"
+          description: "{{ $value | humanizePercentage }} of matching requests missing SLA"
+
+      - alert: MatchingNoResults
+        expr: |
+          sum(rate(matching_requests_total{matches="0"}[5m]))
+          /
+          sum(rate(matching_requests_total[5m]))
+          > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          team: care
+        annotations:
+          summary: "High rate of no-match results"
+          description: "{{ $value | humanizePercentage }} of requests returning no matches"
+
+  # ============================================================================
+  # EVV ALERTS
+  # ============================================================================
+  - name: evv-service
+    rules:
+      - alert: EVVVerificationFailures
+        expr: rate(evv_verification_failures_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: compliance
+        annotations:
+          summary: "EVV verification failures"
+          description: "EVV verifications failing at {{ $value }}/s"
+
+      - alert: EVVClockInMissing
+        expr: |
+          sum(rate(evv_missing_clockin_total[1h])) > 10
+        for: 1h
+        labels:
+          severity: warning
+          team: compliance
+        annotations:
+          summary: "Missing EVV clock-ins detected"
+          description: "{{ $value }} shifts with missing clock-ins in the last hour"
+
+  # ============================================================================
+  # COMPLIANCE ALERTS
+  # ============================================================================
+  - name: compliance
+    rules:
+      - alert: HIPAAViolationDetected
+        expr: increase(hipaa_violations_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: compliance
+        annotations:
+          summary: "HIPAA violation detected"
+          description: "A potential HIPAA violation has been detected"
+          runbook_url: "https://wiki.medi-aide.com/runbooks/hipaa-violation"
+
+      - alert: UnauthorizedPHIAccess
+        expr: increase(unauthorized_phi_access_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Unauthorized PHI access detected"
+          description: "Unauthorized access to PHI has been detected"
+
+      - alert: AuditLogFailure
+        expr: rate(audit_log_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: compliance
+        annotations:
+          summary: "Audit logging failure"
+          description: "Audit logs are failing to write - compliance at risk"
+

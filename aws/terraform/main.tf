@@ -19,10 +19,11 @@ terraform {
   }
   
   # Backend configuration for state management
+  # Using Canada region for data residency compliance
   backend "s3" {
-    bucket         = "medi-aide-terraform-state"
+    bucket         = "medi-aide-terraform-state-ca"
     key            = "infrastructure/terraform.tfstate"
-    region         = "us-east-1"
+    region         = "ca-central-1"  # Montreal, Canada
     encrypt        = true
     dynamodb_table = "medi-aide-terraform-locks"
   }

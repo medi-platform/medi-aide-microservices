@@ -1,0 +1,45 @@
+# Jaeger Configuration for Production
+# This configuration is used when deploying Jaeger as part of the observability stack
+
+# Collector configuration
+collector:
+  # Number of spans to batch before flushing
+  queue-size: 10000
+  # Number of workers processing the queue
+  num-workers: 50
+
+# Storage configuration
+storage:
+  type: elasticsearch
+  options:
+    es:
+      server-urls: http://elasticsearch:9200
+      index-prefix: jaeger
+      tags-as-fields:
+        all: true
+      num-shards: 5
+      num-replicas: 1
+      bulk:
+        size: 5000000
+        workers: 3
+        flush-interval: 200ms
+
+# Query service configuration  
+query:
+  # Maximum number of traces to return
+  max-traces: 1000
+  # UI base path
+  base-path: /jaeger
+
+# Sampling configuration
+sampling:
+  strategies-file: /etc/jaeger/sampling-strategies.json
+
+# Metrics
+metrics:
+  backend: prometheus
+  http-route: /metrics
+
+# Log level
+log-level: info
+

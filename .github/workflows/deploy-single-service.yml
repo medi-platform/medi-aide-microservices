@@ -55,9 +55,8 @@ on:
         default: 'latest'
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository }}
-  AWS_REGION: ca-central-1
+  AWS_REGION: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ca-west-1' }}
+  PROJECT_NAME: medi-aide
 
 jobs:
   deploy:
@@ -65,14 +64,16 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.environment }}
+    env:
+      DEPLOY_ENV: ${{ inputs.environment }}
+      ECS_CLUSTER: ${{ inputs.environment == 'production' && (secrets.ECS_CLUSTER_PRODUCTION || vars.ECS_CLUSTER_PRODUCTION || secrets.ECS_CLUSTER || vars.ECS_CLUSTER || 'medi-aide-production') || inputs.environment == 'staging' && (secrets.ECS_CLUSTER_STAGING || vars.ECS_CLUSTER_STAGING || secrets.ECS_CLUSTER || vars.ECS_CLUSTER || 'medi-aide-staging') || secrets.ECS_CLUSTER || vars.ECS_CLUSTER || 'medi-aide-development' }}
+      ECS_SERVICE_PREFIX: ${{ inputs.environment == 'production' && (vars.ECS_SERVICE_PREFIX_PRODUCTION || vars.ECS_SERVICE_PREFIX) || inputs.environment == 'staging' && (vars.ECS_SERVICE_PREFIX_STAGING || vars.ECS_SERVICE_PREFIX) || vars.ECS_SERVICE_PREFIX || 'medi-aide' }}
+      ECS_SERVICE_MAP: ${{ inputs.environment == 'production' && (secrets.ECS_SERVICE_MAP_PRODUCTION || vars.ECS_SERVICE_MAP_PRODUCTION) || inputs.environment == 'staging' && (secrets.ECS_SERVICE_MAP_STAGING || vars.ECS_SERVICE_MAP_STAGING) || secrets.ECS_SERVICE_MAP || vars.ECS_SERVICE_MAP || '{}' }}
+      ECS_DEPLOY_REQUIRE_ALL: "true"
+      IMAGE_TAG: ${{ inputs.image_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: '3.13.0'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -81,43 +82,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update kubeconfig
+      - name: Resolve ECR registry
+        id: ecr
         run: |
-          CLUSTER_NAME="medi-aide-${{ inputs.environment }}"
-          [ "${{ inputs.environment }}" = "production" ] && CLUSTER_NAME="medi-aide-prod"
-          aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ env.AWS_REGION }}
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          echo "registry=${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy service
+      - name: Deploy service to ECS
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
-          SERVICE="${{ inputs.service }}"
-          ENV="${{ inputs.environment }}"
-          TAG="${{ inputs.image_tag }}"
-          
-          # Determine values file
-          VALUES_FILE="charts/nest-service/values-${SERVICE}.yaml"
-          if [ ! -f "$VALUES_FILE" ]; then
-            VALUES_FILE="charts/nest-service/values.yaml"
-          fi
-          
-          # Environment-specific values
-          ENV_VALUES="charts/nest-service/values-${ENV}.yaml"
-          
-          # Deploy with Helm
-          helm upgrade --install $SERVICE charts/nest-service \
-            --namespace medi-aide-${ENV} \
-            --create-namespace \
-            -f $VALUES_FILE \
-            -f $ENV_VALUES \
-            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${SERVICE} \
-            --set image.tag=${TAG} \
-            --set environment=${ENV} \
-            --wait --timeout 10m
-
-      - name: Verify deployment
-        run: |
-          kubectl rollout status deployment/${{ inputs.service }} \
-            --namespace medi-aide-${{ inputs.environment }} \
-            --timeout=5m
+          bash scripts/deploy-ecs-services.sh "${{ inputs.service }}"
 
       - name: Notify Slack
         if: always()

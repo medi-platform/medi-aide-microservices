@@ -2,7 +2,7 @@ name: AWS Deployment Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feature/backend-api]
   workflow_dispatch:
     inputs:
       environment:
@@ -15,8 +15,7 @@ on:
           - production
 
 env:
-  AWS_REGION: ca-central-1  # Montreal, Canada - Required for healthcare data compliance
-  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ca-central-1.amazonaws.com
+  AWS_REGION: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ca-west-1' }}
   PROJECT_NAME: medi-aide
 
 jobs:
@@ -64,6 +63,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Ensure ECR repository exists
+        run: |
+          set -euo pipefail
+          repository="${PROJECT_NAME}/${{ matrix.service }}"
+          if ! aws ecr describe-repositories --repository-names "$repository" >/dev/null 2>&1; then
+            aws ecr create-repository \
+              --repository-name "$repository" \
+              --image-scanning-configuration scanOnPush=true \
+              --encryption-configuration encryptionType=AES256
+          fi
+
       - name: Build and push to ECR
         uses: docker/build-push-action@v5
         with:
@@ -71,24 +81,31 @@ jobs:
           file: services/${{ matrix.service }}/Dockerfile.pnpm
           push: true
           tags: |
-            ${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:${{ github.sha }}
-            ${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:latest
           build-args: |
             SERVICE_NAME=${{ matrix.service }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   # ============================================================================
-  # DEPLOY TO STAGING (EKS)
+  # DEPLOY TO STAGING (ECS)
   # ============================================================================
   deploy-staging:
     name: Deploy to Staging
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/backend-api' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
     environment:
       name: staging
-      url: https://staging.medi-aide.com
+      url: https://staging.medi-aide.ca
+    env:
+      DEPLOY_ENV: staging
+      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_STAGING || vars.ECS_CLUSTER_STAGING || secrets.ECS_CLUSTER || vars.ECS_CLUSTER || 'medi-aide-staging' }}
+      ECS_SERVICE_PREFIX: ${{ vars.ECS_SERVICE_PREFIX_STAGING || vars.ECS_SERVICE_PREFIX || 'medi-aide' }}
+      ECS_SERVICE_MAP: ${{ secrets.ECS_SERVICE_MAP_STAGING || vars.ECS_SERVICE_MAP_STAGING || secrets.ECS_SERVICE_MAP || vars.ECS_SERVICE_MAP || '{}' }}
+      ECS_DEPLOY_REQUIRE_ALL: ${{ vars.ECS_DEPLOY_REQUIRE_ALL || 'true' }}
+      IMAGE_TAG: ${{ github.sha }}
     
     steps:
       - name: Checkout
@@ -101,38 +118,35 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update kubeconfig (Canada)
+      - name: Resolve ECR registry
+        id: ecr
         run: |
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name medi-aide-staging
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          echo "registry=${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> "$GITHUB_OUTPUT"
 
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'v3.13.0'
-
-      - name: Deploy services to staging
+      - name: Deploy services to staging ECS
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
-          for service in notification-service auth-service user-service visit-service wellness-service payment-service search-service audit-service matching-service evv-service care-plan-service file-service training-service feedback-service communication-service; do
-            echo "Deploying $service..."
-            helm upgrade --install $service ./charts/nest-service \
-              --namespace medi-aide-staging \
-              --create-namespace \
-              --set image.repository=${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/$service \
-              --set image.tag=${{ github.sha }} \
-              --set env[0].name=NODE_ENV \
-              --set env[0].value=staging \
-              --set env[1].name=SERVICE_NAME \
-              --set env[1].value=$service \
-              --wait --timeout 5m0s || echo "Failed to deploy $service, continuing..."
-          done
-
-      - name: Verify deployments
-        run: |
-          kubectl get pods -n medi-aide-staging
-          kubectl get services -n medi-aide-staging
+          bash scripts/deploy-ecs-services.sh \
+            notification-service \
+            auth-service \
+            user-service \
+            visit-service \
+            wellness-service \
+            payment-service \
+            search-service \
+            audit-service \
+            matching-service \
+            evv-service \
+            care-plan-service \
+            file-service \
+            training-service \
+            feedback-service \
+            communication-service
 
   # ============================================================================
-  # DEPLOY TO PRODUCTION (EKS)
+  # DEPLOY TO PRODUCTION (ECS)
   # ============================================================================
   deploy-production:
     name: Deploy to Production
@@ -142,6 +156,13 @@ jobs:
     environment:
       name: production
       url: https://medi-aide.com
+    env:
+      DEPLOY_ENV: production
+      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_PRODUCTION || vars.ECS_CLUSTER_PRODUCTION || secrets.ECS_CLUSTER || vars.ECS_CLUSTER || 'medi-aide-production' }}
+      ECS_SERVICE_PREFIX: ${{ vars.ECS_SERVICE_PREFIX_PRODUCTION || vars.ECS_SERVICE_PREFIX || 'medi-aide' }}
+      ECS_SERVICE_MAP: ${{ secrets.ECS_SERVICE_MAP_PRODUCTION || vars.ECS_SERVICE_MAP_PRODUCTION || secrets.ECS_SERVICE_MAP || vars.ECS_SERVICE_MAP || '{}' }}
+      ECS_DEPLOY_REQUIRE_ALL: ${{ vars.ECS_DEPLOY_REQUIRE_ALL || 'true' }}
+      IMAGE_TAG: ${{ github.sha }}
     
     steps:
       - name: Checkout
@@ -154,39 +175,35 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update kubeconfig (Canada)
+      - name: Resolve ECR registry
+        id: ecr
         run: |
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name medi-aide-prod
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          echo "registry=${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> "$GITHUB_OUTPUT"
 
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'v3.13.0'
-
-      - name: Deploy services to production
+      - name: Deploy services to production ECS
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
-          for service in notification-service auth-service user-service visit-service wellness-service payment-service search-service audit-service matching-service evv-service care-plan-service file-service training-service feedback-service communication-service; do
-            echo "Deploying $service..."
-            helm upgrade --install $service ./charts/nest-service \
-              --namespace medi-aide \
-              --create-namespace \
-              --set image.repository=${{ env.ECR_REGISTRY }}/${{ env.PROJECT_NAME }}/$service \
-              --set image.tag=${{ github.sha }} \
-              --set env[0].name=NODE_ENV \
-              --set env[0].value=production \
-              --set env[1].name=SERVICE_NAME \
-              --set env[1].value=$service \
-              --wait --timeout 5m0s
-          done
-
-      - name: Verify deployments
-        run: |
-          kubectl get pods -n medi-aide
-          kubectl get services -n medi-aide
+          bash scripts/deploy-ecs-services.sh \
+            notification-service \
+            auth-service \
+            user-service \
+            visit-service \
+            wellness-service \
+            payment-service \
+            search-service \
+            audit-service \
+            matching-service \
+            evv-service \
+            care-plan-service \
+            file-service \
+            training-service \
+            feedback-service \
+            communication-service
 
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Production deployment completed successfully"
+          echo "Production ECS deployment completed successfully"
           echo "Services deployed: notification, auth, user, visit, wellness, payment, search, audit, matching, evv, care-plan, file, training, feedback, communication"
-

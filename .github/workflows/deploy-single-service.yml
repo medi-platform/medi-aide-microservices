@@ -58,6 +58,10 @@ env:
   AWS_REGION: ${{ vars.AWS_REGION || secrets.AWS_REGION || 'ca-west-1' }}
   PROJECT_NAME: medi-aide
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Deploy ${{ inputs.service }} to ${{ inputs.environment }}
@@ -71,16 +75,35 @@ jobs:
       ECS_SERVICE_MAP: ${{ inputs.environment == 'production' && (secrets.ECS_SERVICE_MAP_PRODUCTION || vars.ECS_SERVICE_MAP_PRODUCTION) || inputs.environment == 'staging' && (secrets.ECS_SERVICE_MAP_STAGING || vars.ECS_SERVICE_MAP_STAGING) || secrets.ECS_SERVICE_MAP || vars.ECS_SERVICE_MAP || '{}' }}
       ECS_DEPLOY_REQUIRE_ALL: "true"
       IMAGE_TAG: ${{ inputs.image_tag }}
+      AWS_ROLE_TO_ASSUME: ${{ inputs.environment == 'production' && (secrets.AWS_ROLE_TO_ASSUME_PRODUCTION || secrets.AWS_ROLE_TO_ASSUME || '') || inputs.environment == 'staging' && (secrets.AWS_ROLE_TO_ASSUME_STAGING || secrets.AWS_ROLE_TO_ASSUME || '') || secrets.AWS_ROLE_TO_ASSUME || '' }}
+      EXPECTED_AWS_ACCOUNT_ID: ${{ inputs.environment == 'production' && (secrets.AWS_ACCOUNT_ID_PRODUCTION || vars.AWS_ACCOUNT_ID_PRODUCTION || '') || inputs.environment == 'staging' && (secrets.AWS_ACCOUNT_ID_STAGING || vars.AWS_ACCOUNT_ID_STAGING || '946769779647') || secrets.AWS_ACCOUNT_ID || vars.AWS_ACCOUNT_ID || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (static keys)
+        if: env.AWS_ROLE_TO_ASSUME == ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS account
+        run: |
+          set -euo pipefail
+          actual_account="$(aws sts get-caller-identity --query Account --output text)"
+          if [[ -n "${EXPECTED_AWS_ACCOUNT_ID:-}" && "$actual_account" != "$EXPECTED_AWS_ACCOUNT_ID" ]]; then
+            echo "::error::AWS credentials resolved to account ${actual_account}, expected ${EXPECTED_AWS_ACCOUNT_ID}."
+            exit 1
+          fi
 
       - name: Resolve ECR registry
         id: ecr
